@@ -19,16 +19,9 @@ class NewBlog extends Component {
     this.mysqlLayer = new MysqlLayer();
   }
 
-  updateTitle(value) {
-    this.setState({ title: value });
-  }
-
-  updateBody(value) {
-    this.setState({ body: value });
-  }
-
-  updateTags(value) {
-    this.setState({ tags: value });
+  handleChange(e) {
+    const value = e.target.value;
+    this.setState({ [e.target.name]: value });
   }
 
   async submit() {
@@ -59,7 +52,8 @@ class NewBlog extends Component {
                   <input
                     disabled={this.state.disabled}
                     type="text"
-                    onChange={(e) => {this.updateTitle(e.target.value)}}
+                    name="title"
+                    onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
                     placeholder="Give your blog a title"
                   />
@@ -69,7 +63,8 @@ class NewBlog extends Component {
                   <textarea
                     disabled={this.state.disabled}
                     type="text"
-                    onChange={(e) => {this.updateBody(e.target.value)}}
+                    name="body"
+                    onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
                     placeholder="Share your wisdom"
                     rows="10"
@@ -81,7 +76,8 @@ class NewBlog extends Component {
                   <input
                     disabled={this.state.disabled}
                     type="text"
-                    onChange={(e) => {this.updateTags(e.target.value)}}
+                    name="tags"
+                    onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
                     placeholder="Leave a space between each tag"
                   />

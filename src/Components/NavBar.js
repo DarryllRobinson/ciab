@@ -16,6 +16,9 @@ function NavBar() {
           <li className="nav-item active">
             <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
           </li>
+          <li className="nav-item active">
+            <Link className="nav-link" to="/workspace/applications">Applications <span className="sr-only"></span></Link>
+          </li>
         </ul>
       </div>
     </nav>
