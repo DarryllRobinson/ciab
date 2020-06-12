@@ -22,7 +22,7 @@ class Blogs extends Component {
     return (
       <div className="container">
         <div className="row">
-          <Link to="/community/blog">
+          <Link to="/community/new-blog">
             <div className="card text-white bg-secondary mb-3">
               <div className="card-header">Feel like adding to our library?</div>
               <div className="card-body">
@@ -40,7 +40,7 @@ class Blogs extends Component {
                   <div className="card text-white bg-success mb-3">
                     <div className="card-header">Likes: {blog.likes}</div>
                     <div className="card-body">
-                      <h4 className="card-title">Title: {blog.title}</h4>
+                      <h4 className="card-title">{blog.title}</h4>
                       <p className="card-text">Tags: {blog.tags}</p>
                     </div>
                   </div>

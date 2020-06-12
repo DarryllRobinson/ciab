@@ -8,7 +8,7 @@ export default class MysqlLayer {
 
   // Get route
   async Get(path) {
-    this.security.validateSession();
+    //this.security.validateSession();
     try {
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
@@ -28,9 +28,12 @@ export default class MysqlLayer {
 
   // Post route
   async Post(path, object) {
-    this.security.validateSession();
+    //this.security.validateSession();
+    console.log('path: ', path);
+    console.log('object: ', object);
     try {
-      let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
+      let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
+      console.log('response: ', response);
       return response.data;
     } catch(e) {
       console.log('e: ', e);
@@ -48,9 +51,9 @@ export default class MysqlLayer {
 
   // Put route
   async Put(path, object) {
-    this.security.validateSession();
+    //this.security.validateSession();
     try {
-      let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
+      let response = await axios.put(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       return response.data;
     } catch(e) {
       console.log('e: ', e);
@@ -68,9 +71,9 @@ export default class MysqlLayer {
 
   // Delete route
   async Delete(path) {
-    this.security.validateSession();
+    //this.security.validateSession();
     try {
-      let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
+      let response = await axios.delete(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
     } catch(e) {
       console.log('e: ', e);
