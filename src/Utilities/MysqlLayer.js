@@ -1,10 +1,14 @@
 import axios from 'axios';
 import AppSettings from './appSettings';
+import Security from './Security';
 
-export default class mysqlLayer {
+export default class MysqlLayer {
+
+  security = new Security();
 
   // Get route
   async Get(path) {
+    this.security.validateSession();
     try {
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
@@ -24,6 +28,7 @@ export default class mysqlLayer {
 
   // Post route
   async Post(path, object) {
+    this.security.validateSession();
     try {
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       return response.data;
@@ -43,6 +48,7 @@ export default class mysqlLayer {
 
   // Put route
   async Put(path, object) {
+    this.security.validateSession();
     try {
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       return response.data;
@@ -62,6 +68,7 @@ export default class mysqlLayer {
 
   // Delete route
   async Delete(path) {
+    this.security.validateSession();
     try {
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
