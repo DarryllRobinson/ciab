@@ -17,7 +17,7 @@ class Application extends Component {
   }
 
   async componentDidMount() {
-    await this.refreshApplication();
+    //await this.refreshApplication();
   }
 
   async refreshApplication() {

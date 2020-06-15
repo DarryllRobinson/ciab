@@ -7,7 +7,10 @@ class Applications extends Component {
     super(props);
 
     this.state = {
-      applications: null
+      applications: null,
+      approved: null,
+      referred: null,
+      declined: null
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -15,7 +18,49 @@ class Applications extends Component {
 
   async componentDidMount() {
     const applications = await this.mysqlLayer.Get('/workspace/applications');
-    this.setState({ applications: applications })
+    await this.setState({ applications: applications });
+    await this.queuePrep(applications);
+  }
+
+  queuePrep(apps) {
+    let approved = [];
+    let referred = [];
+    let declined = [];
+
+    apps.forEach(app => {
+      switch (app.result) {
+        case 'Approved': approved.push(app); break;
+        case 'Referred': referred.push(app); break;
+        case 'Declined': declined.push(app); break;
+        default: ;
+      }
+    });
+
+    this.setState({
+      approved: approved,
+      referred: referred,
+      declined: declined
+    });
+  }
+
+  queueCount(apps) {
+    let approved = 0;
+    let referred = 0;
+    let declined = 0;
+
+    apps.forEach(app => {
+      switch (app.result) {
+        case 'Approved': ++approved; break;
+        case 'Referred': ++referred; break;
+        case 'Declined': ++declined; break;
+        default: ;
+      }
+      this.setState({
+        approved: approved,
+        referred: referred,
+        declined: declined
+      })
+    })
   }
 
   render() {
@@ -33,27 +78,50 @@ class Applications extends Component {
               </div>
             </div>
           </Link>
-
-          {this.state.applications === null && <p>Loading applications...</p>}
-          {
-            this.state.applications && this.state.applications.map(application => (
-              <div key={application.id} className="col-sm-12 col-md-4 col-lg-3">
-                <Link to={`/workspace/applications/${application.id}`}>
-                  <div className="card text-white bg-success mb-3">
-                    {console.log('application.createdDate: ', typeof new Date(application.createdDate))}
-                      {console.log('Date: ', typeof new Date())}
-                    <div className="card-header">TAT {}</div>
-                    <div className="card-body">
-                      <h4 className="card-title">{application.firstName} {application.surname}</h4>
-                      <p className="card-text">{application.result} with ${application.limit}</p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ))
-          }
         </div>
-      </div>
+
+        {this.state.applications === null && <p>Loading queues...</p>}
+          {this.state.applications && this.state.approved && this.state.referred && this.state.declined && (
+            <div className="row">
+              <Link to={{
+                pathname: "/workspace/applications/approved",
+                state: this.state.approved
+              }}>
+                <div className="card text-white bg-secondary mb-3">
+                  <div className="card-header">Approved Applications</div>
+                  <div className="card-body">
+                    <h4 className="card-title">{this.state.approved.length}</h4>
+                  </div>
+                </div>
+              </Link>
+
+              <Link to={{
+                pathname: "/workspace/applications/referred",
+                state: this.state.referred
+              }}>
+                <div className="card text-white bg-secondary mb-3">
+                  <div className="card-header">Referred Applications</div>
+                  <div className="card-body">
+                    <h4 className="card-title">{this.state.referred.length}</h4>
+                  </div>
+                </div>
+              </Link>
+
+              <Link to={{
+                pathname: "/workspace/applications/declined",
+                state: this.state.declined
+              }}>
+                <div className="card text-white bg-secondary mb-3">
+                  <div className="card-header">Declined Applications</div>
+                  <div className="card-body">
+                    <h4 className="card-title">{this.state.declined.length}</h4>
+                  </div>
+                </div>
+              </Link>
+            </div>
+        )}
+        </div>
+
     )
   }
 }

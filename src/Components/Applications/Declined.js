@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 
-class Approved extends Component {
+class Declined extends Component {
   constructor(props) {
     super(props);
 
@@ -49,4 +49,4 @@ class Approved extends Component {
   }
 }
 
-export default Approved;
+export default Declined;

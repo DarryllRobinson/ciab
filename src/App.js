@@ -9,6 +9,8 @@ import NewBlog from './Components/Community/NewBlog';
 import Applications from './Components/Applications/Applications';
 import Application from './Components/Applications/Application';
 import Approved from './Components/Applications/Approved';
+import Referred from './Components/Applications/Referred';
+import Declined from './Components/Applications/Declined';
 import NewApplication from './Components/Applications/NewApplication';
 
 class App extends Component {
@@ -31,6 +33,8 @@ class App extends Component {
         <Route exact path='/workspace/applications' component={Applications} />
         <Route exact path='/workspace/applications/:applicationId' component={Application} />
         <Route exact path='/workspace/applications/approved' component={Approved} />
+        <Route exact path='/workspace/applications/referred' component={Referred} />
+        <Route exact path='/workspace/applications/declined' component={Declined} />
         <Route exact path='/workspace/new-application' component={NewApplication} />
       </div>
     )
