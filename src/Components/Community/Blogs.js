@@ -14,7 +14,7 @@ class Blogs extends Component {
   }
 
   async componentDidMount() {
-    const blogs = await this.mysqlLayer.Get('/blogs');
+    const blogs = await this.mysqlLayer.Get('/community/blogs');
     this.setState({ blogs: blogs })
   }
 

@@ -22,8 +22,8 @@ class Application extends Component {
 
   async refreshApplication() {
     const { match: { params } } = this.props;
-    const application = await this.mysqlLayer.Get(`/applications/${params.applicationId}`);
-    const comments = await this.mysqlLayer.Get(`/comments/${params.applicationId}`);
+    const application = await this.mysqlLayer.Get(`/workspace/applications/${params.applicationId}`);
+    const comments = await this.mysqlLayer.Get(`/workspace/comments/${params.applicationId}`);
     this.setState({
       application: application,
       comments: comments
@@ -38,7 +38,7 @@ class Application extends Component {
       f_applicationId: this.state.application[0].id
     }
 
-    await this.mysqlLayer.Post(`/comments`, newComment); /*{
+    await this.mysqlLayer.Post(`/workspace/comments`, newComment); /*{
       comment,
     }, {
       headers: { 'Authorization': `Bearer ${auth0Client.getIdToken()}` }

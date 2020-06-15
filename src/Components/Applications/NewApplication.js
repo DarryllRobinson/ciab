@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
 import {withRouter} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import Vet from './Vet';
 import moment from 'moment';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 class NewApplication extends Component {
   constructor(props) {
@@ -12,6 +15,7 @@ class NewApplication extends Component {
       firstName: '',
       surname: '',
       idNumber: '',
+      sex: '',
       mobile: '',
       email: '',
       dob: null,
@@ -19,16 +23,24 @@ class NewApplication extends Component {
       address2: '',
       address3: '',
       address4: '',
+      address5: '',
+      employer: '',
+      employmentDuration: 0.0,
+      residencyDuration: 0.0,
+      numDependents: 0,
       bankCode: '',
       bankAccount: '',
       grossIncome: 0,
       expenses: 0,
       bureauScore: 0,
       createdBy: '',
-      createdDate: null
+      createdDate: null,
+      result: null,
+      limit: null
     }
 
     this.mysqlLayer = new MysqlLayer();
+    this.vet = new Vet();
   }
 
   handleChange(e) {
@@ -43,6 +55,7 @@ class NewApplication extends Component {
       firstName: this.state.firstName,
       surname: this.state.surname,
       idNumber: this.state.idNumber,
+      sex: this.state.sex,
       mobile: this.state.mobile,
       email: this.state.email,
       dob: this.state.dob,
@@ -51,6 +64,10 @@ class NewApplication extends Component {
       address3: this.state.address3,
       address4: this.state.address4,
       address5: this.state.address5,
+      employer: this.state.employer,
+      employmentDuration: this.state.employmentDuration,
+      residencyDuration: this.state.residencyDuration,
+      numDependents: this.state.numDependents,
       bankCode: this.state.bankCode,
       bankAccount: this.state.bankAccount,
       grossIncome: this.state.grossIncome,
@@ -64,14 +81,19 @@ class NewApplication extends Component {
       firstName: "Peter",
       surname: "Parker",
       idNumber: "1234567890123",
+      sex: this.state.sex,
       mobile: "01234",
       email: "peter@email.com",
-      dob: "1990-09-18",
+      dob: "2002-06-14",
       address1: "45 Buckingham Place",
       address2: "",
       address3: "",
       address4: "Durban",
       address5: "2134",
+      employer: "SAB",
+      employmentDuration: 2,
+      residencyDuration: 2,
+      numDependents: this.state.numDependents,
       bankCode: "123456",
       bankAccount: "22233344",
       grossIncome: 10000,
@@ -81,10 +103,36 @@ class NewApplication extends Component {
       createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
     }
 
-    console.log('application: ', application);
+    await this.mysqlLayer.Post('/workspace/applications', application);
+    let cont = true;
+    cont = await this.vet.Declines(application);
 
-    await this.mysqlLayer.Post('/applications', application);
-    this.props.history.push('/workspace/applications');
+    if (cont) {
+      this.setState({ result: 'Approved' });
+      let score = await this.vet.Scorecard(application);
+      if (score < 30) this.setState({ result: 'Referred' });
+      console.log('score: ', score);
+    }
+
+    if (this.state.result === 'Approved') this.setState({ limit: 1000 });
+    if (this.state.result === 'Referred') this.setState({ limit: 750 });
+
+    //this.props.history.push('/workspace/applications');
+  }
+
+  creditResult(result, limit) {
+    if (result && limit) {
+      toast(`Credit result ${result} -- Limit ${limit}`, {
+        position: "top-center",
+        autoClose: 10000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        }
+      );
+    }
   }
 
   render() {
@@ -129,6 +177,16 @@ class NewApplication extends Component {
                   />
                 </div>
                 <div className="form-group">
+                  <label htmlFor="exampleInputSex">Sex</label>
+                  <input
+                    disabled={this.state.disabled}
+                    type="text"
+                    name="sex"
+                    onChange={(e) => {this.handleChange(e)}}
+                    className="form-control"
+                  />
+                </div>
+                <div className="form-group">
                   <label htmlFor="exampleInputMobile">Mobile</label>
                   <input
                     disabled={this.state.disabled}
@@ -158,7 +216,17 @@ class NewApplication extends Component {
                     name="dob"
                     onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
-                    placeholder="01/06/1990"
+                    placeholder="14/06/2002"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="exampleInputNumDependents">Number of Dependents</label>
+                  <input
+                    disabled={this.state.disabled}
+                    type="text"
+                    name="numDependents"
+                    onChange={(e) => {this.handleChange(e)}}
+                    className="form-control"
                   />
                 </div>
                 <div className="form-group">
@@ -206,7 +274,7 @@ class NewApplication extends Component {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="exampleInputAddress5">Post Code</label>
+                  <label htmlFor="exampleInputAddress5">Address 5</label>
                   <input
                     disabled={this.state.disabled}
                     type="text"
@@ -214,6 +282,39 @@ class NewApplication extends Component {
                     onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
                     placeholder="2134"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="exampleInputresidencyDuration">Time at Address</label>
+                  <input
+                    disabled={this.state.disabled}
+                    type="text"
+                    name="residencyDuration"
+                    onChange={(e) => {this.handleChange(e)}}
+                    className="form-control"
+                    placeholder="2"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="exampleInputEmployer">Employer</label>
+                  <input
+                    disabled={this.state.disabled}
+                    type="text"
+                    name="employer"
+                    onChange={(e) => {this.handleChange(e)}}
+                    className="form-control"
+                    placeholder="SAB"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="exampleInputEmploymentDuration">Time at Employer</label>
+                  <input
+                    disabled={this.state.disabled}
+                    type="text"
+                    name="employmentDuration"
+                    onChange={(e) => {this.handleChange(e)}}
+                    className="form-control"
+                    placeholder="1"
                   />
                 </div>
                 <div className="form-group">
@@ -235,7 +336,7 @@ class NewApplication extends Component {
                     name="bankCode"
                     onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
-                    placeholder="444-555-66"
+                    placeholder="44455566"
                   />
                 </div>
                 <div className="form-group">
@@ -290,7 +391,7 @@ class NewApplication extends Component {
                     name="bureauScore"
                     onChange={(e) => {this.handleChange(e)}}
                     className="form-control"
-                    placeholder=""
+                    placeholder="650"
                   />
                 </div>
                 <button
@@ -299,6 +400,8 @@ class NewApplication extends Component {
                   onClick={() => {this.submit()}}>
                   Submit
                 </button>
+                {this.creditResult(this.state.result, this.state.limit)}
+                <ToastContainer />
               </div>
             </div>
           </div>

@@ -22,8 +22,8 @@ class Blog extends Component {
 
   async refreshBlog() {
     const { match: { params } } = this.props;
-    const blog = await this.mysqlLayer.Get(`/blogs/${params.blogId}`);
-    const comments = await this.mysqlLayer.Get(`/comments/${params.blogId}`);
+    const blog = await this.mysqlLayer.Get(`/community/blogs/${params.blogId}`);
+    const comments = await this.mysqlLayer.Get(`/community/comments/${params.blogId}`);
     this.setState({
       blog: blog,
       comments: comments
@@ -38,7 +38,7 @@ class Blog extends Component {
       f_blogId: this.state.blog[0].id
     }
 
-    await this.mysqlLayer.Post(`/comments`, newComment); /*{
+    await this.mysqlLayer.Post(`/community/comments`, newComment); /*{
       comment,
     }, {
       headers: { 'Authorization': `Bearer ${auth0Client.getIdToken()}` }
@@ -50,7 +50,7 @@ class Blog extends Component {
     const {blog} = this.state;
     const {comments} = this.state;
     if (blog === null) return <p>Loading...</p>;
-    
+
     return (
       <div className="container">
         <div className="row">

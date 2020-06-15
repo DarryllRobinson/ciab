@@ -35,7 +35,7 @@ class NewBlog extends Component {
       tags: this.state.tags
     }
 
-    await this.mysqlLayer.Post('/blogs', blog);
+    await this.mysqlLayer.Post('/community/blogs', blog);
     this.props.history.push('/community/blogs');
   }
 
