@@ -36,7 +36,7 @@ class App extends Component {
         <Route exact path='/main' component={Main} />
         <Route exact path='/workspace' component={Workspace} />
         <Route exact path='/workspace/applications' component={Applications} />
-        <Route exact path='/workspace/applications/:applicationId' component={Application} />
+        <Route exact path='/workspace/applications/:id' component={Application} />
         <Route exact path='/workspace/applications/approved' component={Approved} />
         <Route exact path='/workspace/applications/referred' component={Referred} />
         <Route exact path='/workspace/applications/declined' component={Declined} />

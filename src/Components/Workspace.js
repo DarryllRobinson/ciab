@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { MDBDataTable, MDBBtn } from 'mdbreact';
+import {Link } from "react-router-dom";
+import { MDBDataTable } from 'mdbreact';
 import MysqlLayer from '../Utilities/MysqlLayer';
 import moment from 'moment';
 
@@ -8,7 +9,7 @@ class Workspace extends Component {
     super(props);
 
     this.state = {
-      recordStatus: '',
+      recordStatus: 'Referred',
       columns: [
         {
           label: 'Record ID',
@@ -86,7 +87,12 @@ class Workspace extends Component {
             limit: record.limit,
             createdBy: record.createdBy,
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
-            id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
+            //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
+            id: <Link className="nav-link" to={{
+                pathname: `/workspace/applications/${record.id}`,
+                state: {recordId: record.id}
+              }}
+              style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>
           }
           rows.push(row);
         }
@@ -99,12 +105,10 @@ class Workspace extends Component {
     });
   }
 
-  openRecord(event) {
+  /*openRecord(event) {
     let recordId = event.target.name;
-    let status = this.state.recordStatus;
-    const { history } = this.props;
-    history.push('/workspace/application', { recordId, status });
-  }
+    history.push('/workspace/application', { recordId });
+  }*/
 
   componentToLoad() {
     const status = this.state.recordStatus;
