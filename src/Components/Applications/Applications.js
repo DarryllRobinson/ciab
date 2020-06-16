@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import moment from 'moment';
+import { PieChart } from 'react-minimal-pie-chart';
 
 class Applications extends Component {
   constructor(props) {
@@ -106,21 +107,20 @@ class Applications extends Component {
 
         {this.state.applications === null && <p>Loading queues...</p>}
           {this.state.applications && this.state.approved && this.state.referred && this.state.declined && (
+
             <div className="row">
               <div className="col">
                 <Link to={{
                   pathname: "/workspace/applications/approved",
                   state: this.state.approved
                 }}>
-                  <div className={this.cardTat(this.state.approvedTat)} style={{maxWidth: "20rem"}}>
-                    <div className="card-header">Approved Applications</div>
-                    <div className="card-body">
-                      <h4 className="card-title">Total: {this.state.approved.length} <br /><br />
-                        Longest TAT: {Math.round(this.state.approvedTat)} hours <br /><br />
-                        Avg TAT: {Math.round(this.state.approvedTat) / this.state.approved.length} hours
-                      </h4>
-                    </div>
-                  </div>
+                <PieChart
+                  data={[
+                    { title: 'One', value: 10, color: '#E38627' },
+                    { title: 'Two', value: 15, color: '#C13C37' },
+                    { title: 'Three', value: 20, color: '#6A2135' },
+                  ]}
+                />
                 </Link>
               </div>
 

@@ -7,14 +7,46 @@ class Main extends Component {
     super(props);
 
     this.state = {
-      role: null
+      role: null,
+      referred: 0,
+      pended: 0,
+      reviews: 0
     }
 
     this.mysqlLayer = new MysqlLayer();
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    let apps = await this.mysqlLayer.Get('/workspace/applications');
+    this.queueCount(apps);
+  }
 
+  queueCount(apps) {
+    let referred = this.state.referred;
+    let pended = this.state.pended;
+    let reviews = this.state.reviews;
+
+    apps.forEach(app => {
+      switch (app.result) {
+        case 'Referred':
+          referred = ++referred;
+          break;
+        case 'Pended':
+          pended = ++pended;
+          break;
+        case 'Decline Review':
+          reviews = ++reviews;
+          break;
+        default:
+          break;
+      }
+    })
+
+    this.setState({
+      referred: referred,
+      pended: pended,
+      reviews: reviews
+    });
   }
 
   render() {
@@ -41,15 +73,26 @@ class Main extends Component {
                     style={{padding: 0}}>
                     Referred
                   </Link>
-                  <span className="badge badge-primary badge-pill">14</span>
+                  <span className="badge badge-primary badge-pill">{this.state.referred}</span>
                 </li>
                 <li className="list-group-item d-flex justify-content-between align-items-center">
-                  <Link className="nav-link" to="/workspace/applications" style={{padding: 0}}>Pended</Link>
-                  <span className="badge badge-primary badge-pill">2</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between align-items-center">
-                  <Link className="nav-link" to="/workspace/applications" style={{padding: 0}}>Decline Review</Link>
-                  <span className="badge badge-primary badge-pill">1</span>
+                  <Link className="nav-link" to={{
+                      pathname: "/workspace",
+                      state: 'Pended'
+                    }}
+                    style={{padding: 0}}>
+                    Pended
+                  </Link>
+                  <span className="badge badge-primary badge-pill">{this.state.pended}</span>
+                </li><li className="list-group-item d-flex justify-content-between align-items-center">
+                  <Link className="nav-link" to={{
+                      pathname: "/workspace",
+                      state: 'Decline Reviews'
+                    }}
+                    style={{padding: 0}}>
+                    Decline Reviews
+                  </Link>
+                  <span className="badge badge-primary badge-pill">{this.state.reviews}</span>
                 </li>
               </ul>
             </div>

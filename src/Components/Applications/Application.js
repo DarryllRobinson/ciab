@@ -271,6 +271,107 @@ class Application extends Component {
                 </div>
               </div>
 
+              <br /><br />
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputBankCode">Bank Code</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="bankCode"
+                      className="form-control"
+                      value={application[0].bankCode}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputBankAcc">Bank Account</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="bankAccount"
+                      className="form-control"
+                      value={application[0].bankAccount}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    {/* This space left blank intentionally */}
+                  </div>
+                </div>
+              </div>
+
+              <br /><br />
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputGrossIncome">Gross Income</label>
+                    <input
+                      disabled={true}
+                      type="number"
+                      name="grossIncome"
+                      className="form-control"
+                      value={application[0].grossIncome}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputExpenses">Expenses</label>
+                    <input
+                      disabled={true}
+                      type="number"
+                      name="expenses"
+                      className="form-control"
+                      value={application[0].expenses}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    {/* This space left blank intentionally */}
+                  </div>
+                </div>
+              </div>
+
+              <br /><br />
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputBureauScore">Bureau Score</label>
+                    <input
+                      disabled={true}
+                      type="number"
+                      name="bureauScore"
+                      className="form-control"
+                      value={application[0].bureauScore}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    {/* This space left blank intentionally */}
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    {/* This space left blank intentionally */}
+                  </div>
+                </div>
+              </div>
+
               </div>
             </div>
           </div>
