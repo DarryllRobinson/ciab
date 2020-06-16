@@ -103,8 +103,6 @@ class Application extends Component {
                   </div>
                 </div>
 
-
-
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputNumDependents">Number of Dependents</label>
@@ -115,6 +113,160 @@ class Application extends Component {
                       className="form-control"
                       value={application[0].numDependents}
                     />
+                  </div>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputMobile">Mobile</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="mobile"
+                      className="form-control"
+                      value={application[0].mobile}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputEmail">Email address</label>
+                    <input
+                      disabled={true}
+                      type="email"
+                      name="email"
+                      className="form-control"
+                      value={application[0].email}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    {/* This space left blank intentionally */}
+                  </div>
+                </div>
+              </div>
+
+              <br /><br />
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputAddress1">Address Line 1</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="address1"
+                      className="form-control"
+                      value={application[0].address1}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputAddress2">Address Line 2</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="address2"
+                      className="form-control"
+                      value={application[0].address2}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputAddress3">Address Line 3</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="address3"
+                      className="form-control"
+                      value={application[0].address3}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputAddress4">Address Line 4</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="address4"
+                      className="form-control"
+                      value={application[0].address4}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputAddress5">Address Line 5</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="address5"
+                      className="form-control"
+                      value={application[0].address5}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputresidencyDuration">Time at Address</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="residencyDuration"
+                      className="form-control"
+                      value={application[0].residencyDuration}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <br /><br />
+
+              <div className="row">
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputEmployer">Employer</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="employer"
+                      className="form-control"
+                      value={application[0].employer}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputEmploymentDuration">Time at Employer</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="employmentDuration"
+                      className="form-control"
+                      value={application[0].employmentDuration}
+                    />
+                  </div>
+                </div>
+
+                <div className="col-4">
+                  <div className="form-group">
+                    {/* This space left blank intentionally */}
                   </div>
                 </div>
               </div>
