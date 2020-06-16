@@ -36,7 +36,9 @@ class NewApplication extends Component {
       createdBy: '',
       createdDate: null,
       result: null,
-      limit: null
+      limit: null,
+      closedBy: '',
+      closedDate: null
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -81,10 +83,10 @@ class NewApplication extends Component {
       firstName: "Peter",
       surname: "Parker",
       idNumber: "1234567890123",
-      sex: this.state.sex,
+      sex: 'M',//this.state.sex,
       mobile: "01234",
       email: "peter@email.com",
-      dob: "2002-06-14",
+      dob: "1990-08-08",
       address1: "45 Buckingham Place",
       address2: "",
       address3: "",
@@ -93,7 +95,7 @@ class NewApplication extends Component {
       employer: "SAB",
       employmentDuration: 2,
       residencyDuration: 2,
-      numDependents: this.state.numDependents,
+      numDependents: 2,//this.state.numDependents,
       bankCode: "123456",
       bankAccount: "22233344",
       grossIncome: 10000,
@@ -103,19 +105,36 @@ class NewApplication extends Component {
       createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
     }
 
-    await this.mysqlLayer.Post('/workspace/applications', application);
+    const response = await this.mysqlLayer.Post('/workspace/applications', application);
+    const appId = response.insertId;
+
     let cont = true;
     cont = await this.vet.Declines(application);
 
     if (cont) {
       this.setState({ result: 'Approved' });
+
       let score = await this.vet.Scorecard(application);
-      if (score < 30) this.setState({ result: 'Referred' });
+      if (score < 20) this.setState({ result: 'Referred' });
       console.log('score: ', score);
     }
 
-    if (this.state.result === 'Approved') this.setState({ limit: 1000 });
+    if (this.state.result === 'Approved') this.setState(
+      {
+        limit: 1000,
+        closedBy: 'Darryll',
+        closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      });
     if (this.state.result === 'Referred') this.setState({ limit: 750 });
+
+    let update = [];
+    /*update.push("result": this.state.result);
+    update.push("limit": this.state.limit);
+    update.push("closedBy": this.state.closedBy);
+    update.push("closedDate": this.state.closedDate);
+    console.log('update: ', update);
+    console.log('appId: ', appId);
+    await this.updateAppTable(appId, update);*/
 
     //this.props.history.push('/workspace/applications');
   }
@@ -133,6 +152,13 @@ class NewApplication extends Component {
         }
       );
     }
+  }
+
+  async updateAppTable(id, result) {
+    console.log('id: ', id);
+    console.log('result: ', result);
+    const res = await this.mysqlLayer.Put('/workspace/applications/id', result);
+    console.log('res: ', res);
   }
 
   render() {

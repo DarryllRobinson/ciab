@@ -6,6 +6,9 @@ import Blogs from './Components/Community/Blogs';
 import Blog from './Components/Community/Blog';
 import NewBlog from './Components/Community/NewBlog';
 
+import Main from './Components/Main';
+import Workspace from './Components/Workspace';
+
 import Applications from './Components/Applications/Applications';
 import Application from './Components/Applications/Application';
 import Approved from './Components/Applications/Approved';
@@ -30,6 +33,8 @@ class App extends Component {
         <Route exact path='/community/blogs/:blogId' component={Blog} />
         <Route exact path='/community/new-blog' component={NewBlog} />
 
+        <Route exact path='/main' component={Main} />
+        <Route exact path='/workspace' component={Workspace} />
         <Route exact path='/workspace/applications' component={Applications} />
         <Route exact path='/workspace/applications/:applicationId' component={Application} />
         <Route exact path='/workspace/applications/approved' component={Approved} />

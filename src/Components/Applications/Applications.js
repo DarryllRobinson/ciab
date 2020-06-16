@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import moment from 'moment';
 
 class Applications extends Component {
   constructor(props) {
@@ -9,8 +10,12 @@ class Applications extends Component {
     this.state = {
       applications: null,
       approved: null,
+      approvedTat: 0,
       referred: null,
-      declined: null
+      referredTat: 0,
+      declined: null,
+      declinedTat: 0,
+      tatTarget: 2
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -29,9 +34,24 @@ class Applications extends Component {
 
     apps.forEach(app => {
       switch (app.result) {
-        case 'Approved': approved.push(app); break;
-        case 'Referred': referred.push(app); break;
-        case 'Declined': declined.push(app); break;
+        case 'Approved': {
+          approved.push(app);
+          let newTat = this.queueTat(app, this.state.approvedTat);
+          if (newTat > this.state.approvedTat) this.setState ({ approvedTat: newTat });
+          break;
+        }
+        case 'Referred': {
+          referred.push(app);
+          let newTat = this.queueTat(app, this.state.referredTat);
+          if (newTat > this.state.referredTat) this.setState ({ referredTat: newTat });
+          break;
+        }
+        case 'Declined': {
+          declined.push(app);
+          let newTat = this.queueTat(app, this.state.declinedTat);
+          if (newTat > this.state.declinedTat) this.setState ({ declinedTat: newTat });
+          break;
+        }
         default: ;
       }
     });
@@ -43,38 +63,42 @@ class Applications extends Component {
     });
   }
 
-  queueCount(apps) {
-    let approved = 0;
-    let referred = 0;
-    let declined = 0;
+  queueTat(app, queueTat) {
+    let appClosedDate = null;
+    app.closedDate === null ? appClosedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss') : appClosedDate = app.closedDate;
+    console.log('appClosedDate: ', appClosedDate, app.closedDate);
+    const tat = (Math.abs(new Date() - new Date(app.createdDate))) / 1000 / 60 / 60;
+    if (tat > queueTat) return tat;
+    return queueTat;
+  }
 
-    apps.forEach(app => {
-      switch (app.result) {
-        case 'Approved': ++approved; break;
-        case 'Referred': ++referred; break;
-        case 'Declined': ++declined; break;
-        default: ;
-      }
-      this.setState({
-        approved: approved,
-        referred: referred,
-        declined: declined
-      })
-    })
+  cardTat(tat) {
+    const target = this.state.tatTarget;
+
+    if (target < tat) {
+      return "card text-white bg-danger mb-3";
+    }
+    if (((target * 0.9) < tat) ) {
+      return "card text-white bg-warning mb-3";
+    }
+    if (target > tat) {
+      return "card text-white bg-secondary mb-3";
+    }
   }
 
   render() {
-    //const tat = Math.abs(new Date() - new Date(this.state.application.createdDate));
-    //console.log('tat: ', tat);
+    if (this.state.applications) {
+      const tat = (Math.abs(new Date() - new Date(this.state.applications[2].createdDate))) / 1000 / 60 / 60;
+    }
+
     return (
       <div className="container">
         <div className="row">
           <Link to="/workspace/new-application">
-            <div className="card text-white bg-secondary mb-3">
+            <div className="card text-white bg-primary mb-3">
               <div className="card-header">Process a credit application</div>
               <div className="card-body">
                 <h4 className="card-title">+ New Application</h4>
-                <p className="card-text">Card text to come</p>
               </div>
             </div>
           </Link>
@@ -83,41 +107,57 @@ class Applications extends Component {
         {this.state.applications === null && <p>Loading queues...</p>}
           {this.state.applications && this.state.approved && this.state.referred && this.state.declined && (
             <div className="row">
-              <Link to={{
-                pathname: "/workspace/applications/approved",
-                state: this.state.approved
-              }}>
-                <div className="card text-white bg-secondary mb-3">
-                  <div className="card-header">Approved Applications</div>
-                  <div className="card-body">
-                    <h4 className="card-title">{this.state.approved.length}</h4>
+              <div className="col">
+                <Link to={{
+                  pathname: "/workspace/applications/approved",
+                  state: this.state.approved
+                }}>
+                  <div className={this.cardTat(this.state.approvedTat)} style={{maxWidth: "20rem"}}>
+                    <div className="card-header">Approved Applications</div>
+                    <div className="card-body">
+                      <h4 className="card-title">Total: {this.state.approved.length} <br /><br />
+                        Longest TAT: {Math.round(this.state.approvedTat)} hours <br /><br />
+                        Avg TAT: {Math.round(this.state.approvedTat) / this.state.approved.length} hours
+                      </h4>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
 
-              <Link to={{
-                pathname: "/workspace/applications/referred",
-                state: this.state.referred
-              }}>
-                <div className="card text-white bg-secondary mb-3">
-                  <div className="card-header">Referred Applications</div>
-                  <div className="card-body">
-                    <h4 className="card-title">{this.state.referred.length}</h4>
+              <div className="col">
+                <Link to={{
+                  pathname: "/workspace/applications/referred",
+                  state: this.state.referred
+                }}>
+                  <div className={this.cardTat(this.state.referredTat)} style={{maxWidth: "20rem"}}>
+                    <div className="card-header">Referred Applications</div>
+                    <div className="card-body">
+                      <h4 className="card-title">Total: {this.state.referred.length} <br /><br />
+                        Longest TAT: {Math.round(this.state.referredTat)} hours <br /><br />
+                        Avg TAT: {Math.round(this.state.referredTat) / this.state.referred.length} hours
+                      </h4>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
 
-              <Link to={{
-                pathname: "/workspace/applications/declined",
-                state: this.state.declined
-              }}>
-                <div className="card text-white bg-secondary mb-3">
-                  <div className="card-header">Declined Applications</div>
-                  <div className="card-body">
-                    <h4 className="card-title">{this.state.declined.length}</h4>
+              <div className="col">
+                <Link to={{
+                  pathname: "/workspace/applications/declined",
+                  state: this.state.declined
+                }}>
+                  <div className={this.cardTat(this.state.declinedTat)} style={{maxWidth: "20rem"}}>
+                    <div className="card-header">Declined Applications</div>
+                    <div className="card-body">
+                      <h4 className="card-title">Total: {this.state.declined.length} <br /><br />
+                        Longest TAT: {Math.round(this.state.declinedTat)} hours <br /><br />
+                        Avg TAT: {Math.round(this.state.declinedTat) / this.state.declined.length} hours
+                      </h4>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
+
             </div>
         )}
         </div>
