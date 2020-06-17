@@ -35,7 +35,7 @@ class NewApplication extends Component {
       bureauScore: 0,
       createdBy: '',
       createdDate: null,
-      result: null,
+      status: null,
       limit: null,
       closedBy: '',
       closedDate: null
@@ -53,7 +53,7 @@ class NewApplication extends Component {
   async submit() {
     this.setState({ disabled: true });
 
-    let xxxapplication = {
+    /*let xxxapplication = {
       firstName: this.state.firstName,
       surname: this.state.surname,
       idNumber: this.state.idNumber,
@@ -77,7 +77,7 @@ class NewApplication extends Component {
       bureauScore: this.state.bureauScore,
       createdBy: "Darryll", // must add actual username
       createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
-    }
+    }*/
 
     let application = {
       firstName: "Peter",
@@ -105,30 +105,30 @@ class NewApplication extends Component {
       createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
     }
 
-    const response = await this.mysqlLayer.Post('/workspace/applications', application);
-    const appId = response.insertId;
+    //const response = await this.mysqlLayer.Post('/workspace/applications', application);
+    //const appId = response.insertId;
 
     let cont = true;
     cont = await this.vet.Declines(application);
 
     if (cont) {
-      this.setState({ result: 'Approved' });
+      this.setState({ status: 'Approved' });
 
       let score = await this.vet.Scorecard(application);
-      if (score < 20) this.setState({ result: 'Referred' });
+      if (score < 20) this.setState({ status: 'Referred' });
       console.log('score: ', score);
     }
 
-    if (this.state.result === 'Approved') this.setState(
+    if (this.state.status === 'Approved') this.setState(
       {
         limit: 1000,
         closedBy: 'Darryll',
         closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       });
-    if (this.state.result === 'Referred') this.setState({ limit: 750 });
+    if (this.state.status === 'Referred') this.setState({ limit: 750 });
 
-    let update = [];
-    /*update.push("result": this.state.result);
+    //let update = [];
+    /*update.push("status": this.state.status);
     update.push("limit": this.state.limit);
     update.push("closedBy": this.state.closedBy);
     update.push("closedDate": this.state.closedDate);
@@ -139,9 +139,9 @@ class NewApplication extends Component {
     //this.props.history.push('/workspace/applications');
   }
 
-  creditResult(result, limit) {
-    if (result && limit) {
-      toast(`Credit result ${result} -- Limit ${limit}`, {
+  creditStatus(status, limit) {
+    if (status && limit) {
+      toast(`Credit status ${status} -- Limit ${limit}`, {
         position: "top-center",
         autoClose: 10000,
         hideProgressBar: false,
@@ -154,10 +154,10 @@ class NewApplication extends Component {
     }
   }
 
-  async updateAppTable(id, result) {
+  async updateAppTable(id, status) {
     console.log('id: ', id);
-    console.log('result: ', result);
-    const res = await this.mysqlLayer.Put('/workspace/applications/id', result);
+    console.log('status: ', status);
+    const res = await this.mysqlLayer.Put('/workspace/applications/id', status);
     console.log('res: ', res);
   }
 
@@ -426,7 +426,7 @@ class NewApplication extends Component {
                   onClick={() => {this.submit()}}>
                   Submit
                 </button>
-                {this.creditResult(this.state.result, this.state.limit)}
+                {this.creditStatus(this.state.status, this.state.limit)}
                 <ToastContainer />
               </div>
             </div>

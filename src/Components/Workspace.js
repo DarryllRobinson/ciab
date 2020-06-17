@@ -32,8 +32,8 @@ class Workspace extends Component {
           sort: 'asc'
         },
         {
-          label: 'Result',
-          field: 'result',
+          label: 'Status',
+          field: 'status',
           sort: 'asc'
         },
         {
@@ -77,13 +77,13 @@ class Workspace extends Component {
 
     if (records) {
       records.forEach(record => {
-        if (record.result === recordStatus) {
+        if (record.status === recordStatus) {
           let row = {
             recordId: record.id,
             firstName: record.firstName,
             surname: record.surname,
             idNumber: record.idNumber,
-            result: record.result,
+            status: record.status,
             limit: record.limit,
             createdBy: record.createdBy,
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),

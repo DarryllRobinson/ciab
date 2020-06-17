@@ -34,7 +34,7 @@ class Applications extends Component {
     let declined = [];
 
     apps.forEach(app => {
-      switch (app.result) {
+      switch (app.status) {
         case 'Approved': {
           approved.push(app);
           let newTat = this.queueTat(app, this.state.approvedTat);
@@ -89,7 +89,7 @@ class Applications extends Component {
 
   render() {
     if (this.state.applications) {
-      const tat = (Math.abs(new Date() - new Date(this.state.applications[2].createdDate))) / 1000 / 60 / 60;
+      //const tat = (Math.abs(new Date() - new Date(this.state.applications[2].createdDate))) / 1000 / 60 / 60;
     }
 
     return (

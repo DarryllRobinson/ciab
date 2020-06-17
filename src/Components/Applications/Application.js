@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import MysqlLayer from '../../Utilities/MysqlLayer';
-import SubmitComment from './SubmitComment';
+//import SubmitComment from './SubmitComment';
 import moment from 'moment';
 
 class Application extends Component {
@@ -9,16 +9,84 @@ class Application extends Component {
 
     this.state = {
       application: null,
+      disabled: false,
+      agentComments: '',
+      storeComments: '',
+      supervisorComments: '',
+      user: "Darryll"
     }
 
     this.mysqlLayer = new MysqlLayer();
+    this.handleChange = this.handleChange.bind(this);
+    this.pendRecord = this.pendRecord.bind(this);
+    this.approveRecord = this.approveRecord.bind(this);
   }
 
   async componentDidMount() {
     let record = [];
     record = await this.mysqlLayer.Get(this.props.location.pathname);
-    await this.setState({ application: record });
+    await this.setState({
+      application: record,
+      agentComments: record.agentComments,
+      storeComments: record.storeComments,
+      supervisorComments: record.supervisorComments
+    });
     console.log('application: ', this.state.application);
+  }
+
+  handleChange(e) {
+    const value = e.target.value;
+    this.setState({ [e.target.name]: value });
+  }
+
+  async pendRecord() {
+    const comments = this.state.agentComments;
+    if (comments && comments.length > 10) {
+      this.setState({ disabled: true });
+      let oldComments = this.state.application[0].agentComments;
+
+      let newComment = oldComments + `\n\r ${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.agentComments}`;
+      let update = {
+        agentComments: newComment,
+        storeComments: this.state.storeComments,
+        supervisorComments: this.state.supervisorComments,
+        status: 'Pended',
+        updatedBy: this.state.user, // must add actual username
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      }
+
+      await this.mysqlLayer.Put(`/workspace/applications/${this.state.application[0].id}`, update);
+      this.props.history.push({
+        pathname: '/workspace',
+        state: 'Referred'
+      });
+    } else {
+      alert('Please enter a comment longer than 10 characters');
+    }
+  }
+
+  async approveRecord() {
+    return (
+      <div className="modal">
+        <div className="modal-dialog" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Modal title</h5>
+              <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Modal body text goes here.</p>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-primary">Save changes</button>
+              <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   render() {
@@ -376,6 +444,117 @@ class Application extends Component {
             </div>
           </div>
         </div>
+
+        <div className="container">
+          <div className="row">
+            <div className="col-12">
+              <div className="card border-none">
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-12">
+              <div className="card border-none">
+              </div>
+            </div>
+          </div><div className="row">
+            <div className="col-12">
+              <div className="card border-none">
+              </div>
+            </div>
+          </div><div className="row">
+            <div className="col-12">
+              <div className="card border-none">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-12">
+            <div className="card border-primary">
+              <div className="card-header">Vetting Comment History</div>
+              <div className="card-body text-left">
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAgentComment">Vetting Agent Comments</label>
+                      <textarea
+                        disabled={true}
+                        rows="10"
+                        name="agentComments"
+                        className="form-control"
+                        value={this.state.application[0].agentComments || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-12">
+            <div className="card border-primary">
+              <div className="card-header">Vetting Comments</div>
+              <div className="card-body text-left">
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAgentComment">Vetting Agent Comments</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="agentComments"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Remember to provide clear feedback to the store"
+                      />
+                    </div>
+
+                    <button
+                      disabled={this.state.disabled}
+                      className="btn btn-primary"
+                      onClick={() => {this.pendRecord()}}>
+                      Pend
+                    </button>
+
+                    <button
+                      disabled={this.state.disabled}
+                      className="btn btn-primary"
+                      onClick={() => {this.approveRecord()}}>
+                      Approve
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Modal title</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+                <p>Modal body text goes here.</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-primary">Save changes</button>
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     )
   }
