@@ -16,14 +16,14 @@ class Queues extends Component {
   async componentDidMount() {
     const service = this.props.service;
     console.log('service: ', service);
-    let records = await this.mysqlLayer.Get(`/workspace/${service}`);
+    //let records = await this.mysqlLayer.Get(`/workspace/${service}`);
   }
 
   render() {
     return (
 
 <>
-      <div className="row"> {/* Queues */}
+      <div className="row">
         <div className="col-lg-4">
           <div className="bs-component">
             <ul className="list-group">

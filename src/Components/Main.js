@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import MysqlLayer from '../Utilities/MysqlLayer';
-import Welcome from './Workspace/Welcome';
-import Workspace from './Workspace/Workspace';
 
 class Main extends Component {
   constructor(props) {
@@ -12,7 +10,7 @@ class Main extends Component {
       userId: 1,  // passed in from login - to be created still
       user: null,
       client: null,
-      role: null,
+      role: 'god',  // passed in from login - to be created still
       referred: 0,
       pended: 0,
       reviews: 0,
@@ -39,55 +37,134 @@ class Main extends Component {
     clientservices.forEach(service => {
       cs.push(service.service);
     });
-    await this.setState({ services: cs });
 
-    //let apps = await this.mysqlLayer.Get(`/workspace/${service}`);
-    let services = this.state.services;
-    let apps = null;
-    services.forEach(serv => {
-      this.prepareComponent(serv);
-    })
-    //this.queueCount(apps);
-  }
-
-  async prepareComponent(service) {
-    let records = await this.mysqlLayer.Get(`/workspace/${service}`);
-    console.log('records: ', records);
-  }
-
-  queueCount(apps) {
-    let referred = this.state.referred;
-    let pended = this.state.pended;
-    let reviews = this.state.reviews;
-
-    apps.forEach(app => {
-      switch (app.result) {
-        case 'Referred':
-          referred = ++referred;
-          break;
-        case 'Pended':
-          pended = ++pended;
-          break;
-        case 'Decline Review':
-          reviews = ++reviews;
-          break;
-        default:
-          break;
-      }
-    })
-
-    this.setState({
-      referred: referred,
-      pended: pended,
-      reviews: reviews
+    // load everything into state
+    await this.setState({
+      user: user,
+      client: client,
+      services: cs
     });
   }
 
   render() {
     return (
       <div className="container">
-        <Welcome />
-        <Workspace service='applications' />
+        <div className="cols-12">
+
+
+        {/* Welcome  */}
+          <div className="row">
+            <div className="lead">
+              <h1 className="display-5">Welcome to your workspace</h1>
+              <p className="lead">{`It will provide you with an overview of what's happening and is where you will start your day`}</p>
+              <hr className="my-4" />
+            </div>
+          </div>
+
+          {/* Workspace  */}
+          <div className="row">
+
+            {/* Queues  */}
+            <div className="col-lg-4">
+              <div className="bs-component">
+                <ul className="list-group">
+                  <p className="lead">Queues</p>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    <Link className="nav-link" to={{
+                        pathname: "/workspace",
+                        state: 'Referred'
+                      }}
+                      style={{padding: 0}}
+                    >
+                    Referred
+                    </Link>
+                    <span className="badge badge-primary badge-pill">12</span>
+                  </li>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    <Link className="nav-link" to={{
+                        pathname: "/workspace",
+                        state: 'Pended'
+                      }}
+                      style={{padding: 0}}
+                    >
+                    Pended
+                    </Link>
+                    <span className="badge badge-primary badge-pill">3</span>
+                  </li>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    <Link className="nav-link" to={{
+                        pathname: "/workspace",
+                        state: 'Decline Review'
+                      }}
+                      style={{padding: 0}}
+                    >
+                    Decline Reviews
+                    </Link>
+                    <span className="badge badge-primary badge-pill">2</span>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+
+
+            {/* Community  */}
+            <div className="col-lg-4">
+              <div className="bs-component">
+                <ul className="list-group">
+                  <p className="lead">Community</p>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    Your badges
+                    <span className="badge badge-primary badge-pill">14</span>
+                  </li>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    New publishings
+                    <span className="badge badge-primary badge-pill">6</span>
+                  </li>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    Top topics
+                    <span className="badge badge-primary badge-pill">7</span>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+
+
+            {/* News  */}
+            <div className="col-lg-4">
+              <div className="bs-component">
+                <ul className="list-group">
+                  <p className="lead">News</p>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    CNN
+                    <span className="badge badge-primary badge-pill">5</span>
+                  </li>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    Business Day
+                    <span className="badge badge-primary badge-pill">11</span>
+                  </li>
+
+                  <li className="list-group-item d-flex justify-content-between align-items-center">
+                    Daily Maverick
+                    <span className="badge badge-primary badge-pill">9</span>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
       </div>
     )
   }

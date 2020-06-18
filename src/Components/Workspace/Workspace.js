@@ -1,15 +1,22 @@
 import React, { Component } from 'react';
 import {Link} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
-import Queues from './Queues';
+import Worklist from './Worklist';
+//import Community from './Community';
+//import News from './News';
+
+const worklists = [
+  'Queues',
+  'Community',
+  'News'
+]
 
 class Workspace extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      records: null,
-      statusList: []
+      records: null
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -17,51 +24,41 @@ class Workspace extends Component {
 
   async componentDidMount() {
     const service = this.props.service;
-    console.log('service: ', service);
-    let records = await this.mysqlLayer.Get(`/workspace/${service}`);
-
-    let status = [];
-    let count = 0;
-    records.forEach(record => {
-      ++count;
-      status.push(record.status);
-    });
-
-    const statusArr = status.filter(this.onlyUnique);
-    await this.setState({ statusList: statusArr, statusCount: count });
-  }
-
-  onlyUnique(value, index, self) {
-    return self.indexOf(value) === index;
+    const records = await this.mysqlLayer.Get(`/workspace/${service}`);
+    await this.setState({ records: records });
   }
 
   render() {
-    const listQueues = this.state.statusList.map((item, idx) =>
-      <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-        <Link className="nav-link" to={{
-            pathname: "/workspace",
-            state: {item}
-          }}
-          style={{padding: 0}}>
-          {item}
-        </Link>
-        <span className="badge badge-primary badge-pill">{this.state.statusCount}</span>
-      </li>
+    const records = this.state.records;
+    const worklist = worklists.map((worklist, idx) =>
+
+        <div key={idx+'worklist'} className="col-lg-4">
+          <div className="bs-component">
+            <ul className="list-group">
+              <p className="lead">{worklist}</p>
+              <Worklist worklist={worklist} records={records}/>
+            </ul>
+          </div>
+        </div>
+
     );
 
     return (
       <>
-        <div className="col-lg-4">
-          <div className="bs-component">
-            <ul className="list-group">
-              <p className="lead">Queues</p>
-                {listQueues}
-            </ul>
+      {
+        records ?
+        (
+          <div className="row">
+            {worklist}
           </div>
-        </div>
+        ) :
+        (
+          <div>Loading</div>
+        )
+      }
       </>
-  )
-}
+    )
+  }
 
 }
 
