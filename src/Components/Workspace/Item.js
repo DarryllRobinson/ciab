@@ -4,6 +4,7 @@ import {Link} from 'react-router-dom';
 function Item(props) {
   const item = props.item;
   const count = props.count;
+  console.log('Item item: ', item);
   return (
 
     <li className="list-group-item d-flex justify-content-between align-items-center">

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
-import Worklist from './Workspace/Worklist';
 
 class Main extends Component {
   constructor(props) {
@@ -50,14 +49,128 @@ class Main extends Component {
 
   render() {
 
+  const application = {
+    workspace: 'Applications',
+    worklists: [
+        {
+          worklist: 'Queues',
+          items: [
+            {
+              item: 'Referred',
+              count: 12
+            },
+            {
+              item: 'Pended',
+              count: 3
+            },
+            {
+              item: 'Decline Reviews',
+              count: 2
+            }
+          ]
+        },
+        {
+          worklist: 'Community',
+          items: [
+            {
+              item: 'Your badges',
+              count: 14
+            },
+            {
+              item: 'New publishings',
+              count: 6
+            },
+            {
+              item: 'Top topics',
+              count: 7
+            }
+          ]
+        },
+        {
+          worklist: 'News',
+          items: [
+            {
+              item: 'CNN',
+              count: 5
+            },
+            {
+              item: 'Business Day',
+              count: 11
+            },
+            {
+              item: 'Daily Maverick',
+              count: 9
+            }
+          ]
+        }
+    ]
+  };
+
+  const collection = {
+    workspace: 'Collections',
+    worklists: [
+      {
+        worklist: 'Queues',
+        items: [
+          {
+            item: 'Status 1',
+            count: 12
+          },
+          {
+            item: 'Status 2',
+            count: 3
+          },
+          {
+            item: 'Status 3',
+            count: 2
+          }
+        ]
+      },
+      {
+        worklist: 'Community',
+        items: [
+          {
+            item: 'Community 1',
+            count: 12
+          },
+          {
+            item: 'Community 2',
+            count: 3
+          },
+          {
+            item: 'Community 3',
+            count: 2
+          }
+        ]
+      },
+      {
+        worklist: 'News',
+        items: [
+          {
+            item: 'News 1',
+            count: 12
+          },
+          {
+            item: 'News 2',
+            count: 3
+          },
+          {
+            item: 'News 3',
+            count: 2
+          }
+        ]
+      }
+    ]
+  }
+
   const workspaces = [
-    'Applications',
-    'Collections'
+    application,
+    collection
   ];
 
   const workspace = workspaces.map((workspace, idx) =>
-    <div className="card border-primary mb-3" style={{padding: "20px"}}>
-      <Workspace workspace={workspace} />
+    <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
+      <Workspace key={idx} workspaces={workspace} />
     </div>
   );
 
