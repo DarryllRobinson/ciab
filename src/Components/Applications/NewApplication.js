@@ -105,7 +105,7 @@ class NewApplication extends Component {
       createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
     }
 
-    //const response = await this.mysqlLayer.Post('/workspace/applications', application);
+    //const response = await this.mysqlLayer.Post('/workspace/applications', application, { withCredentials: true });
     //const appId = response.insertId;
 
     let cont = true;

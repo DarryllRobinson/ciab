@@ -11,7 +11,7 @@ function Workspace(props) {
 
   return (
     <>
-      <p className="lead">This is a Workspace instead of {workspace}</p>
+      <p className="lead">{workspace}</p>
       <div className="row">
         {worklist}
       </div>

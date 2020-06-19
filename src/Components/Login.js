@@ -1,13 +1,13 @@
-import React from 'react';
-import { userService } from '../Utilities/user.service';
+import React, { Component } from 'react';
 
-class Login extends React.Component {
+export default class Login extends Component {
   constructor(props) {
     super(props);
 
     userService.logout();
 
     this.state = {
+      email: '',
       username: '',
       password: '',
       submitted: false,

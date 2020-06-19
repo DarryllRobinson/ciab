@@ -16,6 +16,8 @@ import Referred from './Components/Applications/Referred';
 import Declined from './Components/Applications/Declined';
 import NewApplication from './Components/Applications/NewApplication';
 
+import Registration from './Components/Auth/Registration';
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -41,6 +43,8 @@ class App extends Component {
         <Route exact path='/workspace/applications/referred' component={Referred} />
         <Route exact path='/workspace/applications/declined' component={Declined} />
         <Route exact path='/workspace/new-application' component={NewApplication} />
+
+        <Route exact path='/' component={Registration} />
       </div>
     )
   }

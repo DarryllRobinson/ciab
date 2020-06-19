@@ -4,7 +4,6 @@ import {Link} from 'react-router-dom';
 function Item(props) {
   const item = props.item;
   const count = props.count;
-  console.log('Item item: ', item);
   return (
 
     <li className="list-group-item d-flex justify-content-between align-items-center">
@@ -14,7 +13,7 @@ function Item(props) {
       }}
       style={{padding: 0}}
       >
-        This is an Item instead of {item}
+        {item}
       </Link>
       <span className="badge badge-primary badge-pill">{count}</span>
     </li>
