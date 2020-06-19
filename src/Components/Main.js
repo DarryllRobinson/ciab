@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
 import Welcome from './Workspace/Welcome';
+import Workspace from './Workspace/Workspace';
 import Worklist from './Workspace/Worklist';
-import Item from './Workspace/Item';
 
 class Main extends Component {
   constructor(props) {
@@ -50,121 +50,26 @@ class Main extends Component {
 
   render() {
 
-  const items = [
-    {
-      item: 'Referred',
-      count: 12
-    },
-    {
-      item: 'Pended',
-      count: 3
-    },
-    {
-      item: 'Decline Reviews',
-      count: 2
-    }
+  const workspaces = [
+    'Applications',
+    'Collections'
   ];
+
+  const workspace = workspaces.map((workspace, idx) =>
+    <div className="card border-primary mb-3" style={{padding: "20px"}}>
+      <Workspace workspace={workspace} />
+    </div>
+  );
+
     return (
+
+
       <div className="container">
         <div className="cols-12">
 
           <Welcome />
+          {workspace}
 
-          {/* Workspace - Applications  */}
-          <div className="card border-primary mb-3" style={{padding: "20px"}}>
-            <p className="lead">Workspace - Applications</p>
-            <div className="row">
-
-
-              {/* Queues  */}
-              <Worklist list="Queues" items={items}/>
-
-
-              {/* Community  */}
-              <div className="col-lg-4">
-                <div className="bs-component">
-                  <ul className="list-group">
-                    <p className="lead">Community</p>
-
-                      <Item item='Your badges' count='14'/>
-                      <Item item='New publishings' count='6'/>
-                      <Item item='Top topics' count='7'/>
-
-                  </ul>
-                </div>
-              </div>
-
-
-              {/* News  */}
-              <div className="col-lg-4">
-                <div className="bs-component">
-                  <ul className="list-group">
-                    <p className="lead">News</p>
-
-                      <Item item='CNN' count='5'/>
-                      <Item item='Business Day' count='11'/>
-                      <Item item='Daily Maverick' count='9'/>
-
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-
-          {/* Workspace - Collections  */}
-          <div className="card border-primary mb-3" style={{padding: "20px"}}>
-            <p className="lead">Workspace - Collections</p>
-            <div className="row">
-
-              {/* Queues  */}
-              <div className="col-lg-4">
-                <div className="bs-component">
-                  <ul className="list-group">
-                    <p className="lead">Queues</p>
-
-                      <Item item='Referred' count='12'/>
-                      <Item item='Pended' count='3'/>
-                      <Item item='Decline Reviews' count='2'/>
-
-                  </ul>
-                </div>
-              </div>
-
-
-              {/* Community  */}
-              <div className="col-lg-4">
-                <div className="bs-component">
-                  <ul className="list-group">
-                    <p className="lead">Community</p>
-
-                      <Item item='Your badges' count='14'/>
-                      <Item item='New publishings' count='6'/>
-                      <Item item='Top topics' count='7'/>
-
-                  </ul>
-                </div>
-              </div>
-
-
-              {/* News  */}
-              <div className="col-lg-4">
-                <div className="bs-component">
-                  <ul className="list-group">
-                    <p className="lead">News</p>
-
-                      <Item item='CNN' count='5'/>
-                      <Item item='Business Day' count='11'/>
-                      <Item item='Daily Maverick' count='9'/>
-
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-
-
-          </div>
         </div>
       </div>
     )
