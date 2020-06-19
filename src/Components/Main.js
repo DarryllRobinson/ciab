@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import {Link} from 'react-router-dom';
 import MysqlLayer from '../Utilities/MysqlLayer';
+import Welcome from './Workspace/Welcome';
+import Worklist from './Workspace/Worklist';
+import Item from './Workspace/Item';
 
 class Main extends Component {
   constructor(props) {
@@ -47,120 +49,119 @@ class Main extends Component {
   }
 
   render() {
+
+  const items = [
+    {
+      item: 'Referred',
+      count: 12
+    },
+    {
+      item: 'Pended',
+      count: 3
+    },
+    {
+      item: 'Decline Reviews',
+      count: 2
+    }
+  ];
     return (
       <div className="container">
         <div className="cols-12">
 
+          <Welcome />
 
-        {/* Welcome  */}
-          <div className="row">
-            <div className="lead">
-              <h1 className="display-5">Welcome to your workspace</h1>
-              <p className="lead">{`It will provide you with an overview of what's happening and is where you will start your day`}</p>
-              <hr className="my-4" />
+          {/* Workspace - Applications  */}
+          <div className="card border-primary mb-3" style={{padding: "20px"}}>
+            <p className="lead">Workspace - Applications</p>
+            <div className="row">
+
+
+              {/* Queues  */}
+              <Worklist list="Queues" items={items}/>
+
+
+              {/* Community  */}
+              <div className="col-lg-4">
+                <div className="bs-component">
+                  <ul className="list-group">
+                    <p className="lead">Community</p>
+
+                      <Item item='Your badges' count='14'/>
+                      <Item item='New publishings' count='6'/>
+                      <Item item='Top topics' count='7'/>
+
+                  </ul>
+                </div>
+              </div>
+
+
+              {/* News  */}
+              <div className="col-lg-4">
+                <div className="bs-component">
+                  <ul className="list-group">
+                    <p className="lead">News</p>
+
+                      <Item item='CNN' count='5'/>
+                      <Item item='Business Day' count='11'/>
+                      <Item item='Daily Maverick' count='9'/>
+
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Workspace  */}
-          <div className="row">
 
-            {/* Queues  */}
-            <div className="col-lg-4">
-              <div className="bs-component">
-                <ul className="list-group">
-                  <p className="lead">Queues</p>
+          {/* Workspace - Collections  */}
+          <div className="card border-primary mb-3" style={{padding: "20px"}}>
+            <p className="lead">Workspace - Collections</p>
+            <div className="row">
 
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    <Link className="nav-link" to={{
-                        pathname: "/workspace",
-                        state: 'Referred'
-                      }}
-                      style={{padding: 0}}
-                    >
-                    Referred
-                    </Link>
-                    <span className="badge badge-primary badge-pill">12</span>
-                  </li>
+              {/* Queues  */}
+              <div className="col-lg-4">
+                <div className="bs-component">
+                  <ul className="list-group">
+                    <p className="lead">Queues</p>
 
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    <Link className="nav-link" to={{
-                        pathname: "/workspace",
-                        state: 'Pended'
-                      }}
-                      style={{padding: 0}}
-                    >
-                    Pended
-                    </Link>
-                    <span className="badge badge-primary badge-pill">3</span>
-                  </li>
+                      <Item item='Referred' count='12'/>
+                      <Item item='Pended' count='3'/>
+                      <Item item='Decline Reviews' count='2'/>
 
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    <Link className="nav-link" to={{
-                        pathname: "/workspace",
-                        state: 'Decline Review'
-                      }}
-                      style={{padding: 0}}
-                    >
-                    Decline Reviews
-                    </Link>
-                    <span className="badge badge-primary badge-pill">2</span>
-                  </li>
+                  </ul>
+                </div>
+              </div>
 
-                </ul>
+
+              {/* Community  */}
+              <div className="col-lg-4">
+                <div className="bs-component">
+                  <ul className="list-group">
+                    <p className="lead">Community</p>
+
+                      <Item item='Your badges' count='14'/>
+                      <Item item='New publishings' count='6'/>
+                      <Item item='Top topics' count='7'/>
+
+                  </ul>
+                </div>
+              </div>
+
+
+              {/* News  */}
+              <div className="col-lg-4">
+                <div className="bs-component">
+                  <ul className="list-group">
+                    <p className="lead">News</p>
+
+                      <Item item='CNN' count='5'/>
+                      <Item item='Business Day' count='11'/>
+                      <Item item='Daily Maverick' count='9'/>
+
+                  </ul>
+                </div>
               </div>
             </div>
 
-
-            {/* Community  */}
-            <div className="col-lg-4">
-              <div className="bs-component">
-                <ul className="list-group">
-                  <p className="lead">Community</p>
-
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    Your badges
-                    <span className="badge badge-primary badge-pill">14</span>
-                  </li>
-
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    New publishings
-                    <span className="badge badge-primary badge-pill">6</span>
-                  </li>
-
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    Top topics
-                    <span className="badge badge-primary badge-pill">7</span>
-                  </li>
-
-                </ul>
-              </div>
-            </div>
-
-
-            {/* News  */}
-            <div className="col-lg-4">
-              <div className="bs-component">
-                <ul className="list-group">
-                  <p className="lead">News</p>
-
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    CNN
-                    <span className="badge badge-primary badge-pill">5</span>
-                  </li>
-
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    Business Day
-                    <span className="badge badge-primary badge-pill">11</span>
-                  </li>
-
-                  <li className="list-group-item d-flex justify-content-between align-items-center">
-                    Daily Maverick
-                    <span className="badge badge-primary badge-pill">9</span>
-                  </li>
-
-                </ul>
-              </div>
-            </div>
 
 
           </div>
