@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import Security from '../../Utilities/Security';
 import moment from 'moment';
 import { PieChart } from 'react-minimal-pie-chart';
 
@@ -20,6 +21,7 @@ class Applications extends Component {
     }
 
     this.mysqlLayer = new MysqlLayer();
+    this.security = new Security();
   }
 
   async componentDidMount() {
@@ -67,7 +69,7 @@ class Applications extends Component {
   queueTat(app, queueTat) {
     let appClosedDate = null;
     app.closedDate === null ? appClosedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss') : appClosedDate = app.closedDate;
-    console.log('appClosedDate: ', appClosedDate, app.closedDate);
+    //console.log('appClosedDate: ', appClosedDate, app.closedDate);
     const tat = (Math.abs(new Date() - new Date(app.createdDate))) / 1000 / 60 / 60;
     if (tat > queueTat) return tat;
     return queueTat;

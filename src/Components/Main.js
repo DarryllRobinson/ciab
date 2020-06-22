@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
+import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
 
@@ -139,10 +140,19 @@ class Main extends Component {
       workspaces: []
     }
 
+    this.handleSuccessfulAuth = this.handleSuccessfulAuth.bind(this);
     this.mysqlLayer = new MysqlLayer();
+    this.security = new Security();
+  }
+
+  handleSuccessfulAuth(data) {
+    console.log('handleSuccessfulAuth data: ', data);
+    this.props.handleLogin(data);
+    this.props.history.push('workspace');
   }
 
   async componentDidMount() {
+    this.props.checkLoginStatus();
     // get user fields from table
     const user = await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
 
@@ -166,7 +176,7 @@ class Main extends Component {
       // get all statuses and count them
       let status = [];
       records.forEach(record => {
-        console.log('record.status: ', record.status);
+        //console.log('record.status: ', record.status);
         status.push(record.status);
       });
 
@@ -207,9 +217,9 @@ class Main extends Component {
   }
 
   onlyUnique(value, index, self) {
-    console.log('value: ', value);
+    /*console.log('value: ', value);
     console.log('index: ', index);
-    console.log('self: ', self);
+    console.log('self: ', self);*/
     return self.indexOf(value) === index;
   }
 
@@ -224,7 +234,8 @@ class Main extends Component {
     return (
       <div className="container">
         <div className="cols-12">
-          <Welcome />
+        <h1>Status: {this.props.loggedInStatus}</h1>
+          <Welcome user={this.state.user}/>
           {workspace}
         </div>
       </div>

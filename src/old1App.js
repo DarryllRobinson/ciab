@@ -40,48 +40,66 @@ class App extends Component {
     });
   }
 
-  async handleLogout() {
-    await this.setState({
+  handleLogout() {
+    this.setState({
       loggedInStatus: "NOT_LOGGED_IN",
       user: {}
     });
-
-    let cwsUser = sessionStorage.getItem('cwsUser');
-    await this.mysqlLayer.Delete(`/admin/sessions/${cwsUser}`, { withCredentials: true });
   }
 
-  async checkLoginStatus() {
+  checkLoginStatus() {
+    console.log('initial app state: ', this.state);
+    this.security.checkLoginStatus(this.props);
+  }
+
+  async xxxcheckLoginStatus() {
+    //if (this.state.loggedInStatus === "NOT_LOGGED_IN") this.props.history.push('/');
+    this.security.validateSession();
     console.log('initial app state: ', this.state);
     let cwsUser = sessionStorage.getItem('cwsUser');
 
-    await this.mysqlLayer.Get(`/admin/sessions/${cwsUser}`, { withCredentials: true })
-      .then(response => {
-        if (response[1].logged_in && this.state.loggedInStatus === "NOT_LOGGED_IN") {
-          this.setState({
-            loggedInStatus: "LOGGED_IN",
-            user: response[0]
-          });
+    if (cwsUser) {
+      console.log('trying to get');
+      await this.mysqlLayer.Get(`/admin/sessions/${cwsUser}`, { withCredentials: true })
+       .then(response => {
+         console.log('response: ', response);
+         if (response[1].logged_in && this.state.loggedInStatus === "NOT_LOGGED_IN") {
+           console.log('first option');
+           this.setState({
+             loggedInStatus: "LOGGED_IN",
+             user: response[0]
+           });
+           console.log('App state: ', this.state);
 
-        } else if (
-          !response[1].logged_in &
-          (this.state.loggedInStatus === "LOGGED_IN")
-        ) {
-          this.setState({
-            loggedInStatus: "NOT_LOGGED_IN",
-            user: {}
-          });
-          this.props.history.push('/');
-          this.forceUpate();
-        }
-     })
-     .catch(error => {
-       console.log("check login error", error);
-     });
-  }
+         } else if (!response.logged_in && (this.state.loggedInStatus === "LOGGED_IN")) {
+           console.log('second option');
+           this.setState({
+             loggedInStatus: "NOT_LOGGED_IN",
+             user: {}
+           });
+           this.security.terminateSession();
+           this.props.history.push('/');
+         } else {
+           console.log('something odd is happening here');
+           this.security.terminateSession();
+           this.props.history.push('/');
+         }
+       })
+       .catch(error => {
+         console.log("check login error", error);
+         this.security.terminateSession();
+         this.props.history.push('/');
+       });
+     } else {
+       console.log('trying to push');
+       this.security.terminateSession();
+       this.props.history.push('/');
+     }
+ }
 
-  componentDidMount() {
-    this.checkLoginStatus();
-  }
+ componentDidMount() {
+   this.checkLoginStatus();
+ }
 
   render() {
     return (
@@ -89,17 +107,18 @@ class App extends Component {
         <NavBar />
         <Switch>
 
-          <Route exact path='/' render={props => (<Home {...props} handleLogin={this.handleLogin} handleLogout={this.handleLogout} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/' render={props => (<Home {...props} handleLogin={this.handleLogin} loggedInStatus={this.state.loggedInStatus} />)} />
 
           <Route exact path='/community/blogs' render={props => (<Blogs {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} loggedInStatus={this.state.loggedInStatus} />)} />
 
-          <Route exact path='/main' render={props => (<Main {...props} loggedInStatus={this.state.loggedInStatus} checkLoginStatus={this.checkLoginStatus} />)} />
+          <Route exact path='/main' render={props => (<Main {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace' render={props => (<Workspace {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+
 
         </Switch>
       </div>

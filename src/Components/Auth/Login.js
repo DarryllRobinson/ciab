@@ -1,20 +1,24 @@
 import React, { Component } from "react";
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import Security from '../../Utilities/Security';
+import moment from 'moment';
+import bcrypt from 'bcryptjs';
 
 export default class Login extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      email: "",
-      password: "",
-      loginErrors: ""
+      email: '',
+      password: '',
+      loginErrors: ''
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
+    this.security = new Security();
   }
 
   handleChange(event) {
@@ -26,17 +30,31 @@ export default class Login extends Component {
   handleSubmit(event) {
     const { email, password } = this.state;
 
-    this.mysqlLayer.Post(`/admin/users`),
-        {
-          user: {
-            email: email,
-            password: password
-          }
-        },
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync("b0oBi35", salt);
+
+    console.log('Login hash: ', hash);
+
+    bcrypt.compare(password, hash, (err, res) => {
+      if (res) console.log('Passwords match')
+      ;
+    });
+
+    const loginDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    const user = {
+      email: email,
+      password: password,
+      loginDate: loginDatetime
+    };
+
+    this.mysqlLayer.Post(`/admin/sessions`,
+        user,
         { withCredentials: true }
       )
       .then(response => {
-        if (response.data.logged_in) {
+        if (response.data) {
+          this.security.writeLoginSession(response.data[0].email, loginDatetime);
           this.props.handleSuccessfulAuth(response.data);
         }
       })

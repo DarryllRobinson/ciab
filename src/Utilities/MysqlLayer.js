@@ -8,7 +8,7 @@ export default class MysqlLayer {
 
   // Get route
   async Get(path) {
-    //this.security.validateSession();
+    this.security.validateSession();
     try {
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
@@ -34,7 +34,7 @@ export default class MysqlLayer {
     try {
       let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       console.log('response: ', response);
-      return response.data;
+      return response;
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
@@ -96,7 +96,7 @@ export default class MysqlLayer {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       }
-      , httpsAgent: new https.Agent({ rejectUnauthorized: false })
+      , httpsAgent: new https.Agent({ rejectUnauthorized: false, withCredentials: true })
     }
   }
 }
