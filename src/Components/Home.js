@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-//import MysqlLayer from '../Utilities/MysqlLayer';
+import MysqlLayer from '../Utilities/MysqlLayer';
 //import Registration from './Auth/Registration';
 import Login from './Auth/Login';
 
@@ -7,8 +7,29 @@ class Home extends Component {
   constructor(props) {
     super(props);
 
+    this.mysqlLayer = new MysqlLayer();
+    this.handleSuccessfulAuth = this.handleSuccessfulAuth.bind(this);
+    this.handleLogoutClick = this.handleLogoutClick.bind(this);
+  }
 
-    }
+  handleSuccessfulAuth(data) {
+    console.log('handleSuccessfulAuth data: ', data);
+    this.props.handleLogin(data);
+    this.props.history.push('/dashboard');
+  }
+
+  async handleLogoutClick() {
+    console.log('Home props: ', this.props);
+    let cwsUser = '';
+    cwsUser = sessionStorage.getItem('cwsUser');
+    await this.mysqlLayer.Delete(`/admin/sessions/${cwsUser}`, { withCredentials: true })
+    .then(response => {
+        this.props.handleLogout();
+      })
+      .catch(error => {
+        console.log("logout error", error);
+      });
+  }
 
   render() {
     return (
@@ -42,7 +63,11 @@ class Home extends Component {
           </div>
 
 
-            <Login handleLogin={this.props.handleLogin} handleLogout={this.props.handleLogout} loggedInStatus={this.props.loggedInStatus} handleSuccessfulAuth={this.props.handleSuccessfulAuth} />
+            <Login
+              loggedInStatus={this.props.loggedInStatus}
+              handleSuccessfulAuth={this.handleSuccessfulAuth}
+              handleLogoutClick={this.handleLogoutClick}
+            />
 
 
         </div>

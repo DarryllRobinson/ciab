@@ -16,7 +16,6 @@ export default class Login extends Component {
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleLogoutClick = this.handleLogoutClick.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
     this.security = new Security();
@@ -28,13 +27,40 @@ export default class Login extends Component {
     });
   }
 
-  handleSubmit(event) {
+  async handleSubmit(event) {
+    event.preventDefault();
+    const { email, password } = this.state;
+
+    // bcrypt password
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync("b0oBi35", salt);
+
+    const loginDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+    const user = {
+      email: email,
+      password: password,
+      loginDate: loginDatetime
+    };
+
+
+    await this.mysqlLayer.Post(`/admin/sessions/`, user, { withCredentials: true }
+    ).then(response => {
+      console.log('Login response: ', response);
+      if (response.data) {
+        this.security.writeLoginSession(response.data.email, loginDatetime);
+        this.props.handleSuccessfulAuth(response.data);
+      }
+    }).catch(error => {
+      console.log('Login error: ', error);
+    });
+  }
+
+  xxxhandleSubmit(event) {
     const { email, password } = this.state;
 
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync("b0oBi35", salt);
-
-    console.log('Login hash: ', hash);
 
     bcrypt.compare(password, hash, (err, res) => {
       if (res) console.log('Passwords match')
@@ -49,7 +75,7 @@ export default class Login extends Component {
       loginDate: loginDatetime
     };
 
-    this.mysqlLayer.Post(`/admin/sessions`,
+    this.mysqlLayer.Post(`/admin/usersession`,
         user,
         { withCredentials: true }
       )
@@ -64,18 +90,6 @@ export default class Login extends Component {
         console.log("login error", error);
       });
     event.preventDefault();
-  }
-
-  async handleLogoutClick() {
-    console.log('Home props: ', this.props);
-    let cwsUser = sessionStorage.getItem('cwsUser');
-    await this.mysqlLayer.Delete(`/admin/sessions/${cwsUser}`, { withCredentials: true })
-    .then(response => {
-        this.props.handleLogout();
-      })
-      .catch(error => {
-        console.log("logout error", error);
-      });
   }
 
   sectionToRender() {
@@ -109,7 +123,7 @@ export default class Login extends Component {
       );
     } else if (this.props.loggedInStatus === "LOGGED_IN") {
       return (
-        <button type="button" className="btn btn-secondary" onClick={() => this.handleLogoutClick()}>Logout</button>
+        <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
       );
     } else {
       return (
@@ -119,7 +133,7 @@ export default class Login extends Component {
   }
 
   render() {
-    console.log('Login props: ', this.props);
+    //console.log('Login props: ', this.props);
     return (
       <div className="col-lg-2">
         <small className="text-muted">Status: {this.props.loggedInStatus}</small>

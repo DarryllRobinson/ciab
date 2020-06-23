@@ -4,7 +4,6 @@ function Welcome(props) {
   let user = '';
   if (props.user) {
     user = props.user[0].firstName;
-    console.log('Welcome user: ', user);
   }
 
   return (

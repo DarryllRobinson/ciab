@@ -31,12 +31,6 @@ class App extends Component {
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
-    this.handleSuccessfulAuth = this.handleSuccessfulAuth.bind(this);
-  }
-
-  handleSuccessfulAuth(data) {
-    this.handleLogin(data);
-    this.props.history.push('dashboard');
   }
 
   handleLogin(data) {
@@ -51,34 +45,35 @@ class App extends Component {
       loggedInStatus: "NOT_LOGGED_IN",
       user: {}
     });
-
-    let cwsUser = sessionStorage.getItem('cwsUser');
-    await this.mysqlLayer.Delete(`/admin/sessions/${cwsUser}`, { withCredentials: true });
   }
 
   async checkLoginStatus() {
     console.log('initial app state: ', this.state);
-    let cwsUser = sessionStorage.getItem('cwsUser');
+    let cwsUser = '';
+    cwsUser = sessionStorage.getItem('cwsUser');
     console.log('cwsUser: ', cwsUser);
 
     await this.mysqlLayer.Get(`/admin/sessions/${cwsUser}`, { withCredentials: true })
-      .then(response => {
+      .then(async response => {
         if (response[1].logged_in && this.state.loggedInStatus === "NOT_LOGGED_IN") {
-          this.setState({
+          console.log('Logging in...');
+          await this.setState({
             loggedInStatus: "LOGGED_IN",
             user: response[0]
           });
+          console.log('Logged in app state: ', this.state);
 
         } else if (
           !response[1].logged_in &
           (this.state.loggedInStatus === "LOGGED_IN")
         ) {
+          console.log('Logging out...');
           this.setState({
             loggedInStatus: "NOT_LOGGED_IN",
             user: {}
           });
-          this.props.history.push('/');
-          this.forceUpate();
+          //this.props.history.push('/');
+          //this.forceUpate();
         }
      })
      .catch(error => {
@@ -96,9 +91,15 @@ class App extends Component {
         <NavBar />
         <Switch>
 
-          <Route exact path='/' render={props => (<Home {...props} handleLogin={this.handleLogin} handleLogout={this.handleLogout} handleSuccessfulAuth={this.handleSuccessfulAuth} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/' render={props => (
+            <Home {...props}
+              handleLogin={this.handleLogin}
+              handleLogout={this.handleLogout}
+              loggedInStatus={this.state.loggedInStatus}
+            />)}
+          />
 
-          <Route exact path='/dashboard' render={props => (<Dashboard {...props} loggedInStatus={this.state.loggedInStatus} checkLoginStatus={this.checkLoginStatus} />)} />
+          <Route exact path='/dashboard' render={props => (<Dashboard {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace' render={props => (<Workspace {...props} loggedInStatus={this.state.loggedInStatus} />)} />
 
           <Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />

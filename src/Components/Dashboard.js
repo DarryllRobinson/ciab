@@ -140,19 +140,12 @@ class Dashboard extends Component {
       workspaces: []
     }
 
-    this.handleSuccessfulAuth = this.handleSuccessfulAuth.bind(this);
     this.mysqlLayer = new MysqlLayer();
     this.security = new Security();
   }
 
-  handleSuccessfulAuth(data) {
-    console.log('handleSuccessfulAuth data: ', data);
-    this.props.handleLogin(data);
-    this.props.history.push('workspace');
-  }
-
   async componentDidMount() {
-    //this.props.checkLoginStatus();
+    console.log('Dashboard props: ', this.props);
     // get user fields from table
     const user = await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
 
