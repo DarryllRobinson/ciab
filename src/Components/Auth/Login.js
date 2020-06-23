@@ -16,6 +16,7 @@ export default class Login extends Component {
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleLogoutClick = this.handleLogoutClick.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
     this.security = new Security();
@@ -53,6 +54,7 @@ export default class Login extends Component {
         { withCredentials: true }
       )
       .then(response => {
+        console.log('handleSubmit response: ', response);
         if (response.data) {
           this.security.writeLoginSession(response.data[0].email, loginDatetime);
           this.props.handleSuccessfulAuth(response.data);
@@ -64,31 +66,67 @@ export default class Login extends Component {
     event.preventDefault();
   }
 
-  render() {
-    return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={this.state.email}
-            onChange={this.handleChange}
-            required
-          />
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={this.state.password}
-            onChange={this.handleChange}
-            required
-          />
-
-          <button type="submit">Login</button>
-        </form>
-      </div>
-    );
+  async handleLogoutClick() {
+    console.log('Home props: ', this.props);
+    let cwsUser = sessionStorage.getItem('cwsUser');
+    await this.mysqlLayer.Delete(`/admin/sessions/${cwsUser}`, { withCredentials: true })
+    .then(response => {
+        this.props.handleLogout();
+      })
+      .catch(error => {
+        console.log("logout error", error);
+      });
   }
+
+  sectionToRender() {
+    if (this.props.loggedInStatus === "NOT_LOGGED_IN") {
+      return (
+        <div className="form-group">
+          <form onSubmit={this.handleSubmit}>
+            <input
+              type="email"
+              name="email"
+              className="form-control"
+              placeholder="Email"
+              value={this.state.email}
+              onChange={this.handleChange}
+              required
+            />
+
+            <input
+              type="password"
+              name="password"
+              className="form-control"
+              placeholder="Password"
+              value={this.state.password}
+              onChange={this.handleChange}
+              required
+            />
+
+            <button className="btn btn-secondary" type="submit">Login</button>
+          </form>
+        </div>
+      );
+    } else if (this.props.loggedInStatus === "LOGGED_IN") {
+      return (
+        <button type="button" className="btn btn-secondary" onClick={() => this.handleLogoutClick()}>Logout</button>
+      );
+    } else {
+      return (
+        <div>loggedInStatus is confused</div>
+      );
+    }
+  }
+
+  render() {
+    console.log('Login props: ', this.props);
+    return (
+      <div className="col-lg-2">
+        <small className="text-muted">Status: {this.props.loggedInStatus}</small>
+
+        <br /><br />
+        {this.sectionToRender()}
+
+    </div>
+  )}
 }

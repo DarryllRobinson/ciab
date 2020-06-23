@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import MysqlLayer from '../../Utilities/MysqlLayer';
-//import SubmitComment from './SubmitComment';
 import moment from 'moment';
 
 class Application extends Component {
@@ -13,13 +12,16 @@ class Application extends Component {
       agentComments: '',
       storeComments: '',
       supervisorComments: '',
-      user: "Darryll"
+      user: "Darryll",
+      changesMade: false
     }
 
     this.mysqlLayer = new MysqlLayer();
     this.handleChange = this.handleChange.bind(this);
     this.pendRecord = this.pendRecord.bind(this);
     this.approveRecord = this.approveRecord.bind(this);
+    this.closeRecord = this.closeRecord.bind(this);
+
   }
 
   async componentDidMount() {
@@ -31,12 +33,15 @@ class Application extends Component {
       storeComments: record.storeComments,
       supervisorComments: record.supervisorComments
     });
-    console.log('application: ', this.state.application);
+    //console.log('application: ', this.state.application);
   }
 
   handleChange(e) {
     const value = e.target.value;
-    this.setState({ [e.target.name]: value });
+    this.setState({
+      [e.target.name]: value,
+      changesMade: true
+    });
   }
 
   async pendRecord() {
@@ -63,6 +68,14 @@ class Application extends Component {
     } else {
       alert('Please enter a comment longer than 10 characters');
     }
+  }
+
+  async closeRecord() {
+    if (this.state.changesMade) alert('The change you made have been lost');
+    this.props.history.push({
+      pathname: '/workspace',
+      state: 'Referred'
+    });
   }
 
   async approveRecord() {
@@ -528,6 +541,13 @@ class Application extends Component {
                       onClick={() => {this.approveRecord()}}>
                       Approve
                     </button>
+
+                    <button
+                      disabled={this.state.disabled}
+                      className="btn btn-primary"
+                      onClick={() => {this.closeRecord()}}>
+                      Close
+                    </button>
                   </div>
                 </div>
               </div>
@@ -535,25 +555,6 @@ class Application extends Component {
           </div>
         </div>
 
-        <div className="modal">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Modal title</h5>
-                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <p>Modal body text goes here.</p>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-primary">Save changes</button>
-                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
 
       </div>
     )

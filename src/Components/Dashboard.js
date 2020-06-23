@@ -124,7 +124,7 @@ const worklistsNames = [
   'News'
 ];
 
-class Main extends Component {
+class Dashboard extends Component {
   constructor(props) {
     super(props);
 
@@ -152,7 +152,7 @@ class Main extends Component {
   }
 
   async componentDidMount() {
-    this.props.checkLoginStatus();
+    //this.props.checkLoginStatus();
     // get user fields from table
     const user = await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
 
@@ -234,7 +234,6 @@ class Main extends Component {
     return (
       <div className="container">
         <div className="cols-12">
-        <h1>Status: {this.props.loggedInStatus}</h1>
           <Welcome user={this.state.user}/>
           {workspace}
         </div>
@@ -243,4 +242,4 @@ class Main extends Component {
   }
 }
 
-export default Main;
+export default Dashboard;

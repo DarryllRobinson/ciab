@@ -96,7 +96,7 @@ class Applications extends Component {
 
     return (
       <div className="container">
-        <div className="row">
+        {/*<div className="row">
           <Link to="/workspace/new-application">
             <div className="card text-white bg-primary mb-3">
               <div className="card-header">Process a credit application</div>
@@ -105,7 +105,7 @@ class Applications extends Component {
               </div>
             </div>
           </Link>
-        </div>
+        </div>*/}
 
         {this.state.applications === null && <p>Loading queues...</p>}
           {this.state.applications && this.state.approved && this.state.referred && this.state.declined && (
