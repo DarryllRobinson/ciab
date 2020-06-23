@@ -58,17 +58,7 @@ export default class Login extends Component {
 
   xxxhandleSubmit(event) {
     const { email, password } = this.state;
-
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync("b0oBi35", salt);
-
-    bcrypt.compare(password, hash, (err, res) => {
-      if (res) console.log('Passwords match')
-      ;
-    });
-
     const loginDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-
     const user = {
       email: email,
       password: password,
@@ -136,9 +126,7 @@ export default class Login extends Component {
     //console.log('Login props: ', this.props);
     return (
       <div className="col-lg-2">
-        <small className="text-muted">Status: {this.props.loggedInStatus}</small>
-
-        <br /><br />
+        
         {this.sectionToRender()}
 
     </div>

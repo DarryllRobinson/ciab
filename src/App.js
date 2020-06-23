@@ -48,32 +48,32 @@ class App extends Component {
   }
 
   async checkLoginStatus() {
-    console.log('initial app state: ', this.state);
+    //console.log('initial app state: ', this.state);
     let cwsUser = '';
     cwsUser = sessionStorage.getItem('cwsUser');
-    console.log('cwsUser: ', cwsUser);
+    //console.log('cwsUser: ', cwsUser);
 
     await this.mysqlLayer.Get(`/admin/sessions/${cwsUser}`, { withCredentials: true })
       .then(async response => {
         if (response[1].logged_in && this.state.loggedInStatus === "NOT_LOGGED_IN") {
-          console.log('Logging in...');
+          //console.log('Logging in...');
           await this.setState({
             loggedInStatus: "LOGGED_IN",
             user: response[0]
           });
-          console.log('Logged in app state: ', this.state);
+          //console.log('Logged in app state: ', this.state);
 
         } else if (
           !response[1].logged_in &
           (this.state.loggedInStatus === "LOGGED_IN")
         ) {
-          console.log('Logging out...');
+          //console.log('Logging out...');
           this.setState({
             loggedInStatus: "NOT_LOGGED_IN",
             user: {}
           });
-          //this.props.history.push('/');
-          //this.forceUpate();
+          this.props.history.push('/');
+          this.forceUpate();
         }
      })
      .catch(error => {
@@ -88,7 +88,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <NavBar />
+        <NavBar {...this.props} loggedInStatus={this.state.loggedInStatus} />
         <Switch>
 
           <Route exact path='/' render={props => (
@@ -99,7 +99,7 @@ class App extends Component {
             />)}
           />
 
-          <Route exact path='/dashboard' render={props => (<Dashboard {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/dashboard' render={props => (<Dashboard {...props} loggedInStatus={this.state.loggedInStatus} checkLoginStatus={this.checkLoginStatus} />)} />
           <Route exact path='/workspace' render={props => (<Workspace {...props} loggedInStatus={this.state.loggedInStatus} />)} />
 
           <Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />
