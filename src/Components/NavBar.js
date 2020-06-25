@@ -9,8 +9,9 @@ class NavBar extends React.Component {
   }
 
   menuToDisplay() {
+    //console.log('NavBar props: ', this.props);
     const loggedInStatus = this.props.loggedInStatus;
-    if (loggedInStatus == 'LOGGED_IN') {
+    if (loggedInStatus === "LOGGED_IN" && this.props.role === "god") {
       return (
         <>
             <li className="nav-item active">
@@ -23,6 +24,23 @@ class NavBar extends React.Component {
               <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
             </li>
           </>
+      );
+    } else if (loggedInStatus === "LOGGED_IN" && this.props.role !== "god") {
+      return (
+        <>
+          <li className="nav-item active">
+            <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
+          </li>
+          <li className="nav-item active">
+            <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
+          </li>
+          <li className="nav-item active">
+            <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
+          </li>
+          <li className="nav-item active">
+            <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
+          </li>
+        </>
       );
     } else if (loggedInStatus === 'NOT_LOGGED_IN') {
       return (

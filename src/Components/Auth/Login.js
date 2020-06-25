@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import Security from '../../Utilities/Security';
 import moment from 'moment';
-import bcrypt from 'bcryptjs';
 
 export default class Login extends Component {
   constructor(props) {
@@ -30,10 +29,6 @@ export default class Login extends Component {
   async handleSubmit(event) {
     event.preventDefault();
     const { email, password } = this.state;
-
-    // bcrypt password
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync("b0oBi35", salt);
 
     const loginDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
@@ -126,7 +121,7 @@ export default class Login extends Component {
     //console.log('Login props: ', this.props);
     return (
       <div className="col-lg-2">
-        
+
         {this.sectionToRender()}
 
     </div>

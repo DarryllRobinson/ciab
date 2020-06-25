@@ -68,7 +68,9 @@ class Applications extends Component {
 
   queueTat(app, queueTat) {
     let appClosedDate = null;
+    console.log('app.closedDate before: ', app.closedDate);
     app.closedDate === null ? appClosedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss') : appClosedDate = app.closedDate;
+    console.log('appClosedDate after: ', appClosedDate);
     //console.log('appClosedDate: ', appClosedDate, app.closedDate);
     const tat = (Math.abs(new Date() - new Date(app.createdDate))) / 1000 / 60 / 60;
     if (tat > queueTat) return tat;

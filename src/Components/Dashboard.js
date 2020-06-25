@@ -146,73 +146,77 @@ class Dashboard extends Component {
 
   async componentDidMount() {
     console.log('Dashboard props: ', this.props);
+
+    //this.props.checkLoginStatus();
+    // get user fields from table
+    const user = await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
+    //console.log('Dashboard user: ', user);
+
+    // get client from user who logged in
+    const client = await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
+    //console.log('Dashboard client: ', client);
+
+    // has client paid? - still thinking about this one...
+    if (client[0].hasPaid === 0) this.props.history.push(`/admin/arrears`);
+
+    // what services are turned on?
+    const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${user[0].f_clientId}`);
+
+    let cs = [];
+    clientservices.forEach(async service => {
+      cs.push(service.service);
+
+      // get all records to send downstream to the workspace components
+      let records = await this.mysqlLayer.Get(`/workspace/${service.service}`);
+
+
+      // get all statuses and count them
+      let status = [];
+      records.forEach(record => {
+        //console.log('record.status: ', record.status);
+        status.push(record.status);
+      });
+
+      const statusArr = status.filter(this.onlyUnique);
+
+      statusArr.forEach(status => {
+        let count = 0;
+        records.forEach(record => {
+          if (record.status === status)
+          ++count;
+        });
+        let item = status;
+        let items = [];
+        items.push(item, count);
+
+        let worklists = [];
+        worklistsNames.forEach(name => {
+          worklists.push(name, items);
+        });
+        //console.log('worklists: ', worklists);
+      });
+    });
+
+
+    let workspaces = [];
+    workspaces.push(application, collection);
+
+
+    // load everything into state
+    await this.setState({
+      user: user,
+      client: client,
+      services: cs,
+      workspaces: workspaces
+    });
+  }
+
+  componentDidUpdate() {
     if (this.props.loggedInStatus === "NOT_LOGGED_IN") {
       this.props.history.push('/');
-    } else {
-      //this.props.checkLoginStatus();
-      // get user fields from table
-      const user = await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
-
-      // get client from user who logged in
-      const client = await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
-
-      // has client paid? - still thinking about this one...
-      if (client[0].hasPaid === 0) this.props.history.push(`/admin/arrears`);
-
-      // what services are turned on?
-      const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${user[0].f_clientId}`);
-
-      let cs = [];
-      clientservices.forEach(async service => {
-        cs.push(service.service);
-
-        // get all records to send downstream to the workspace components
-        let records = await this.mysqlLayer.Get(`/workspace/${service.service}`);
-
-
-        // get all statuses and count them
-        let status = [];
-        records.forEach(record => {
-          //console.log('record.status: ', record.status);
-          status.push(record.status);
-        });
-
-        const statusArr = status.filter(this.onlyUnique);
-
-        statusArr.forEach(status => {
-          let count = 0;
-          records.forEach(record => {
-            if (record.status === status)
-            ++count;
-          });
-          let item = status;
-          let items = [];
-          items.push(item, count);
-
-          let worklists = [];
-          worklistsNames.forEach(name => {
-            worklists.push(name, items);
-          });
-          //console.log('worklists: ', worklists);
-        });
-
-
-      });
-
-
-      let workspaces = [];
-      workspaces.push(application, collection);
-
-
-      // load everything into state
-      await this.setState({
-        user: user,
-        client: client,
-        services: cs,
-        workspaces: workspaces
-      });
     }
   }
+
 
   onlyUnique(value, index, self) {
     /*console.log('value: ', value);
@@ -225,7 +229,7 @@ class Dashboard extends Component {
 
   const workspace = this.state.workspaces.map((workspace, idx) =>
     <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
-      <Workspace key={idx} workspaces={workspace} />
+      <Workspace key={idx} workspaces={workspace} user={this.state.user} />
     </div>
   );
 

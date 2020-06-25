@@ -17,6 +17,8 @@ import Blogs from './Components/Community/Blogs';
 import Blog from './Components/Community/Blog';
 import NewBlog from './Components/Community/NewBlog';
 
+import Registration from './Components/Auth/Registration';
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -88,7 +90,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <NavBar {...this.props} loggedInStatus={this.state.loggedInStatus} />
+        <NavBar {...this.props} loggedInStatus={this.state.loggedInStatus} role={this.state.user.role} />
         <Switch>
 
           <Route exact path='/' render={props => (
@@ -99,7 +101,7 @@ class App extends Component {
             />)}
           />
 
-          <Route exact path='/dashboard' render={props => (<Dashboard {...props} loggedInStatus={this.state.loggedInStatus} checkLoginStatus={this.checkLoginStatus} />)} />
+          <Route exact path='/dashboard' render={props => (<Dashboard {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace' render={props => (<Workspace {...props} loggedInStatus={this.state.loggedInStatus} />)} />
 
           <Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />
@@ -109,6 +111,8 @@ class App extends Component {
           <Route exact path='/community/blogs' render={props => (<Blogs {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+
+          <Route exact path='/auth/registration' render={props => (<Registration {...props} loggedInStatus={this.state.loggedInStatus} />)} />
 
         </Switch>
       </div>

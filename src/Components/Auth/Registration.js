@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default class Registration extends Component {
   constructor(props) {
@@ -13,136 +15,201 @@ export default class Registration extends Component {
       email: '',
       phone: '',
       password: '',
-      password_confirmation: '',
       role: '',
       f_clientId: '',
-      createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-      registrationErrors: ''
+      createdDate: '',
+      registrationErrors: '',
+      clients: []
     }
 
     this.mysqlLayer = new MysqlLayer();
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    //this.checkPassword = this.checkPassword.bind(this);
+  }
 
-
+  async componentDidMount() {
+    let clients = await this.mysqlLayer.Get(`/admin/clients`, { withCredentials: true });
+    console.log('clients: ', clients);
+    await this.setState({ clients: clients });
   }
 
   handleChange(event) {
+    //console.log('[event.target.name]: ', [event.target.name]);
+    //console.log('event.target.value: ', event.target.value);
     this.setState({
       [event.target.name]: event.target.value
     });
-
   }
 
   handleSubmit(event) {
     event.preventDefault();
 
-    // bcrypt password
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync("b0oBi35", salt);
-    
-    bcrypt.hash(this.state.password, salt, async (err, hash) => {
-       await this.setState({ password: hash });
-       console.log('hashed password: ', this.state.password);
+    // Don't let the missing this.state.values confuse you below :)
+    const {
+      firstName,
+      surname,
+      email,
+      phone,
+      role,
+      f_clientId
+    } = this.state;
 
-       const user = {
-         firstName: 'Steven',//this.state.firstName,
-         surname: 'Strange', //this.state.surname,
-         email: 'steven@email.com', //this.state.email,
-         phone: '0123555555', //this.state.phone,
-         password: this.state.password,
-         role: 'agent', //this.state.role,
-         f_clientId: 3, //this.state.f_clientId,
-         createdDate: this.state.createdDate
-       }
+    if (f_clientId !== '' && role !== '') {
+      // bcrypt password
+      const salt = bcrypt.genSaltSync(10);
+      //const hash = bcrypt.hashSync("b0oBi35", salt);
 
-       console.log('user: ', user);
+      bcrypt.hash(this.state.password, salt, async (err, hash) => {
+         await this.setState({ password: hash });
+         //console.log('hashed password: ', this.state.password);
 
-       this.mysqlLayer.Post(`/admin/users`, user, { withCredentials: true }
-       ).then(response => {
-         console.log('Registration response: ', response.config.data);
-         if (response) {
-           this.props.handleSuccessfulAuth(response.config.data);
-         } else {
-           console.log('Log error to registrationErrors');
+         const createdDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+
+         const user = {
+           firstName: firstName,
+           surname: surname,
+           email: email,
+           phone: phone,
+           password: hash,
+           role: role,
+           f_clientId: f_clientId,
+           createdDate: createdDate
          }
-       }).catch(error => {
-         console.log('Registration error: ', error);
-       });
+
+         //console.log('user: ', user);
+
+         this.mysqlLayer.Post(`/admin/users`, user, { withCredentials: true }
+         ).then(response => {
+           if (response) {
+             this.handleSuccessfulAuth();
+           } else {
+             console.log('Log error to registrationErrors');
+           }
+         }).catch(error => {
+           console.log('Registration error: ', error);
+         });
+      });
+    } else {
+      toast('Please ensure you have selected a role and client from the lists', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined
+      })
+    }
+  }
+
+  handleSuccessfulAuth() {
+    toast(`${this.state.firstName} has been added to the system`, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined
+    });
+
+    this.setState({
+      firstName: '',
+      surname: '',
+      email: '',
+      phone: '',
+      password: '',
+      role: '',
+      f_clientId: '',
+      createdDate: ''
     });
   }
 
   render() {
+    const clientList = this.state.clients.map((client, idx) =>
+        <option key={idx} value={client.id}>{client.name}</option>
+    );
+
     return (
-      <div>
-        <form onSubmit={this.handleSubmit}>
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First name"
-            value={this.state.firstName}
-            onChange={this.handleChange}
-            required
-          />
+      <div className="col-lg-4">
+        <div className="form-group" style={{padding: "20px"}}>
+          <form onSubmit={this.handleSubmit}>
 
-          <input
-            type="text"
-            name="surname"
-            placeholder="Surname"
-            value={this.state.surname}
-            onChange={this.handleChange}
-            required
-          />
+            <input
+              type="text"
+              name="firstName"
+              className="form-control"
+              placeholder="First name"
+              value={this.state.firstName}
+              onChange={this.handleChange}
+              required
+            />
 
-          <input
-            type="email"
-            name="email"
-            placeholder="email@email.com" //"Email address"
-            value={this.state.email}
-            onChange={this.handleChange}
-            required
-          />
+            <input
+              type="text"
+              name="surname"
+              placeholder="Surname"
+              className="form-control"
+              value={this.state.surname}
+              onChange={this.handleChange}
+              required
+            />
 
-          <input
-            type="text"
-            name="phone"
-            placeholder="Mobile"
-            value={this.state.phone}
-            onChange={this.handleChange}
-            required
-          />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              className="form-control"
+              value={this.state.email}
+              onChange={this.handleChange}
+              required
+            />
 
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={this.state.password}
-            onChange={this.handleChange}
-            required
-          />
+            <input
+              type="text"
+              name="phone"
+              placeholder="Mobile"
+              className="form-control"
+              value={this.state.phone}
+              onChange={this.handleChange}
+              required
+            />
 
-          <input
-            type="text"
-            name="role"
-            placeholder="agent" //"Role"
-            value={this.state.role}
-            onChange={this.handleChange}
-            required
-          />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              className="form-control"
+              value={this.state.password}
+              onChange={this.handleChange}
+              required
+            />
 
-          <input
-            type="text"
-            name="f_clientId"
-            placeholder="3" //"Client ID"
-            value={this.state.f_clientId}
-            onChange={this.handleChange}
-            required
-          />
+            <div className="form-group">
+              <select className="custom-select" name="role" onChange={this.handleChange} required>
+                <option >Role</option>
+                <option value="agent">Agent</option>
+                <option value="store">Store agent</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
 
-          <button type="submit">Register</button>
-        </form>
+            <div className="form-group">
+              <select className="custom-select"
+                name="f_clientId"
+                onChange={this.handleChange}
+                required
+              >
+                <option>Client</option>
+                {clientList}
+              </select>
+            </div>
+
+            <button className="btn btn-secondary" type="submit">Register</button>
+          </form>
+          <ToastContainer />
+        </div>
       </div>
     );
   }
