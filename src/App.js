@@ -166,24 +166,24 @@ class App extends Component {
           />
 
           <Route exact path='/dashboard' render={props => (<Dashboard {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
-          <Route exact path='/workspace/applications' render={props => (<Workspace {...props} loggedInStatus={this.state.loggedInStatus} />)} />
-          <Route exact path='/workspace/collections' render={props => (<Workspace {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/workspace/applications' render={props => (<Workspace {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/workspace/collections' render={props => (<Workspace {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           {/*<Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />*/}
-          <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />
-          <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
-          <Route exact path='/workspace/collections/:id' render={props => (<Collection {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/workspace/collections/:id' render={props => (<Collection {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           {/*<Route exact path='/workspace/collections' render={props => (<Collections {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} loggedInStatus={this.state.loggedInStatus} />)} />*/}
 
-          <Route exact path='/community/blogs' render={props => (<Blogs {...props} loggedInStatus={this.state.loggedInStatus} />)} />
-          <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} loggedInStatus={this.state.loggedInStatus} />)} />
-          <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/community/blogs' render={props => (<Blogs {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
-          <Route exact path='/auth/registration' render={props => (<Registration {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+          <Route exact path='/auth/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
         </Switch>
       </div>

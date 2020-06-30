@@ -123,7 +123,7 @@ class Application extends Component {
                       type="text"
                       name="firstName"
                       className="form-control"
-                      value={application[0].firstName}
+                      value={application[0].firstName || ''}
                     />
                   </div>
                 </div>
@@ -136,7 +136,7 @@ class Application extends Component {
                       type="text"
                       name="surname"
                       className="form-control"
-                      value={application[0].surname}
+                      value={application[0].surname || ''}
                     />
                   </div>
                 </div>
@@ -151,7 +151,7 @@ class Application extends Component {
                       type="text"
                       name="idNumber"
                       className="form-control"
-                      value={application[0].idNumber}
+                      value={application[0].idNumber || ''}
                     />
                   </div>
                 </div>
@@ -166,7 +166,7 @@ class Application extends Component {
                       type="text"
                       name="dob"
                       className="form-control"
-                      value={moment(application[0].dob).format('YYYY-MM-DD')}
+                      value={moment(application[0].dob).format('YYYY-MM-DD') || ''}
                     />
                   </div>
                 </div>
@@ -179,7 +179,7 @@ class Application extends Component {
                       type="text"
                       name="sex"
                       className="form-control"
-                      value={application[0].sex}
+                      value={application[0].sex || ''}
                     />
                   </div>
                 </div>
@@ -192,7 +192,7 @@ class Application extends Component {
                       type="text"
                       name="numDependents"
                       className="form-control"
-                      value={application[0].numDependents}
+                      value={application[0].numDependents || ''}
                     />
                   </div>
                 </div>
@@ -207,7 +207,7 @@ class Application extends Component {
                       type="text"
                       name="mobile"
                       className="form-control"
-                      value={application[0].mobile}
+                      value={application[0].mobile || ''}
                     />
                   </div>
                 </div>
@@ -220,7 +220,7 @@ class Application extends Component {
                       type="email"
                       name="email"
                       className="form-control"
-                      value={application[0].email}
+                      value={application[0].email || ''}
                     />
                   </div>
                 </div>
@@ -243,7 +243,7 @@ class Application extends Component {
                       type="text"
                       name="address1"
                       className="form-control"
-                      value={application[0].address1}
+                      value={application[0].address1 || ''}
                     />
                   </div>
                 </div>
@@ -256,7 +256,7 @@ class Application extends Component {
                       type="text"
                       name="address2"
                       className="form-control"
-                      value={application[0].address2}
+                      value={application[0].address2 || ''}
                     />
                   </div>
                 </div>
@@ -269,7 +269,7 @@ class Application extends Component {
                       type="text"
                       name="address3"
                       className="form-control"
-                      value={application[0].address3}
+                      value={application[0].address3 || ''}
                     />
                   </div>
                 </div>
@@ -284,7 +284,7 @@ class Application extends Component {
                       type="text"
                       name="address4"
                       className="form-control"
-                      value={application[0].address4}
+                      value={application[0].address4 || ''}
                     />
                   </div>
                 </div>
@@ -297,7 +297,7 @@ class Application extends Component {
                       type="text"
                       name="address5"
                       className="form-control"
-                      value={application[0].address5}
+                      value={application[0].address5 || ''}
                     />
                   </div>
                 </div>
@@ -310,7 +310,7 @@ class Application extends Component {
                       type="text"
                       name="residencyDuration"
                       className="form-control"
-                      value={application[0].residencyDuration}
+                      value={application[0].residencyDuration || ''}
                     />
                   </div>
                 </div>
@@ -327,7 +327,7 @@ class Application extends Component {
                       type="text"
                       name="employer"
                       className="form-control"
-                      value={application[0].employer}
+                      value={application[0].employer || ''}
                     />
                   </div>
                 </div>
@@ -340,7 +340,7 @@ class Application extends Component {
                       type="text"
                       name="employmentDuration"
                       className="form-control"
-                      value={application[0].employmentDuration}
+                      value={application[0].employmentDuration || ''}
                     />
                   </div>
                 </div>
@@ -363,7 +363,7 @@ class Application extends Component {
                       type="text"
                       name="bankCode"
                       className="form-control"
-                      value={application[0].bankCode}
+                      value={application[0].bankCode || ''}
                     />
                   </div>
                 </div>
@@ -376,7 +376,7 @@ class Application extends Component {
                       type="text"
                       name="bankAccount"
                       className="form-control"
-                      value={application[0].bankAccount}
+                      value={application[0].bankAccount || ''}
                     />
                   </div>
                 </div>
@@ -399,7 +399,7 @@ class Application extends Component {
                       type="number"
                       name="grossIncome"
                       className="form-control"
-                      value={application[0].grossIncome}
+                      value={application[0].grossIncome || 0}
                     />
                   </div>
                 </div>
@@ -412,7 +412,7 @@ class Application extends Component {
                       type="number"
                       name="expenses"
                       className="form-control"
-                      value={application[0].expenses}
+                      value={application[0].expenses || 0}
                     />
                   </div>
                 </div>
@@ -435,7 +435,7 @@ class Application extends Component {
                       type="number"
                       name="bureauScore"
                       className="form-control"
-                      value={application[0].bureauScore}
+                      value={application[0].bureauScore || 0}
                     />
                   </div>
                 </div>
