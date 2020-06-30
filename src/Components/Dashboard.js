@@ -5,14 +5,14 @@ import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
 
 const application = {
-  workspace: 'Applications',
+  workspace: 'applications',
   worklists: [
       {
         worklist: 'Queues',
         items: [
           {
             item: 'Referred',
-            count: 12
+            count: 129
           },
           {
             item: 'Pended',
@@ -62,13 +62,13 @@ const application = {
 };
 
 const collection = {
-  workspace: 'Collections',
+  workspace: 'collections',
   worklists: [
     {
       worklist: 'Queues',
       items: [
         {
-          item: 'Status 1',
+          item: 'Current',
           count: 12
         },
         {
@@ -172,10 +172,14 @@ class Dashboard extends Component {
 
       // get all statuses and count them
       let status = [];
-      records.forEach(record => {
-        //console.log('record.status: ', record.status);
-        status.push(record.status);
-      });
+      try {
+        records.forEach(record => {
+          //console.log('record.status: ', record.status);
+          status.push(record.status);
+        });
+      } catch (error) {
+        console.log('record extraction error: ', error);
+      }
 
       const statusArr = status.filter(this.onlyUnique);
 

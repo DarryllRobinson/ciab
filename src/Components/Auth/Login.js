@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import Security from '../../Utilities/Security';
 import moment from 'moment';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default class Login extends Component {
   constructor(props) {
@@ -41,10 +42,22 @@ export default class Login extends Component {
 
     await this.mysqlLayer.Post(`/admin/sessions/`, user, { withCredentials: true }
     ).then(response => {
-      console.log('Login response: ', response);
-      if (response.data) {
-        this.security.writeLoginSession(response.data.email, loginDatetime);
+      //console.log('Login props: ', this.props);
+      //console.log('Login response: ', response);
+      if (response.data[1].logged_in) {
+        this.security.writeLoginSession(response.data, loginDatetime);
         this.props.handleSuccessfulAuth(response.data);
+      } else {
+        toast('Incorrect username or password', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        this.setState({ email: '', password: '' });
       }
     }).catch(error => {
       console.log('Login error: ', error);
@@ -80,31 +93,34 @@ export default class Login extends Component {
   sectionToRender() {
     if (this.props.loggedInStatus === "NOT_LOGGED_IN") {
       return (
-        <div className="form-group">
-          <form onSubmit={this.handleSubmit}>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              placeholder="Email"
-              value={this.state.email}
-              onChange={this.handleChange}
-              required
-            />
+        <>
+        <form className="form-inline my-2 my-lg-0" onSubmit={this.handleSubmit}>
+              <input
+                type="email"
+                name="email"
+                className="form-control mr-sm-2"
+                placeholder="Email"
+                value={this.state.email}
+                onChange={this.handleChange}
+                required
+              />
 
-            <input
-              type="password"
-              name="password"
-              className="form-control"
-              placeholder="Password"
-              value={this.state.password}
-              onChange={this.handleChange}
-              required
-            />
 
-            <button className="btn btn-secondary" type="submit">Login</button>
-          </form>
-        </div>
+              <input
+                type="password"
+                name="password"
+                className="form-control mr-sm-2"
+                placeholder="Password"
+                value={this.state.password}
+                onChange={this.handleChange}
+                required
+              />
+
+              <button className="btn btn-secondary my-2 my-sm-0" type="submit">Login</button>
+              </form>
+
+          <ToastContainer />
+        </>
       );
     } else if (this.props.loggedInStatus === "LOGGED_IN") {
       return (
@@ -120,10 +136,10 @@ export default class Login extends Component {
   render() {
     //console.log('Login props: ', this.props);
     return (
-      <div className="col-lg-2">
+      <>
 
         {this.sectionToRender()}
+        </>
 
-    </div>
   )}
 }

@@ -73,7 +73,7 @@ class Application extends Component {
   async closeRecord() {
     if (this.state.changesMade) alert('The change you made have been lost');
     this.props.history.push({
-      pathname: '/workspace',
+      pathname: '/workspace/applications',
       state: 'Referred'
     });
   }

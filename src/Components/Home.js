@@ -1,21 +1,12 @@
 import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
-//import Registration from './Auth/Registration';
-import Login from './Auth/Login';
 
 class Home extends Component {
   constructor(props) {
     super(props);
 
     this.mysqlLayer = new MysqlLayer();
-    this.handleSuccessfulAuth = this.handleSuccessfulAuth.bind(this);
     this.handleLogoutClick = this.handleLogoutClick.bind(this);
-  }
-
-  handleSuccessfulAuth(data) {
-    console.log('handleSuccessfulAuth data: ', data);
-    this.props.handleLogin(data);
-    this.props.history.push('/dashboard');
   }
 
   async handleLogoutClick() {
@@ -42,34 +33,25 @@ class Home extends Component {
                 <hr className="my-4" />
                 <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
                 <p className="lead">
-                  <a className="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
+                  <a className="btn btn-primary btn-lg" href=" # " role="button">Learn more</a>
                 </p>
             </div>
 
             <div className="list-group">
-              <a href="#" className="list-group-item list-group-item-action active">
+              <a href=" # " className="list-group-item list-group-item-action active">
                 Application capture and processing - including scorecards
               </a>
-              <a href="#" className="list-group-item list-group-item-action">
+              <a href=" # " className="list-group-item list-group-item-action">
                 Collection workflow to assist you with the inevitable
               </a>
-              <a href="#" className="list-group-item list-group-item-action disabled">
+              <a href=" # " className="list-group-item list-group-item-action disabled">
                 Ticket logging system to handle customer requests and complaints - includes automated escalation
               </a>
-              <a href="#" className="list-group-item list-group-item-action disabled">
+              <a href=" # " className="list-group-item list-group-item-action disabled">
                 Agent community with support for news articles, sharing information and assistance and blogs
               </a>
             </div>
           </div>
-
-
-            <Login
-              loggedInStatus={this.props.loggedInStatus}
-              handleSuccessfulAuth={this.handleSuccessfulAuth}
-              handleLogoutClick={this.handleLogoutClick}
-            />
-
-
         </div>
       </div>
     )
