@@ -8,11 +8,13 @@ import Home from './Components/Home';
 
 import Dashboard from './Components/Dashboard';
 import Workspace from './Components/Workspace';
-import CollectionsWorkspace from './Components/CollectionsWorkspace';
+//import CollectionsWorkspace from './Components/CollectionsWorkspace';
 
-import Applications from './Components/Applications/Applications';
+//import Applications from './Components/Applications/Applications';
 import Application from './Components/Applications/Application';
 import NewApplication from './Components/Applications/NewApplication';
+
+import Collection from './Components/Collections/Collection';
 
 import Blogs from './Components/Community/Blogs';
 import Blog from './Components/Community/Blog';
@@ -170,6 +172,8 @@ class App extends Component {
           {/*<Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />*/}
           <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+
+          <Route exact path='/workspace/collections/:id' render={props => (<Collection {...props} loggedInStatus={this.state.loggedInStatus} />)} />
 
           {/*<Route exact path='/workspace/collections' render={props => (<Collections {...props} loggedInStatus={this.state.loggedInStatus} />)} />
           <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />
