@@ -19,35 +19,35 @@ class Workspace extends Component {
   }
 
   async componentDidMount() {
-    console.log('Actual Workspace props: ', this.props);
+    //console.log('Actual Workspace props: ', this.props);
 
     // Figure out what workspace to extract
     const workspace = this.props.location.workspace ?
       this.props.location.workspace :
       this.getWorkspaceName(this.props.history.location.pathname);
-    console.log('mounting workspace: ', workspace);
+    //console.log('mounting workspace: ', workspace);
 
     // Determine which status to set, fallback to default if required
     let recordStatus = '';
     if (workspace === 'applications') {
       recordStatus = this.props.location.status ? this.props.location.status : 'Referred';
     } else if (workspace === 'collections') {
-      recordStatus = this.props.location.status ? this.props.location.status : 'Current';
+      recordStatus = this.props.location.status ? this.props.location.status : 'Arrears';
     }
-    console.log('mounting recordStatus: ', recordStatus);
+    //console.log('mounting recordStatus: ', recordStatus);
 
     await this.setState({
       recordStatus: recordStatus,
       workspace: workspace
     });
 
-    console.log('recordStatus: ', this.state.recordStatus);
+    //console.log('recordStatus: ', this.state.recordStatus);
     this.loadRecords(this.state.recordStatus, workspace);
     //this.loadRecords(this.state.recordStatus);
   }
 
   getWorkspaceName(pathname) {
-    console.log('pathname: ', pathname);
+    //console.log('pathname: ', pathname);
     const searchTerm = '/';
     const indexOfFirst = pathname.indexOf(searchTerm);
     const indexOfSecond = pathname.indexOf(searchTerm, (indexOfFirst + 1));
@@ -56,35 +56,35 @@ class Workspace extends Component {
     const indexOfFifth = pathname.indexOf(searchTerm, (indexOfFourth + 1));
     const apiLength = pathname.length;
 
-    console.log('indexOfFirst: ', indexOfFirst);
+    /*console.log('indexOfFirst: ', indexOfFirst);
     console.log('indexOfSecond: ', indexOfSecond);
     console.log('indexOfThird: ', indexOfThird);
     console.log('indexOfFourth: ', indexOfFourth);
     console.log('indexOfFifth: ', indexOfFifth);
-    console.log('apiLength: ', apiLength);
+    console.log('apiLength: ', apiLength);*/
 
     // For routes with /api/{resource}/{table}/{appstatus}/:id pattern
-    if (indexOfFifth < 0) console.log('5: ', pathname.substring(indexOfThird + 1, indexOfFourth));
+    //if (indexOfFifth < 0) console.log('5: ', pathname.substring(indexOfThird + 1, indexOfFourth));
     if (indexOfFifth < 0) return pathname.substring(indexOfThird + 1, indexOfFourth);
     // For routes with /api/{resource}/{table}/:id pattern
-    if (indexOfFourth < 0) console.log('4: ', pathname.substring(indexOfThird + 1, apiLength));
+    //if (indexOfFourth < 0) console.log('4: ', pathname.substring(indexOfThird + 1, apiLength));
     if (indexOfFourth < 0) return pathname.substring(indexOfThird + 1, apiLength);
     // For routes with /api/{table}/:id pattern
-    if (indexOfThird < 0) console.log('3: ', pathname.substring(indexOfSecond + 1, apiLength));
+    //if (indexOfThird < 0) console.log('3: ', pathname.substring(indexOfSecond + 1, apiLength));
     if (indexOfThird < 0) return pathname.substring(indexOfSecond + 1, apiLength);
     // For routes with /api/{table} pattern
-    if (indexOfSecond < 0) console.log('2: ', pathname.substring(indexOfFirst, indexOfSecond + 1));
+    //if (indexOfSecond < 0) console.log('2: ', pathname.substring(indexOfFirst, indexOfSecond + 1));
     if (indexOfSecond < 0) return pathname.substring(indexOfFirst, apiLength);
   }
 
   //async loadRecords(status, workspace) {
   async loadRecords(status, workspace) {
-    console.log('loading records');
+    //console.log('loading records');
     //const status = this.state.recordStatus;
     //const workspace = this.state.workspace ? this.state.workspace : this.props.workspace;
 
     let records = await this.mysqlLayer.Get(`/workspace/${workspace}`);
-    console.log('records: ', records);
+    //console.log('records: ', records);
     let recordStatus = status;
     let rows = [];
     let columns = [];
@@ -92,7 +92,7 @@ class Workspace extends Component {
     if (records) {
       records.forEach(record => {
         if (record.status === recordStatus && workspace === 'applications') {
-          console.log('records: applications');
+          //console.log('records: applications');
           let row = {
             recordId: record.id,
             firstName: record.firstName,
@@ -159,7 +159,7 @@ class Workspace extends Component {
             }
           ];
         } else if (record.status === recordStatus && workspace === 'collections') {
-          console.log('records: collections');
+          //console.log('records: collections');
           let row = {
             recordId: record.id,
             accountNumber: record.accountNumber,
@@ -345,41 +345,68 @@ class Workspace extends Component {
 
   componentToLoad() {
     const status = this.state.recordStatus;
-    switch (status) {
-      case 'Referred': return (
-        <div>
-          <h4>Referred Applications</h4>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review", this.state.workspace)}>Load Decline Review Applications</button>
-        </div>
-      )
-      case 'Pended': return (
-        <div>
-          <h4>Pended Applications</h4>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review", this.state.workspace)}>Load Decline Review Applications</button>
-        </div>
-      )
-      case 'Decline Review': return (
-        <div>
-          <h4>Decline Review Applications</h4>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>
-        </div>
-      )
-      case 'Current': return (
-        <div>
-          <h4>Current Accounts</h4>
-          <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("In Arrears", this.state.workspace)}>Load Accounts In Arrears</button>
-          {/*<button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>*/}
-        </div>
-      )
+    const workspace = this.state.workspace;
+
+    switch (workspace) {
+      case 'applications':
+        switch (status) {
+          case 'Referred': return (
+            <div>
+              <h4>Referred Applications</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review", this.state.workspace)}>Load Decline Review Applications</button>
+            </div>
+          )
+          case 'Pended': return (
+            <div>
+              <h4>Pended Applications</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review", this.state.workspace)}>Load Decline Review Applications</button>
+            </div>
+          )
+          case 'Decline Review': return (
+            <div>
+              <h4>Decline Review Applications</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>
+            </div>
+          )
+          default: return (
+            <div>
+              <h4>Problem Loading Applications Records</h4>
+            </div>
+          )
+        }
+
+      case 'collections':
+        switch (status) {
+          case 'Pended': return (
+            <div>
+              <h4>Pended Cases</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Arrears", this.state.workspace)}>Load Accounts In Arrears</button>
+              {/*<button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>*/}
+            </div>
+          )
+          case 'Arrears': return (
+            <div>
+              <h4>Accounts In Arrears</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Cases</button>
+              {/*<button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>*/}
+            </div>
+          )
+          default: return (
+            <div>
+              <h4>Problem Loading Collections Records</h4>
+            </div>
+          )
+        }
       default: return (
         <div>
-          <h4>Problem Loading Records</h4>
+          <h4>Problem with selecting a Workspace</h4>
         </div>
       )
     }
+
   }
 
   render() {

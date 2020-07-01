@@ -9,9 +9,13 @@ class Collection extends Component {
     this.state = {
       collection: null,
       disabled: false,
-      accountNotes: '',
+      caseNotes: '',
       user: "Darryll",
-      changesMade: false
+      changesMade: false,
+      ptpDate: null,
+      ptpAmount: 0,
+      nextVisitDate: null,
+      resolution: ''
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -24,45 +28,55 @@ class Collection extends Component {
 
   async componentDidMount() {
     let record = [];
+    console.log('this.props.location.pathname: ', this.props.location.pathname);
     record = await this.mysqlLayer.Get(this.props.location.pathname);
     //console.log('this.props.location.pathname: ', this.props.location.pathname);
     console.log('record: ', record);
     await this.setState({
       collection: record,
-      accountNotes: record.accountNotes
+      caseNotes: record.caseNotes
     });
     //console.log('collection: ', this.state.collection);
   }
 
-  handleChange(e) {
+  async handleChange(e) {
     const value = e.target.value;
-    this.setState({
+    //console.log('value: ', value);
+    //const name = [e.target.name];
+    //console.log('[e.target.name]: ', name);
+    await this.setState({
       [e.target.name]: value,
       changesMade: true
     });
+    //console.log('this.state after change: ', this.state);
   }
 
   async pendRecord() {
-    const notes = this.state.accountNotes;
-    if (notes && notes.length > 10) {
+    const notes = this.state.caseNotes;
+    if (notes && notes.length > 10 && this.state.nextVisitDate !== null) {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].accountNotes ? this.state.collection[0].accountNotes + `\n\r` : '';
+      let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.accountNotes}`;
-      let update = {
-        accountNotes: newNote,
-        recordStatus: 'Pended',
+      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.caseNotes}`;
+      let caseUpdate = {
+        caseNotes: newNote,
+        currentStatus: 'Pended',
         updatedBy: this.state.user, // must add actual username
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
-      }
+      };
 
-      await this.mysqlLayer.Put(`/workspace/collections/${this.state.collection[0].accountNumber}`, update);
+      let outcomeUpdate = {
+        nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+      };
+
+      await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
         pathname: '/workspace/collections',
-        status: 'Current'
+        status: 'Arrears'
       });
     } else {
-      alert('Please enter a comment longer than 10 characters');
+      alert('Please enter a note longer than 10 characters and provide a Next Visit Date');
     }
   }
 
@@ -78,6 +92,23 @@ class Collection extends Component {
             <div className="card border-primary">
               <div className="card-header">Account Number {collection[0].accountNumber}</div>
               <div className="card-body text-left">
+
+              <div className="row">
+                <div className="col-12">
+                  <div className="form-group">
+                    <label htmlFor="exampleInputaccountNotes">Account Notes</label>
+                    <textarea
+                      disabled={true}
+                      rows="3"
+                      name="accountNotes"
+                      className="form-control"
+                      value={this.state.collection[0].accountNotes || ''}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <br />
 
               <div className="row">
                 <div className="col-4">
@@ -423,26 +454,141 @@ class Collection extends Component {
           </div>
         </div>
 
-        <div className="container">
-          <div className="row">
-            <div className="col-12">
-              <div className="card border-none">
+        <div className="row">
+          <div className="col-12">
+            <div className="form-group">
+              {/* This space left blank intentionally */}
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12">
+          <div className="form-group">
+            {/* This space left blank intentionally */}
+          </div>
+        </div>
+
+
+        <div className="row">
+          <div className="col-12">
+            <div className="card border-primary">
+              <div className="card-header">New Case Activity</div>
+              <div className="card-body text-left">
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputptpDate">PTP Date</label>
+                      <input
+                        disabled={false}
+                        type="date"
+                        name="ptpDate"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.ptpDate || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputptpAmount">PTP Amount</label>
+                      <input
+                        disabled={false}
+                        type="number"
+                        name="ptpAmount"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.ptpAmount || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputnextVisitDate">Next Visit Date</label>
+                      <input
+                        disabled={false}
+                        type="date"
+                        name="nextVisitDate"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.nextVisitDate || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <select className="custom-select"
+                        required
+                        name="resolution"
+                        onChange={this.handleChange}
+                      >
+                        <option value="---">Resolution</option>
+                        <option value="ptp">PTP created</option>
+                        <option value="unable">Unable to pay</option>
+                        <option value="already">Customer already paid</option>
+                        <option value="refuses">Customer refuses to pay</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
+        </div>
+
+
+        <div className="row">
           <div className="row">
             <div className="col-12">
-              <div className="card border-none">
+              <div className="form-group">
+                {/* This space left blank intentionally */}
               </div>
             </div>
-          </div><div className="row">
+
             <div className="col-12">
-              <div className="card border-none">
+              <div className="form-group">
+                {/* This space left blank intentionally */}
               </div>
             </div>
-          </div><div className="row">
-            <div className="col-12">
-              <div className="card border-none">
+          </div>
+
+          <div className="col-12">
+            <div className="card border-primary">
+              <div className="card-header">Case Notes History</div>
+              <div className="card-body text-left">
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputcaseNotes">Case Notes</label>
+                      <textarea
+                        disabled={true}
+                        rows="10"
+                        name="caseNotes"
+                        className="form-control"
+                        value={this.state.collection[0].caseNotes || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -450,25 +596,15 @@ class Collection extends Component {
 
         <div className="row">
           <div className="col-12">
-            <div className="card border-primary">
-              <div className="card-header">Account Notes History</div>
-              <div className="card-body text-left">
-
-                <div className="row">
-                  <div className="col-12">
-                    <div className="form-group">
-                      <label htmlFor="exampleInputaccountNotes">Agent Notes</label>
-                      <textarea
-                        disabled={true}
-                        rows="10"
-                        name="accountNotes"
-                        className="form-control"
-                        value={this.state.collection[0].accountNotes || ''}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="form-group">
+              {/* This space left blank intentionally */}
+            </div>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-12">
+            <div className="form-group">
+              {/* This space left blank intentionally */}
             </div>
           </div>
         </div>
@@ -482,11 +618,11 @@ class Collection extends Component {
                 <div className="row">
                   <div className="col-12">
                     <div className="form-group">
-                      <label htmlFor="exampleInputAgentNotes">Agent Notes</label>
+                      <label htmlFor="exampleInputAgentNotes">Case Notes</label>
                       <input
                         disabled={this.state.disabled}
                         type="text"
-                        name="accountNotes"
+                        name="caseNotes"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
                         placeholder="Remember to provide clear notes"
