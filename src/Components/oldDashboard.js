@@ -132,11 +132,11 @@ class Dashboard extends Component {
       userId: 1,  // passed in from login - to be created still
       user: null,
       client: null,
-      loading: true,
       role: 'god',  // passed in from login - to be created still
-      records: null,
-      service: null,
-      worklists: [],
+      referred: 0,
+      pended: 0,
+      reviews: 0,
+      services: [],
       workspaces: []
     }
 
@@ -157,83 +157,62 @@ class Dashboard extends Component {
     //console.log('Dashboard client: ', client);
 
     // has client paid? - still thinking about this one...
-    if (client[0].hasPaid === 0) {
-      this.props.history.push(`/admin/arrears`);
-    } else {
-      // what services are turned on?
-      const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${user[0].f_clientId}`);
+    if (client[0].hasPaid === 0) this.props.history.push(`/admin/arrears`);
 
-      clientservices.forEach(async service => {
-        // Ensuring the state.worklists are empty
-        await this.setState({ worklists: [] });
+    // what services are turned on?
+    const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${user[0].f_clientId}`);
 
-        let workspace = service.service
-        //console.log('Got the workspace: ', workspace);
+    let cs = [];
+    clientservices.forEach(async service => {
+      cs.push(service.service);
 
-        let records = await this.mysqlLayer.Get(`/workspace/${service.service}`);
-        //console.log('records: ', records);
-        //await this.setState({ records: records });
+      // get all records to send downstream to the workspace components
+      let records = await this.mysqlLayer.Get(`/workspace/${service.service}`);
 
-        let statusArr = [];
+
+      // get all statuses and count them
+      let status = [];
+      try {
         records.forEach(record => {
-          //console.log('currentStatus: ', record.currentStatus);
-          statusArr.push(record.currentStatus);
+          //console.log('record.status: ', record.status);
+          status.push(record.status);
         });
-        //console.log('statusArr: ', statusArr);
-        let worklists = statusArr.filter(this.onlyUnique);
-        //console.log('Got the worklists: ', worklists);
+      } catch (error) {
+        console.log('record extraction error: ', error);
+      }
 
+      const statusArr = status.filter(this.onlyUnique);
+
+      statusArr.forEach(status => {
+        let count = 0;
+        records.forEach(record => {
+          if (record.status === status)
+          ++count;
+        });
+        let item = status;
         let items = [];
-        worklists.forEach(async worklist => {
-          let count = 0;
-          records.forEach(record => {
-            if (record.currentStatus === worklist) {
-              ++count;
-            }
-          });
-          //console.log('worklist: ', worklist);
-          //console.log('record: ', record);
+        items.push(item, count);
 
-          //console.log('count: ', count);
-          items.push({
-            item: worklist,
-            count: count
-          });
-          //console.log('items: ', items);
-
-          let worklists = [];
-          worklists.push({
-            worklist: 'Queues',
-            items: items
-          });
-
-          //console.log('worklists: ', worklists);
-          //await this.setState({ worklists: [...this.state.worklists, ...worklists ] }); //another array
-          await this.setState({ worklists: worklists });
-          console.log('this.state.worklists: ', this.state.worklists);
+        let worklists = [];
+        worklistsNames.forEach(name => {
+          worklists.push(name, items);
         });
-
-        let workspaces = [];
-        workspaces.push({
-          workspace: workspace,
-          worklists: this.state.worklists
-        });
-
-        console.log('workspaces: ', workspaces);
-
-        // Push into State
-        await this.setState({
-          //workspaces: workspaces
-          workspaces: [...this.state.workspaces, ...workspaces ]
-        });
-
-        console.log('state.workspaces: ', this.state.workspaces);
-
+        //console.log('worklists: ', worklists);
       });
+    });
 
-      // Should be good to render now
-      this.setState({ loading: false });
-    }
+
+    let workspaces = [];
+    workspaces.push(application, collection);
+
+
+    // load everything into state
+    await this.setState({
+      user: user,
+      client: client,
+      services: cs,
+      workspaces: workspaces
+    });
   }
 
   componentDidUpdate() {
@@ -252,29 +231,20 @@ class Dashboard extends Component {
 
   render() {
 
-    //let workspace = '';
+  const workspace = this.state.workspaces.map((workspace, idx) =>
+    <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
+      <Workspace key={idx} workspaces={workspace} user={this.state.user} />
+    </div>
+  );
 
-    if (this.state.loading) {
-      return (
-        <div>Loading...</div>
-      );
-    } else {
-
-      const workspace = this.state.workspaces.map((workspace, idx) =>
-        <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
-          <Workspace key={idx} workspaces={workspace} user={this.state.user} />
+    return (
+      <div className="container">
+        <div className="cols-12">
+          <Welcome user={this.state.user}/>
+          {workspace}
         </div>
-      );
-
-      return (
-        <div className="container">
-          <div className="cols-12">
-            <Welcome user={this.state.user}/>
-            {workspace}
-          </div>
-        </div>
-      );
-    }
+      </div>
+    )
   }
 }
 

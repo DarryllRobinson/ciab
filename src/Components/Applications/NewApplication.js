@@ -35,7 +35,7 @@ class NewApplication extends Component {
       bureauScore: 0,
       createdBy: '',
       createdDate: null,
-      status: null,
+      currentStatus: null,
       limit: null,
       closedBy: '',
       closedDate: null
@@ -112,23 +112,23 @@ class NewApplication extends Component {
     cont = await this.vet.Declines(application);
 
     if (cont) {
-      this.setState({ status: 'Approved' });
+      this.setState({ currentStatus: 'Approved' });
 
       let score = await this.vet.Scorecard(application);
-      if (score < 20) this.setState({ status: 'Referred' });
+      if (score < 20) this.setState({ currentStatus: 'Referred' });
       console.log('score: ', score);
     }
 
-    if (this.state.status === 'Approved') this.setState(
+    if (this.state.currentStatus === 'Approved') this.setState(
       {
         limit: 1000,
         closedBy: 'Darryll',
         closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       });
-    if (this.state.status === 'Referred') this.setState({ limit: 750 });
+    if (this.state.currentStatus === 'Referred') this.setState({ limit: 750 });
 
     //let update = [];
-    /*update.push("status": this.state.status);
+    /*update.push("currentStatus": this.state.currentStatus);
     update.push("limit": this.state.limit);
     update.push("closedBy": this.state.closedBy);
     update.push("closedDate": this.state.closedDate);
@@ -139,9 +139,9 @@ class NewApplication extends Component {
     //this.props.history.push('/workspace/applications');
   }
 
-  creditStatus(status, limit) {
-    if (status && limit) {
-      toast(`Credit status ${status} -- Limit ${limit}`, {
+  creditStatus(currentStatus, limit) {
+    if (currentStatus && limit) {
+      toast(`Credit currentStatus ${currentStatus} -- Limit ${limit}`, {
         position: "top-center",
         autoClose: 10000,
         hideProgressBar: false,
@@ -154,10 +154,10 @@ class NewApplication extends Component {
     }
   }
 
-  async updateAppTable(id, status) {
+  async updateAppTable(id, currentStatus) {
     console.log('id: ', id);
-    console.log('status: ', status);
-    const res = await this.mysqlLayer.Put('/workspace/applications/id', status);
+    console.log('currentStatus: ', currentStatus);
+    const res = await this.mysqlLayer.Put('/workspace/applications/id', currentStatus);
     console.log('res: ', res);
   }
 
@@ -426,7 +426,7 @@ class NewApplication extends Component {
                   onClick={() => {this.submit()}}>
                   Submit
                 </button>
-                {this.creditStatus(this.state.status, this.state.limit)}
+                {this.creditStatus(this.state.currentStatus, this.state.limit)}
                 <ToastContainer />
               </div>
             </div>

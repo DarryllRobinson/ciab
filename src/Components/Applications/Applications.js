@@ -36,7 +36,7 @@ class Applications extends Component {
     let declined = [];
 
     apps.forEach(app => {
-      switch (app.status) {
+      switch (app.currentStatus) {
         case 'Approved': {
           approved.push(app);
           let newTat = this.queueTat(app, this.state.approvedTat);

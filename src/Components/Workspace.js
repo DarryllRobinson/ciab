@@ -19,7 +19,7 @@ class Workspace extends Component {
   }
 
   async componentDidMount() {
-    console.log('Actual Workspace props: ', this.props);
+    //console.log('Actual Workspace props: ', this.props);
 
     // Figure out what workspace to extract
     const workspace = this.props.location.workspace ?

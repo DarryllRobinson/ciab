@@ -10,7 +10,7 @@ function Item(props) {
     <li className="list-group-item d-flex justify-content-between align-items-center">
       <Link className="nav-link" to={{
         pathname: `/workspace/${workspace}`,
-        status: item,
+        currentStatus: item,
         workspace: workspace
       }}
       style={{padding: 0}}

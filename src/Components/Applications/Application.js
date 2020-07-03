@@ -55,7 +55,7 @@ class Application extends Component {
         agentComments: newComment,
         storeComments: this.state.storeComments,
         supervisorComments: this.state.supervisorComments,
-        status: 'Pended',
+        currentStatus: 'Pended',
         updatedBy: this.state.user, // must add actual username
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       }

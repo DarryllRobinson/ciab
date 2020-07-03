@@ -55,7 +55,7 @@ class Collection extends Component {
     alert('All changes have been lost');
     this.props.history.push({
       pathname: '/workspace/collections',
-      status: 'Open'
+      currentStatus: 'Open'
     });
   }
 
@@ -84,7 +84,7 @@ class Collection extends Component {
       await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
         pathname: '/workspace/collections',
-        status: 'Pended'
+        currentStatus: 'Pended'
       });
     } else {
       alert('Please enter a note longer than 10 characters and provide a Next Visit Date');
@@ -114,7 +114,7 @@ class Collection extends Component {
       await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
         pathname: '/workspace/collections',
-        status: 'Open'
+        currentStatus: 'Open'
       });
     } else {
       alert('Please enter a note longer than 10 characters and provide a PTP date and amount');
@@ -145,7 +145,7 @@ class Collection extends Component {
       await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
         pathname: '/workspace/collections',
-        status: 'Open'
+        currentStatus: 'Open'
       });
     } else {
       alert('Please enter a note longer than 10 characters and provide a resolution');
