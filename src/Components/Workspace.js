@@ -400,8 +400,8 @@ class Workspace extends Component {
           case 'Closed': return (
             <div>
               <h4>Closed Cases</h4>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Closed", this.state.workspace)}>Load Closed Cases</button><button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Open", this.state.workspace)}>Load Open Cases</button>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Closed", this.state.workspace)}>Load Closed Cases</button><button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Cases</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Open", this.state.workspace)}>Load Open Cases</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Cases</button>
             </div>
           )
           default: return (
