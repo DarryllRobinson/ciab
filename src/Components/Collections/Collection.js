@@ -77,10 +77,10 @@ class Collection extends Component {
         nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
       };
 
-      console.log(`Putting to '/workspace/cases/${this.state.collection[0].f_caseNumber}'`);
+      //console.log(`Putting to '/workspace/cases/${this.state.collection[0].f_caseNumber}'`);
       await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
-      console.log(`Putting to '/workspace/outcomes/${this.state.collection[0].id}'`);
+      //console.log(`Putting to '/workspace/outcomes/${this.state.collection[0].id}'`);
       await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
         pathname: '/workspace/collections',

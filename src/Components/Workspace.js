@@ -27,21 +27,21 @@ class Workspace extends Component {
       this.getWorkspaceName(this.props.history.location.pathname);
     //console.log('mounting workspace: ', workspace);
 
-    // Determine which status to set, fallback to default if required
+    // Determine which currentStatus to set, fallback to default if required
     let recordStatus = '';
     if (workspace === 'applications') {
-      recordStatus = this.props.location.status ? this.props.location.status : 'Referred';
+      recordStatus = this.props.location.currentStatus ? this.props.location.currentStatus : 'Referred';
     } else if (workspace === 'collections') {
-      recordStatus = this.props.location.status ? this.props.location.status : 'Open';
+      recordStatus = this.props.location.currentStatus ? this.props.location.currentStatus : 'Open';
     }
-    //console.log('mounting recordStatus: ', recordStatus);
+    console.log('mounting recordStatus: ', recordStatus);
 
     await this.setState({
       recordStatus: recordStatus,
       workspace: workspace
     });
 
-    //console.log('recordStatus: ', this.state.recordStatus);
+    console.log('recordStatus: ', this.state.recordStatus);
     this.loadRecords(this.state.recordStatus, workspace);
     //this.loadRecords(this.state.recordStatus);
   }
@@ -63,7 +63,7 @@ class Workspace extends Component {
     console.log('indexOfFifth: ', indexOfFifth);
     console.log('apiLength: ', apiLength);*/
 
-    // For routes with /api/{resource}/{table}/{appstatus}/:id pattern
+    // For routes with /api/{resource}/{table}/{appcurrentStatus}/:id pattern
     //if (indexOfFifth < 0) console.log('5: ', pathname.substring(indexOfThird + 1, indexOfFourth));
     if (indexOfFifth < 0) return pathname.substring(indexOfThird + 1, indexOfFourth);
     // For routes with /api/{resource}/{table}/:id pattern
@@ -77,30 +77,30 @@ class Workspace extends Component {
     if (indexOfSecond < 0) return pathname.substring(indexOfFirst, apiLength);
   }
 
-  //async loadRecords(status, workspace) {
-  async loadRecords(status, workspace) {
-    console.log('loading records');
-    console.log('status: ', status);
-    console.log('workspace: ', workspace);
-    //const status = this.state.recordStatus;
+  //async loadRecords(currentStatus, workspace) {
+  async loadRecords(currentStatus, workspace) {
+    //console.log('loading records');
+    //console.log('currentStatus: ', currentStatus);
+    //console.log('workspace: ', workspace);
+    //const currentStatus = this.state.recordStatus;
     //const workspace = this.state.workspace ? this.state.workspace : this.props.workspace;
 
     let records = await this.mysqlLayer.Get(`/workspace/${workspace}`);
-    console.log('records: ', records);
-    let recordStatus = status;
+    //console.log('records: ', records);
+    let recordStatus = currentStatus;
     let rows = [];
     let columns = [];
 
     if (records) {
       records.forEach(record => {
-        if (record.status === recordStatus && workspace === 'applications') {
+        if (record.currentStatus === recordStatus && workspace === 'applications') {
           //console.log('records: applications');
           let row = {
             recordId: record.id,
             firstName: record.firstName,
             surname: record.surname,
             idNumber: record.idNumber,
-            status: record.status,
+            currentStatus: record.currentStatus,
             limit: record.limit,
             createdBy: record.createdBy,
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
@@ -136,7 +136,7 @@ class Workspace extends Component {
             },
             {
               label: 'Status',
-              field: 'status',
+              field: 'currentStatus',
               sort: 'asc'
             },
             {
@@ -161,7 +161,7 @@ class Workspace extends Component {
             }
           ];
         } else if (record.currentStatus === recordStatus && workspace === 'collections') {
-          console.log('recordStatus: ', recordStatus);
+          //console.log('recordStatus: ', recordStatus);
           //console.log('records: collections');
           let row = {
             recordId: record.id,
@@ -187,7 +187,7 @@ class Workspace extends Component {
             lastPTPAmount: record.lastPTPAmount,
             accountNotes: record.accountNotes,
             nextVisitDate: record.nextVisitDate,
-            currentStatus: record.status,
+            currentStatus: record.currentStatus,
             createdBy: record.createdBy,
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
@@ -337,7 +337,7 @@ class Workspace extends Component {
     this.setState({
       rows: rows,
       columns: columns,
-      recordStatus: status
+      recordStatus: currentStatus
     });
   }
 
@@ -347,12 +347,12 @@ class Workspace extends Component {
   }*/
 
   componentToLoad() {
-    const status = this.state.recordStatus;
+    const currentStatus = this.state.recordStatus;
     const workspace = this.state.workspace;
 
     switch (workspace) {
       case 'applications':
-        switch (status) {
+        switch (currentStatus) {
           case 'Referred': return (
             <div>
               <h4>Referred Applications</h4>
@@ -382,7 +382,7 @@ class Workspace extends Component {
         }
 
       case 'collections':
-        switch (status) {
+        switch (currentStatus) {
           case 'Pended': return (
             <div>
               <h4>Pended Cases</h4>

@@ -2,7 +2,7 @@ import React from 'react';
 import Worklist from './Worklist';
 
 function Workspace(props) {
-  console.log('Workspace props: ', props);
+  //console.log('Workspace props: ', props);
   if (props.workspaces) {
     const workspace = props.workspaces.workspace;
     const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1)

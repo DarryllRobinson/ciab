@@ -4,7 +4,7 @@ import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
 
-const application = {
+/*const application = {
   workspace: 'applications',
   worklists: [
       {
@@ -122,7 +122,7 @@ const worklistsNames = [
   'Queues',
   'Community',
   'News'
-];
+];*/
 
 class Dashboard extends Component {
   constructor(props) {
