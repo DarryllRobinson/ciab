@@ -9,7 +9,7 @@ class Workspace extends Component {
     super(props);
 
     this.state = {
-      recordStatus: 'Referred',
+      recordStatus: '',
       columns: [],
       rows: []
     }
@@ -19,7 +19,7 @@ class Workspace extends Component {
   }
 
   async componentDidMount() {
-    //console.log('Actual Workspace props: ', this.props);
+    console.log('Actual Workspace props: ', this.props);
 
     // Figure out what workspace to extract
     const workspace = this.props.location.workspace ?
@@ -32,7 +32,7 @@ class Workspace extends Component {
     if (workspace === 'applications') {
       recordStatus = this.props.location.status ? this.props.location.status : 'Referred';
     } else if (workspace === 'collections') {
-      recordStatus = this.props.location.status ? this.props.location.status : 'Arrears';
+      recordStatus = this.props.location.status ? this.props.location.status : 'Open';
     }
     //console.log('mounting recordStatus: ', recordStatus);
 
@@ -79,12 +79,14 @@ class Workspace extends Component {
 
   //async loadRecords(status, workspace) {
   async loadRecords(status, workspace) {
-    //console.log('loading records');
+    console.log('loading records');
+    console.log('status: ', status);
+    console.log('workspace: ', workspace);
     //const status = this.state.recordStatus;
     //const workspace = this.state.workspace ? this.state.workspace : this.props.workspace;
 
     let records = await this.mysqlLayer.Get(`/workspace/${workspace}`);
-    //console.log('records: ', records);
+    console.log('records: ', records);
     let recordStatus = status;
     let rows = [];
     let columns = [];
@@ -158,7 +160,8 @@ class Workspace extends Component {
               sort: 'asc'
             }
           ];
-        } else if (record.status === recordStatus && workspace === 'collections') {
+        } else if (record.currentStatus === recordStatus && workspace === 'collections') {
+          console.log('recordStatus: ', recordStatus);
           //console.log('records: collections');
           let row = {
             recordId: record.id,
@@ -383,15 +386,22 @@ class Workspace extends Component {
           case 'Pended': return (
             <div>
               <h4>Pended Cases</h4>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Arrears", this.state.workspace)}>Load Accounts In Arrears</button>
-              {/*<button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>*/}
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Open", this.state.workspace)}>Load Open Cases</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Closed", this.state.workspace)}>Load Closed Cases</button>
             </div>
           )
-          case 'Arrears': return (
+          case 'Open': return (
             <div>
-              <h4>Accounts In Arrears</h4>
+              <h4>Open Cases</h4>
               <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Cases</button>
-              {/*<button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>*/}
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Closed", this.state.workspace)}>Load Closed Cases</button>
+            </div>
+          )
+          case 'Closed': return (
+            <div>
+              <h4>Closed Cases</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Closed", this.state.workspace)}>Load Closed Cases</button><button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Open", this.state.workspace)}>Load Open Cases</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Closed", this.state.workspace)}>Load Closed Cases</button><button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Cases</button>
             </div>
           )
           default: return (

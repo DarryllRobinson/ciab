@@ -68,7 +68,7 @@ const collection = {
       worklist: 'Queues',
       items: [
         {
-          item: 'Current',
+          item: 'Open',
           count: 12
         },
         {

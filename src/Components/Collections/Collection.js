@@ -15,14 +15,14 @@ class Collection extends Component {
       ptpDate: null,
       ptpAmount: 0,
       nextVisitDate: null,
-      resolution: ''
+      resolution: '---'
     }
 
     this.mysqlLayer = new MysqlLayer();
     this.handleChange = this.handleChange.bind(this);
     this.pendRecord = this.pendRecord.bind(this);
-    //this.closeRecord = this.closeRecord.bind(this);
-    //this.updateRecord = this.updateRecord.bind(this);
+    this.closeRecord = this.closeRecord.bind(this);
+    this.updateRecord = this.updateRecord.bind(this);
 
   }
 
@@ -51,6 +51,14 @@ class Collection extends Component {
     //console.log('this.state after change: ', this.state);
   }
 
+  cancel() {
+    alert('All changes have been lost');
+    this.props.history.push({
+      pathname: '/workspace/collections',
+      status: 'Open'
+    });
+  }
+
   async pendRecord() {
     const notes = this.state.caseNotes;
     if (notes && notes.length > 10 && this.state.nextVisitDate !== null) {
@@ -69,14 +77,78 @@ class Collection extends Component {
         nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
       };
 
+      console.log(`Putting to '/workspace/cases/${this.state.collection[0].f_caseNumber}'`);
+      await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+
+      console.log(`Putting to '/workspace/outcomes/${this.state.collection[0].id}'`);
+      await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
+      this.props.history.push({
+        pathname: '/workspace/collections',
+        status: 'Pended'
+      });
+    } else {
+      alert('Please enter a note longer than 10 characters and provide a Next Visit Date');
+    }
+  }
+
+  async updateRecord() {
+    const notes = this.state.caseNotes;
+    if (notes && notes.length > 10 && this.state.ptpDate !== null && this.state.ptpAmount !== 0) {
+      this.setState({ disabled: true });
+      let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
+
+      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.caseNotes}`;
+      let caseUpdate = {
+        caseNotes: newNote,
+        currentStatus: 'Open',
+        updatedBy: this.state.user, // must add actual username
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
+
+      let outcomeUpdate = {
+        ptpDate: moment(this.state.ptpDate).format('YYYY-MM-DD'),
+        ptpAmount: this.state.ptpAmount
+      };
+
       await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
       await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
         pathname: '/workspace/collections',
-        status: 'Arrears'
+        status: 'Open'
       });
     } else {
-      alert('Please enter a note longer than 10 characters and provide a Next Visit Date');
+      alert('Please enter a note longer than 10 characters and provide a PTP date and amount');
+    }
+  }
+
+  async closeRecord() {
+    const notes = this.state.caseNotes;
+    if (notes && notes.length > 10 && this.state.resolution !== "---") {
+      this.setState({ disabled: true });
+      let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
+
+      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.caseNotes}`;
+      let caseUpdate = {
+        caseNotes: newNote,
+        currentStatus: 'Closed',
+        updatedBy: this.state.user, // must add actual username
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
+
+      let outcomeUpdate = {
+        closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        closedBy: this.state.user,
+        resolution: this.state.resolution
+      };
+
+      await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
+      this.props.history.push({
+        pathname: '/workspace/collections',
+        status: 'Open'
+      });
+    } else {
+      alert('Please enter a note longer than 10 characters and provide a resolution');
     }
   }
 
@@ -389,26 +461,26 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputlastPTPDate">Last PTP Date</label>
+                    <label htmlFor="exampleInputptpDate">Last PTP Date</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="lastPTPDate"
+                      name="ptpDate"
                       className="form-control"
-                      value={collection[0].lastPTPDate || ''}
+                      value={moment(collection[0].ptpDate).format('YYYY-MM-DD') || ''}
                     />
                   </div>
                 </div>
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputlastPTPAmount">Last PTP Amount</label>
+                    <label htmlFor="exampleInputptpAmount">Last PTP Amount</label>
                     <input
                       disabled={true}
                       type="number"
-                      name="lastPTPAmount"
+                      name="ptpAmount"
                       className="form-control"
-                      value={collection[0].lastPTPAmount || 0}
+                      value={collection[0].ptpAmount || 0}
                     />
                   </div>
                 </div>
@@ -431,7 +503,7 @@ class Collection extends Component {
                       type="text"
                       name="nextVisitDate"
                       className="form-control"
-                      value={collection[0].nextVisitDate || ''}
+                      value={moment(collection[0].nextVisitDate).format('YYYY-MM-DD') || ''}
                     />
                   </div>
                 </div>
@@ -499,7 +571,7 @@ class Collection extends Component {
                         name="ptpAmount"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
-                        value={this.state.ptpAmount || 0}
+                        value={this.state.ptpAmount || ''}
                       />
                     </div>
                   </div>
@@ -648,6 +720,13 @@ class Collection extends Component {
                       className="btn btn-primary"
                       onClick={() => {this.updateRecord()}}>
                       Update
+                    </button>
+
+                    <button
+                      disabled={this.state.disabled}
+                      className="btn btn-primary"
+                      onClick={() => {this.cancel()}}>
+                      Cancel
                     </button>
                   </div>
                 </div>
