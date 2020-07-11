@@ -1,6 +1,7 @@
 import React from 'react';
 
 function Welcome(props) {
+  //console.log('Welcome props: ', props);
   let user = '';
   if (props.user) {
     user = props.user[0].firstName;

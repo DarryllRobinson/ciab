@@ -16,6 +16,7 @@ export default class Registration extends Component {
       phone: '',
       password: '',
       role: '',
+      storeId: '',
       f_clientId: '',
       createdDate: '',
       registrationErrors: '',
@@ -52,10 +53,11 @@ export default class Registration extends Component {
       email,
       phone,
       role,
+      storeId,
       f_clientId
     } = this.state;
 
-    if (f_clientId !== '' && role !== '') {
+    if (f_clientId !== '' && role !== '' && storeId !== '') {
       // bcrypt password
       const salt = bcrypt.genSaltSync(10);
       //const hash = bcrypt.hashSync("b0oBi35", salt);
@@ -73,6 +75,7 @@ export default class Registration extends Component {
            phone: phone,
            password: hash,
            role: role,
+           storeId: storeId,
            f_clientId: f_clientId,
            createdDate: createdDate
          }
@@ -121,6 +124,7 @@ export default class Registration extends Component {
       phone: '',
       password: '',
       role: '',
+      storeId: '',
       f_clientId: '',
       createdDate: ''
     });
@@ -192,6 +196,15 @@ export default class Registration extends Component {
                 <option value="agent">Agent</option>
                 <option value="store">Store agent</option>
                 <option value="admin">Administrator</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <select className="custom-select" name="storeId" onChange={this.handleChange} required>
+                <option >Store ID</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
               </select>
             </div>
 

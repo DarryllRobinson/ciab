@@ -4,136 +4,16 @@ import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
 
-/*const application = {
-  workspace: 'applications',
-  worklists: [
-      {
-        worklist: 'Queues',
-        items: [
-          {
-            item: 'Referred',
-            count: 129
-          },
-          {
-            item: 'Pended',
-            count: 3
-          },
-          {
-            item: 'Decline Reviews',
-            count: 2
-          }
-        ]
-      },
-      {
-        worklist: 'Community',
-        items: [
-          {
-            item: 'Your badges',
-            count: 14
-          },
-          {
-            item: 'New publishings',
-            count: 6
-          },
-          {
-            item: 'Top topics',
-            count: 7
-          }
-        ]
-      },
-      {
-        worklist: 'News',
-        items: [
-          {
-            item: 'CNN',
-            count: 5
-          },
-          {
-            item: 'Business Day',
-            count: 11
-          },
-          {
-            item: 'Daily Maverick',
-            count: 9
-          }
-        ]
-      }
-  ]
-};
-
-const collection = {
-  workspace: 'collections',
-  worklists: [
-    {
-      worklist: 'Queues',
-      items: [
-        {
-          item: 'Current',
-          count: 12
-        },
-        {
-          item: 'Status 2',
-          count: 3
-        },
-        {
-          item: 'Status 3',
-          count: 2
-        }
-      ]
-    },
-    {
-      worklist: 'Community',
-      items: [
-        {
-          item: 'Community 1',
-          count: 12
-        },
-        {
-          item: 'Community 2',
-          count: 3
-        },
-        {
-          item: 'Community 3',
-          count: 2
-        }
-      ]
-    },
-    {
-      worklist: 'News',
-      items: [
-        {
-          item: 'News 1',
-          count: 12
-        },
-        {
-          item: 'News 2',
-          count: 3
-        },
-        {
-          item: 'News 3',
-          count: 2
-        }
-      ]
-    }
-  ]
-}
-
-const worklistsNames = [
-  'Queues',
-  'Community',
-  'News'
-];*/
-
 class Dashboard extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      userId: 1,  // passed in from login - to be created still
+      //userId: 1,  // passed in from login - to be created still
       user: null,
       client: null,
       loading: true,
-      role: 'god',  // passed in from login - to be created still
+      role: null,  // passed in from login - to be created still
       records: null,
       service: null,
       worklists: [],
@@ -148,20 +28,37 @@ class Dashboard extends Component {
     console.log('Dashboard props: ', this.props);
 
     //this.props.checkLoginStatus();
-    // get user fields from table
-    const user = await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
-    //console.log('Dashboard user: ', user);
+    // get user fields from session
+    let data = {
+      firstName: sessionStorage.getItem('cwsFirstName'),
+      surname: sessionStorage.getItem('cwsSurname'),
+      email: sessionStorage.getItem('cwsUser'),
+      role: sessionStorage.getItem('cwsRole'),
+      storeId: sessionStorage.getItem('cwsStoreId'),
+      clientId: sessionStorage.getItem('cwsClient')
+    };
+
+    if (Object.keys(this.props.user).length == 0) {
+      let user = [];
+      user.push(data);
+      await this.setState({ user: user });
+    } else {
+      let user = this.props.user;
+      await this.setState({ user: user });
+    }
+    //const user = data ? data : ;//await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
+    console.log('Dashboard user: ', this.state.user);
 
     // get client from user who logged in
-    const client = await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
+    const client = data.clientId ? data.clientId : this.props.user[0].client;//await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
     //console.log('Dashboard client: ', client);
 
     // has client paid? - still thinking about this one...
-    if (client[0].hasPaid === 0) {
+    /*if (client[0].hasPaid === 0) {
       this.props.history.push(`/admin/arrears`);
-    } else {
+    } else {*/
       // what services are turned on?
-      const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${user[0].f_clientId}`);
+      const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${client}`);
 
       clientservices.forEach(async service => {
         // Ensuring the state.worklists are empty
@@ -205,12 +102,46 @@ class Dashboard extends Component {
           worklists.push({
             worklist: 'Queues',
             items: items
+          },
+          {
+            worklist: 'Community',
+            items: [
+              {
+                item: 'Community 1',
+                count: 12
+              },
+              {
+                item: 'Community 2',
+                count: 3
+              },
+              {
+                item: 'Community 3',
+                count: 2
+              }
+            ]
+          },
+          {
+            worklist: 'News',
+            items: [
+              {
+                item: 'News 1',
+                count: 12
+              },
+              {
+                item: 'News 2',
+                count: 3
+              },
+              {
+                item: 'News 3',
+                count: 2
+              }
+            ]
           });
 
           //console.log('worklists: ', worklists);
           //await this.setState({ worklists: [...this.state.worklists, ...worklists ] }); //another array
           await this.setState({ worklists: worklists });
-          console.log('this.state.worklists: ', this.state.worklists);
+          //console.log('this.state.worklists: ', this.state.worklists);
         });
 
         let workspaces = [];
@@ -219,21 +150,22 @@ class Dashboard extends Component {
           worklists: this.state.worklists
         });
 
-        console.log('workspaces: ', workspaces);
+        //console.log('workspaces: ', workspaces);
 
         // Push into State
         await this.setState({
-          //workspaces: workspaces
+          client: client,
+          //user: user,
           workspaces: [...this.state.workspaces, ...workspaces ]
         });
 
-        console.log('state.workspaces: ', this.state.workspaces);
+        console.log('state: ', this.state);
 
       });
 
       // Should be good to render now
       this.setState({ loading: false });
-    }
+    //}   this is for the hasPaid check
   }
 
   componentDidUpdate() {
@@ -252,8 +184,6 @@ class Dashboard extends Component {
 
   render() {
 
-    //let workspace = '';
-
     if (this.state.loading) {
       return (
         <div>Loading...</div>
@@ -262,6 +192,7 @@ class Dashboard extends Component {
 
       const workspace = this.state.workspaces.map((workspace, idx) =>
         <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
+          {/*console.log('workspace: ', workspace)*/}
           <Workspace key={idx} workspaces={workspace} user={this.state.user} />
         </div>
       );

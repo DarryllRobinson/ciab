@@ -42,8 +42,8 @@ export default class Login extends Component {
 
     await this.mysqlLayer.Post(`/admin/sessions/`, user, { withCredentials: true }
     ).then(response => {
-      //console.log('Login props: ', this.props);
-      //console.log('Login response: ', response);
+      console.log('Login props: ', this.props);
+      console.log('Login response: ', response);
       if (response.data[1].logged_in) {
         this.security.writeLoginSession(response.data, loginDatetime);
         this.props.handleSuccessfulAuth(response.data);

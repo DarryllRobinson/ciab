@@ -12,7 +12,7 @@ class NavBar extends React.Component {
   menuToDisplay() {
     //console.log('NavBar props: ', this.props);
     const loggedInStatus = this.props.loggedInStatus;
-    if (loggedInStatus === "LOGGED_IN" && this.props.role === "god") {
+    if (loggedInStatus === "LOGGED_IN" && this.props.role !== "god") {
       return (
         <div className="collapse navbar-collapse" id="navbarColor01">
           <ul className="navbar-nav mr-auto">
@@ -31,7 +31,7 @@ class NavBar extends React.Component {
             </ul>
           </div>
       );
-    } else if (loggedInStatus === "LOGGED_IN" && this.props.role !== "god") {
+    } else if (loggedInStatus === "LOGGED_IN" && this.props.role === "god") {
       return (
         <div className="collapse navbar-collapse" id="navbarColor01">
           <ul className="navbar-nav mr-auto">

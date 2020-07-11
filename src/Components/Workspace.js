@@ -376,7 +376,7 @@ class Workspace extends Component {
           )
           default: return (
             <div>
-              <h4>Problem Loading Applications Records</h4>
+              <h4>Problem Loading Application Records</h4>
             </div>
           )
         }
@@ -406,7 +406,7 @@ class Workspace extends Component {
           )
           default: return (
             <div>
-              <h4>Problem Loading Collections Records</h4>
+              <h4>Problem Loading Collection Records</h4>
             </div>
           )
         }

@@ -13,6 +13,8 @@ export default class Security {
       sessionStorage.setItem('cwsSurname', user[0].surname);
       sessionStorage.setItem('cwsRole', user[0].role);
       sessionStorage.setItem('cwsSession', loginTime);
+      sessionStorage.setItem('cwsStoreId', user[0].storeId);
+      sessionStorage.setItem('cwsClient', user[0].clientId);
     }
 
     validateSession() {
@@ -46,6 +48,8 @@ export default class Security {
       sessionStorage.removeItem('cwsSurname', null);
       sessionStorage.removeItem('cwsRole', null);
       sessionStorage.removeItem('cwsSession', null);
+      sessionStorage.removeItem('cwsStoreId', null);
+      sessionStorage.removeItem('cwsClient', null);
     }
 
     checkLoginStatus(props) {
