@@ -40,12 +40,12 @@ class App extends Component {
   }
 
   async handleLogin(data) {
-    console.log('handleLogin data: ', data);
+    //console.log('handleLogin data: ', data);
     await this.setState({
       loggedInStatus: "LOGGED_IN",
       user: data
     });
-    console.log('updated handleLogin data: ', data);
+    //console.log('updated handleLogin data: ', data);
   }
 
   async handleLogout() {
@@ -73,6 +73,7 @@ class App extends Component {
         clientId: sessionStorage.getItem('cwsClient')
       };
       await this.handleLogin(data);
+      this.security.validateSession();
       //console.log('Logged back in');
     } else if (!sessionUser && (this.state.loggedInStatus === "LOGGED_IN")) {
       await this.setState({

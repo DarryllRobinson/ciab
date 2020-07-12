@@ -25,7 +25,7 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
-    console.log('Dashboard props: ', this.props);
+    //console.log('Dashboard props: ', this.props);
 
     //this.props.checkLoginStatus();
     // get user fields from session
@@ -38,16 +38,16 @@ class Dashboard extends Component {
       clientId: sessionStorage.getItem('cwsClient')
     };
 
-    if (Object.keys(this.props.user).length == 0) {
+    //if (Object.keys(this.props.user).length === 0) {
       let user = [];
       user.push(data);
       await this.setState({ user: user });
-    } else {
+    /*} else {
       let user = this.props.user;
       await this.setState({ user: user });
-    }
+    }*/
     //const user = data ? data : ;//await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
-    console.log('Dashboard user: ', this.state.user);
+    //console.log('Dashboard user: ', this.state.user);
 
     // get client from user who logged in
     const client = data.clientId ? data.clientId : this.props.user[0].client;//await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
@@ -67,7 +67,7 @@ class Dashboard extends Component {
         let workspace = service.service
         //console.log('Got the workspace: ', workspace);
 
-        let records = await this.mysqlLayer.Get(`/workspace/${service.service}`);
+        let records = await this.mysqlLayer.Get(`/workspace/${service.service}/${client}`);
         //console.log('records: ', records);
         //await this.setState({ records: records });
 
@@ -159,7 +159,7 @@ class Dashboard extends Component {
           workspaces: [...this.state.workspaces, ...workspaces ]
         });
 
-        console.log('state: ', this.state);
+        //console.log('state: ', this.state);
 
       });
 
