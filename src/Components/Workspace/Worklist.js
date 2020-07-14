@@ -3,11 +3,17 @@ import Item from './Item';
 
 function Worklist(props) {
   const workspace = props.workspace;
+  const records = props.records;
   const worklist = props.worklist.worklist;
   const items = props.worklist.items;
 
   const item = items.map((item, idx) =>
-    <Item key={idx} workspace={workspace} item={item.item} count={item.count} />
+    <Item
+      key={idx}
+      records={records}
+      workspace={workspace}
+      item={item.item}
+      count={item.count} />
   );
 
   return (

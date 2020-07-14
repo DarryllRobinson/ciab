@@ -4,7 +4,7 @@ import { MDBDataTable } from 'mdbreact';
 import MysqlLayer from '../Utilities/MysqlLayer';
 import moment from 'moment';
 
-class Workspace extends Component {
+class Workzone extends Component {
   constructor(props) {
     super(props);
 
@@ -19,29 +19,30 @@ class Workspace extends Component {
   }
 
   async componentDidMount() {
-    //console.log('Actual Workspace props: ', this.props);
+    //console.log('Workzone props: ', this.props);
+    //console.log('this.props.location.state: ', this.props.location.state);
 
     // Figure out what workspace to extract
-    const workspace = this.props.location.workspace ?
-      this.props.location.workspace :
+    const workspace = this.props.location.state.workspace ?
+      this.props.location.state.workspace :
       this.getWorkspaceName(this.props.history.location.pathname);
     //console.log('mounting workspace: ', workspace);
 
     // Determine which currentStatus to set, fallback to default if required
     let recordStatus = '';
     if (workspace === 'applications') {
-      recordStatus = this.props.location.currentStatus ? this.props.location.currentStatus : 'Referred';
+      recordStatus = this.props.location.state.currentStatus ? this.props.location.state.currentStatus : 'Referred';
     } else if (workspace === 'collections') {
-      recordStatus = this.props.location.currentStatus ? this.props.location.currentStatus : 'Open';
+      recordStatus = this.props.location.state.currentStatus ? this.props.location.state.currentStatus : 'Open';
     }
-    console.log('mounting recordStatus: ', recordStatus);
+    //console.log('mounting recordStatus: ', recordStatus);
 
     await this.setState({
       recordStatus: recordStatus,
       workspace: workspace
     });
 
-    console.log('recordStatus: ', this.state.recordStatus);
+    //console.log('recordStatus: ', this.state.recordStatus);
     this.loadRecords(this.state.recordStatus, workspace);
     //this.loadRecords(this.state.recordStatus);
   }
@@ -79,13 +80,16 @@ class Workspace extends Component {
 
   //async loadRecords(currentStatus, workspace) {
   async loadRecords(currentStatus, workspace) {
-    //console.log('loading records');
+    //console.log('loading records: ', this.props.location.state.records.length === 0);
     //console.log('currentStatus: ', currentStatus);
     //console.log('workspace: ', workspace);
     //const currentStatus = this.state.recordStatus;
     //const workspace = this.state.workspace ? this.state.workspace : this.props.workspace;
 
-    let records = await this.mysqlLayer.Get(`/workspace/${workspace}`);
+    let records = [];
+    let clientId = sessionStorage.getItem('cwsClient');
+    if (!this.props.location.state.records || this.props.location.state.records.length === 0) { records = await this.mysqlLayer.Get(`/workspace/${workspace}/${clientId}`); }
+    else { records = this.props.location.state.records; }
     //console.log('records: ', records);
     let recordStatus = currentStatus;
     let rows = [];
@@ -106,8 +110,10 @@ class Workspace extends Component {
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
             id: <Link className="nav-link" to={{
-                pathname: `/workspace/applications/${record.id}`,
-                state: {recordId: record.id}
+                pathname: `/workspace/applications/application/${record.id}`,
+                state: {
+                  recordId: record.id
+                }
               }}
               style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>
           }
@@ -192,8 +198,10 @@ class Workspace extends Component {
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
             id: <Link className="nav-link" to={{
-                pathname: `/workspace/collections/${record.accountNumber}`,
-                state: {accountNumber: record.accountNumber}
+                pathname: `/workspace/collections/collection/${record.accountNumber}`,
+                state: {
+                  accountNumber: record.accountNumber
+                }
               }}
               style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>
           }
@@ -356,22 +364,36 @@ class Workspace extends Component {
           case 'Referred': return (
             <div>
               <h4>Referred Applications</h4>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review", this.state.workspace)}>Load Decline Review Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended - Agent", this.state.workspace)}>Load Pended Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review - Agent", this.state.workspace)}>Load Decline Review Applications</button>
             </div>
           )
-          case 'Pended': return (
+          case 'Pended - Store': return (
             <div>
               <h4>Pended Applications</h4>
               <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review", this.state.workspace)}>Load Decline Review Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review - Store", this.state.workspace)}>Load Decline Review Applications</button>
             </div>
           )
-          case 'Decline Review': return (
+          case 'Decline Review - Store': return (
             <div>
               <h4>Decline Review Applications</h4>
               <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
-              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended", this.state.workspace)}>Load Pended Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended - Store", this.state.workspace)}>Load Pended Applications</button>
+            </div>
+          )
+          case 'Pended - Agent': return (
+            <div>
+              <h4>Pended Applications</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Decline Review - Agent", this.state.workspace)}>Load Decline Review Applications</button>
+            </div>
+          )
+          case 'Decline Review - Agent': return (
+            <div>
+              <h4>Decline Review Applications</h4>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Referred", this.state.workspace)}>Load Referred Applications</button>
+              <button type="button" className="btn btn-secondary" onClick={() => this.loadRecords("Pended - Agent", this.state.workspace)}>Load Pended Applications</button>
             </div>
           )
           default: return (
@@ -436,4 +458,4 @@ class Workspace extends Component {
   }
 }
 
-export default Workspace;
+export default Workzone;

@@ -9,11 +9,10 @@ class Dashboard extends Component {
     super(props);
 
     this.state = {
-      //userId: 1,  // passed in from login - to be created still
       user: null,
       client: null,
       loading: true,
-      role: null,  // passed in from login - to be created still
+      role: null,
       records: null,
       service: null,
       worklists: [],
@@ -25,7 +24,7 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
-    //console.log('Dashboard props: ', this.props);
+    console.log('Dashboard props: ', this.props);
 
     //this.props.checkLoginStatus();
     // get user fields from session
@@ -69,6 +68,7 @@ class Dashboard extends Component {
 
         let records = await this.mysqlLayer.Get(`/workspace/${service.service}/${client}`);
         //console.log('records: ', records);
+        //console.log('workspace: ', workspace);
         //await this.setState({ records: records });
 
         let statusArr = [];
@@ -77,8 +77,10 @@ class Dashboard extends Component {
           statusArr.push(record.currentStatus);
         });
         //console.log('statusArr: ', statusArr);
-        let worklists = statusArr.filter(this.onlyUnique);
-        //console.log('Got the worklists: ', worklists);
+        let completeWorklist = statusArr.filter(this.onlyUnique);
+        //console.log('Got the completeWorklist: ', completeWorklist);
+        let worklists = [];
+        if (completeWorklist.length > 0) worklists = this.filterWorklists(completeWorklist);
 
         let items = [];
         worklists.forEach(async worklist => {
@@ -156,10 +158,9 @@ class Dashboard extends Component {
         await this.setState({
           client: client,
           //user: user,
+          records: records,
           workspaces: [...this.state.workspaces, ...workspaces ]
         });
-
-        //console.log('state: ', this.state);
 
       });
 
@@ -174,6 +175,49 @@ class Dashboard extends Component {
     }
   }
 
+  filterWorklists(lists) {
+    //console.log('lists: ', lists);
+    let role = sessionStorage.getItem('cwsRole');
+    //console.log('role: ', role);
+    let finalList = [];
+    let recordStatuses = [];
+
+    switch (role) { // Must include filter for Collections
+      case 'agent':
+        recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Agent', 'DeclineReview - Agent', 'Referred'];
+
+        lists.forEach(list => {
+          //console.log('list: ', list);
+          //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+          if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+        });
+        //console.log('finalList: ', finalList);
+        return finalList;
+      case 'store':
+        recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Store', 'DeclineReview - Store'];
+
+        lists.forEach(list => {
+          //console.log('list: ', list);
+          //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+          if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+        });
+        //console.log('finalList: ', finalList);
+        return finalList;
+      case 'god':
+        recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Agent', 'DeclineReview - Agent', 'Pended - Store', 'DeclineReview - Store', 'Referred'];
+
+        lists.forEach(list => {
+          //console.log('list: ', list);
+          //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+          if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+        });
+        //console.log('finalList: ', finalList);
+        return finalList;
+      default:
+        finalList = ['No record statuses for this user'];
+        return finalList;
+    }
+  }
 
   onlyUnique(value, index, self) {
     /*console.log('value: ', value);
@@ -193,7 +237,12 @@ class Dashboard extends Component {
       const workspace = this.state.workspaces.map((workspace, idx) =>
         <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
           {/*console.log('workspace: ', workspace)*/}
-          <Workspace key={idx} workspaces={workspace} user={this.state.user} />
+          <Workspace
+            key={idx}
+            records={this.state.records}
+            workspaces={workspace}
+            user={this.state.user}
+          />
         </div>
       );
 

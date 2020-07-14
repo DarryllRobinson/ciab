@@ -25,6 +25,7 @@ class Application extends Component {
   }
 
   async componentDidMount() {
+    console.log('Application.js props: ', this.props);
     let record = [];
     record = await this.mysqlLayer.Get(this.props.location.pathname);
     await this.setState({
@@ -55,14 +56,14 @@ class Application extends Component {
         agentComments: newComment,
         storeComments: this.state.storeComments,
         supervisorComments: this.state.supervisorComments,
-        currentStatus: 'Pended',
+        currentStatus: 'Pended - Store',
         updatedBy: this.state.user, // must add actual username
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       }
 
-      await this.mysqlLayer.Put(`/workspace/applications/${this.state.application[0].id}`, update);
+      await this.mysqlLayer.Put(`/workspace/applications/application/${this.state.application[0].id}`, update);
       this.props.history.push({
-        pathname: '/workspace',
+        pathname: `/workzone/applications`,
         state: 'Referred'
       });
     } else {
@@ -71,7 +72,7 @@ class Application extends Component {
   }
 
   async closeRecord() {
-    if (this.state.changesMade) alert('The change you made have been lost');
+    if (this.state.changesMade) alert('The changes you made have been lost');
     this.props.history.push({
       pathname: '/workspace/applications',
       state: 'Referred'

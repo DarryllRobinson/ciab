@@ -25,9 +25,6 @@ class NavBar extends React.Component {
             <li className="nav-item active">
               <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
             </li>
-            <li>
-              <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
-            </li>
             </ul>
           </div>
       );
@@ -47,9 +44,6 @@ class NavBar extends React.Component {
           <li className="nav-item active">
             <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
           </li>
-          <li>
-            <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
-          </li>
           </ul>
         </div>
       );
@@ -65,7 +59,9 @@ class NavBar extends React.Component {
     }
   }
 
-    render() {
+  render() {
+    let firstName = sessionStorage.getItem('cwsFirstName');
+
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <Link className="navbar-brand" to="/">
@@ -74,12 +70,9 @@ class NavBar extends React.Component {
             <span className="navbar-toggler-icon"></span>
           </button>
         </Link>
-
-
-            {this.menuToDisplay()}
-
-
-
+        {this.menuToDisplay()}
+        <div className="navbar-brand">{firstName}</div>
+        <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
       </nav>
     );
   }
