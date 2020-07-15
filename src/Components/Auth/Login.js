@@ -40,7 +40,7 @@ export default class Login extends Component {
     };
 
 
-    await this.mysqlLayer.Post(`/admin/sessions/`, user, { withCredentials: true }
+    await this.mysqlLayer.PostLogin(`/admin/sessions/`, user, { withCredentials: true }
     ).then(response => {
       //console.log('Login props: ', this.props);
       //console.log('Login response: ', response);

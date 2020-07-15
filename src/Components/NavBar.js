@@ -13,9 +13,34 @@ class NavBar extends React.Component {
     //console.log('NavBar props: ', this.props);
     const loggedInStatus = this.props.loggedInStatus;
     if (loggedInStatus === "LOGGED_IN" && this.props.role !== "god") {
+      let firstName = sessionStorage.getItem('cwsFirstName');
+
       return (
-        <div className="collapse navbar-collapse" id="navbarColor01">
-          <ul className="navbar-nav mr-auto">
+        <>
+          <div className="collapse navbar-collapse" id="navbarColor01">
+            <ul className="navbar-nav mr-auto">
+              <li className="nav-item active">
+                <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
+              </li>
+              <li className="nav-item active">
+                <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
+              </li>
+              <li className="nav-item active">
+                <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
+              </li>
+            </ul>
+          </div>
+          <div className="navbar-brand">{firstName}</div>
+          <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
+        </>
+      );
+    } else if (loggedInStatus === "LOGGED_IN" && this.props.role === "god") {
+      let firstName = sessionStorage.getItem('cwsFirstName');
+
+      return (
+        <>
+          <div className="collapse navbar-collapse" id="navbarColor01">
+            <ul className="navbar-nav mr-auto">
             <li className="nav-item active">
               <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
             </li>
@@ -25,43 +50,30 @@ class NavBar extends React.Component {
             <li className="nav-item active">
               <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
             </li>
+            <li className="nav-item active">
+              <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
+            </li>
             </ul>
           </div>
-      );
-    } else if (loggedInStatus === "LOGGED_IN" && this.props.role === "god") {
-      return (
-        <div className="collapse navbar-collapse" id="navbarColor01">
-          <ul className="navbar-nav mr-auto">
-          <li className="nav-item active">
-            <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
-          </li>
-          <li className="nav-item active">
-            <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
-          </li>
-          <li className="nav-item active">
-            <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
-          </li>
-          <li className="nav-item active">
-            <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
-          </li>
-          </ul>
-        </div>
+          <div className="navbar-brand">{firstName}</div>
+          <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
+        </>
       );
     } else if (loggedInStatus === 'NOT_LOGGED_IN') {
       return (
-        <Login
-          loggedInStatus={this.props.loggedInStatus}
-          handleSuccessfulAuth={this.props.handleSuccessfulAuth}
-          handleLogin={this.props.handleLogin}
-          handleLogoutClick={this.props.handleLogoutClick}
-        />
+        <div className="collapse navbar-collapse" id="navbarColor01">
+          <Login
+            loggedInStatus={this.props.loggedInStatus}
+            handleSuccessfulAuth={this.props.handleSuccessfulAuth}
+            handleLogin={this.props.handleLogin}
+            handleLogoutClick={this.props.handleLogoutClick}
+          />
+        </div>
       );
     }
   }
 
   render() {
-    let firstName = sessionStorage.getItem('cwsFirstName');
-
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <Link className="navbar-brand" to="/">
@@ -71,8 +83,6 @@ class NavBar extends React.Component {
           </button>
         </Link>
         {this.menuToDisplay()}
-        <div className="navbar-brand">{firstName}</div>
-        <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
       </nav>
     );
   }

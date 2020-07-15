@@ -38,16 +38,16 @@ class Home extends Component {
             </div>
 
             <div className="list-group">
-              <a href=" # " className="list-group-item list-group-item-action active">
+              <a href=" # " className="list-group-item list-group-item-action">
                 Application capture and processing - including scorecards
               </a>
               <a href=" # " className="list-group-item list-group-item-action">
                 Collection workflow to assist you with the inevitable
               </a>
-              <a href=" # " className="list-group-item list-group-item-action disabled">
+              <a href=" # " className="list-group-item list-group-item-action">
                 Ticket logging system to handle customer requests and complaints - includes automated escalation
               </a>
-              <a href=" # " className="list-group-item list-group-item-action disabled">
+              <a href=" # " className="list-group-item list-group-item-action">
                 Agent community with support for news articles, sharing information and assistance and blogs
               </a>
             </div>

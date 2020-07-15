@@ -52,7 +52,7 @@ export default class Security {
       sessionStorage.removeItem('cwsClient', null);
     }
 
-    checkLoginStatus(props) {
-      if (props.loggedInStatus === "NOT_LOGGED_IN") return props.history.push('/');
+    logSessionActivity() {
+      
     }
 }
