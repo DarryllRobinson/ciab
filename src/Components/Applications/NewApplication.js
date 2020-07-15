@@ -38,16 +38,21 @@ class NewApplication extends Component {
       currentStatus: null,
       limit: null,
       closedBy: '',
-      closedDate: null
+      closedDate: null,
+      changesMade: false
     }
 
     this.mysqlLayer = new MysqlLayer();
     this.vet = new Vet();
+    this.cancelApp = this.cancelApp.bind(this);
   }
 
   handleChange(e) {
     const value = e.target.value;
-    this.setState({ [e.target.name]: value });
+    this.setState({
+      [e.target.name]: value,
+      changesMade: true
+    });
   }
 
   async submit() {
@@ -161,6 +166,14 @@ class NewApplication extends Component {
     console.log('res: ', res);
   }
 
+  async cancelApp() {
+    if (this.state.changesMade) alert('The changes you made have been lost');
+    this.props.history.push({
+      pathname: '/dashboard',
+      //state: 'Referred'
+    });
+  }
+
   render() {
     return (
       <div className="container">
@@ -169,263 +182,399 @@ class NewApplication extends Component {
             <div className="card border-primary">
               <div className="card-header">Your new application</div>
               <div className="card-body text-left">
-                <div className="form-group">
-                  <label htmlFor="exampleInputFirstName">First Name</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="firstName"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="Peter"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputsurname">Surname</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="surname"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="Parker"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputIDNumber">ID Number</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="idNumber"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="1234567890123"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputSex">Sex</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="sex"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputMobile">Mobile</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="mobile"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="01234"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputEmail">Email</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="email"
-                    name="email"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="peter@email.com"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputDOB">Date of birth</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="date"
-                    name="dob"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="14/06/2002"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputNumDependents">Number of Dependents</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="numDependents"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputAddress1">Address Line 1</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="address1"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="Building 1"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputAddress2">Address Line 2</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="address2"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="43 Street Lane"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputAddress3">Address Line 3</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="address3"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="Suburb"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputAddress4">Address 4</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="address4"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="City"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputAddress5">Address 5</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="address5"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="2134"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputresidencyDuration">Time at Address</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="residencyDuration"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="2"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputEmployer">Employer</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="employer"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="SAB"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputEmploymentDuration">Time at Employer</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="employmentDuration"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="1"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputBankCode">Bank Code</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="bankCode"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="123456"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputBankAcc">Bank Account</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="text"
-                    name="bankCode"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="44455566"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="control-label">Gross Income</label>
-                  <div className="form-group">
-                    <div className="input-group mb-3">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">$</span>
-                      </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputFirstName">First Name</label>
                       <input
                         disabled={this.state.disabled}
                         type="text"
-                        name="grossIncome"
+                        name="firstName"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
-                        aria-label="Amount (to the nearest dollar)"
-                        data-np-checked="1"
+                        placeholder="Peter"
                       />
-                      <div className="input-group-append">
-                        <span className="input-group-text">.00</span>
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputSurname">Surname</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="surname"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Parker"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputIDNumber">ID Number</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="idNumber"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="1234567890123"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputDOB">Date of birth</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="date"
+                        name="dob"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="14/06/2002"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputSex">Sex</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="sex"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputNumDependents">Number of Dependents</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="numDependents"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputMobile">Mobile</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="mobile"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="01234"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputEmail">Email</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="email"
+                        name="email"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="peter@email.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAddress1">Address Line 1</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="address1"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Building 1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAddress2">Address Line 2</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="address2"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="43 Street Lane"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAddress3">Address Line 3</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="address3"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Suburb"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAddress4">Address 4</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="address4"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="City"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputAddress5">Address 5</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="address5"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="2134"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputresidencyDuration">Time at Address</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="residencyDuration"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="2"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputEmployer">Employer</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="employer"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="SAB"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputEmploymentDuration">Time at Employer</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="employmentDuration"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputBankCode">Bank Code</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="bankCode"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="123456"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleInputBankAcc">Bank Account</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="bankCode"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="44455566"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label className="control-label">Gross Income</label>
+                      <div className="form-group">
+                        <div className="input-group mb-3">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text">$</span>
+                          </div>
+                          <input
+                            disabled={this.state.disabled}
+                            type="text"
+                            name="grossIncome"
+                            onChange={(e) => {this.handleChange(e)}}
+                            className="form-control"
+                            aria-label="Amount (to the nearest dollar)"
+                            data-np-checked="1"
+                          />
+                          <div className="input-group-append">
+                            <span className="input-group-text">.00</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label className="control-label">Expenses</label>
+                      <div className="form-group">
+                        <div className="input-group mb-3">
+                          <div className="input-group-prepend">
+                            <span className="input-group-text">$</span>
+                          </div>
+                          <input
+                            disabled={this.state.disabled}
+                            type="text"
+                            name="expenses"
+                            onChange={(e) => {this.handleChange(e)}}
+                            className="form-control"
+                            aria-label="Amount (to the nearest dollar)"
+                            data-np-checked="1"
+                          />
+                          <div className="input-group-append">
+                            <span className="input-group-text">.00</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        {/* This space left blank intentionally */}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="form-group">
-                  <label className="control-label">Expenses</label>
-                  <div className="form-group">
-                    <div className="input-group mb-3">
-                      <div className="input-group-prepend">
-                        <span className="input-group-text">$</span>
+
+                  <br /><br />
+
+                  <div className="row">
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="exampleInputBureauScore">Bureau Score</label>
+                        <input
+                          disabled={this.state.disabled}
+                          type="number"
+                          name="bureauScore"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          placeholder="650"
+                        />
                       </div>
-                      <input
-                        disabled={this.state.disabled}
-                        type="text"
-                        name="expenses"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        aria-label="Amount (to the nearest dollar)"
-                        data-np-checked="1"
-                      />
-                      <div className="input-group-append">
-                        <span className="input-group-text">.00</span>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        {/* This space left blank intentionally */}
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        {/* This space left blank intentionally */}
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="exampleInputBureauScore">Bureau Score</label>
-                  <input
-                    disabled={this.state.disabled}
-                    type="number"
-                    name="bureauScore"
-                    onChange={(e) => {this.handleChange(e)}}
-                    className="form-control"
-                    placeholder="650"
-                  />
-                </div>
+
                 <button
                   disabled={this.state.disabled}
                   className="btn btn-primary"
                   onClick={() => {this.submit()}}>
                   Submit
                 </button>
+
+                <button
+                  disabled={this.state.disabled}
+                  className="btn btn-primary"
+                  onClick={() => {this.cancelApp()}}>
+                  Cancel
+                </button>
+
                 {this.creditStatus(this.state.currentStatus, this.state.limit)}
                 <ToastContainer />
               </div>

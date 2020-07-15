@@ -51,8 +51,4 @@ export default class Security {
       sessionStorage.removeItem('cwsStoreId', null);
       sessionStorage.removeItem('cwsClient', null);
     }
-
-    logSessionActivity() {
-      
-    }
 }

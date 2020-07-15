@@ -1,5 +1,6 @@
 import React from 'react';
 import Worklist from './Worklist';
+import AppButton from '../Applications/AppButton';
 
 function Workspace(props) {
   //console.log('Workspace props: ', props);
@@ -21,6 +22,7 @@ function Workspace(props) {
     return (
       <>
         <p className="lead">{workspaceCapitalised}</p>
+        <AppButton workspace={workspace}/>
         <div className="row">
           {worklist}
         </div>
