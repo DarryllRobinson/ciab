@@ -31,7 +31,6 @@ export default class MysqlLayer {
   async Post(path, object) {
     this.security.validateSession();
 
-
     try {
       let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       //console.log('response: ', response);
@@ -118,7 +117,7 @@ export default class MysqlLayer {
   setHeaders() {
     const https = require('https');
     let user = sessionStorage.getItem('cwsUser');
-    console.log('user: ', user);
+    //console.log('user: ', user);
     return {
       headers: {
         'Accept': 'application/json',

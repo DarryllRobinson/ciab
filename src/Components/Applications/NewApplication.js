@@ -5,6 +5,7 @@ import Vet from './Vet';
 import moment from 'moment';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Upload from '../../Utilities/Upload';
 
 class NewApplication extends Component {
   constructor(props) {
@@ -574,6 +575,7 @@ class NewApplication extends Component {
                   onClick={() => {this.cancelApp()}}>
                   Cancel
                 </button>
+                <Upload />
 
                 {this.creditStatus(this.state.currentStatus, this.state.limit)}
                 <ToastContainer />
