@@ -122,6 +122,9 @@ class App extends Component {
               />)}
             />
 
+            {/*<Route exact path='*' render={props => (<Dashboard {...props} user={user} loggedInStatus={loggedInStatus} />)} />*/}
+
+
             <Route exact path='/dashboard' render={props => (<Dashboard {...props} user={user} loggedInStatus={loggedInStatus} />)} />
             <Route exact path='/workzone/applications' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/workzone/collections' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />

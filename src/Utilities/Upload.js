@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-//import axios from 'axios';
 import {Progress} from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import MysqlLayer from './MysqlLayer';
+//const mime = require('mime-types');
 
 class Upload extends Component {
   constructor(props) {
@@ -14,25 +14,51 @@ class Upload extends Component {
     }
 
     this.mysqlLayer = new MysqlLayer();
+    this.fileReader = new FileReader();
+  }
+
+  componentDidMount() {
+    console.log('Upload props: ', this.props);
+    //console.log('mime: ', mime);
   }
 
   onChangeHandler = event => {
     let files = event.target.files;
+    //let formats = this.props.formats;
+    //console.log('files: ', files);
     //let fileName = event.target.name;
-    if (this.maxSelectFile(event)) {
-      // if return true allow to setState
-      this.setState({
-        selectedFile: files,
-        //targetTable: fileName
-      });
+    if (this.checkFileType(files)) {
+      if (this.maxSelectFile(event)) {
+        // if return true allow to setState
+        this.setState({
+          selectedFile: files,
+          //targetTable: fileName
+        });
+      }
     }
+  }
+
+  checkFileType = (files) => {
+    let formats = this.props.formats;
+    let type = files[0].type;
+    //let err = '';
+    /*console.log('files: ', files);
+    console.log('type: ', type);
+    console.log('formats: ', formats);
+    console.log('typeof formats: ', typeof formats);*/
+    if (type !== formats) {
+      let format = formats.split('/');
+      alert(`Please choose a file of type .${format[1]}`);
+      return false;
+    }
+    return true;
   }
 
   checkFileSize = (event) => {
     let files = event.target.files;
     let size = 15000;
     let err = "";
-    for (var x = 0; x<files.length; x++) {
+    for (var x = 0; x < files.length; x++) {
       if (files[x].size > size) {
         err += files[x].type + 'is too large, please pick a smaller file\n';
       }
@@ -50,7 +76,8 @@ class Upload extends Component {
    const data = new FormData();
    if (this.state.selectedFile) {
      for (let x = 0; x < this.state.selectedFile.length; x++) {
-       data.append('file', this.state.selectedFile[x])
+       //console.log('selectedFile: ', this.state.selectedFile);
+       data.append('file', this.state.selectedFile[x]);
      }
 
      await this.mysqlLayer.Post(`/upload/document`, data, {
@@ -83,30 +110,23 @@ class Upload extends Component {
    return true;
  }
 
- /*async Post(path) {
-   try {
-     console.log(`Posting to http://localhost:8081${path}`);
-   } catch (exception) {
-       if (exception.response.status === 500) {
-           alert(`An error occurred. ${exception.response.data.message}`);
-       }
-       else {
-           alert(`An error occurred. ${exception}`);
-       }
-   }
- }*/
-
   render() {
+
     return (
       <div className="container">
         <div className="form-group">
           <ToastContainer />
         </div>
-          <label>Upload your file</label>
-          <input type="file" name="files" onChange={this.onChangeHandler}/>
-          <button type="button" className="btn btn-success btn-primary" onClick={this.onClickHandler}>
-            Upload
-          </button>
+        <label>{this.props.message}</label>
+        <input
+          type="file"
+          name="files"
+          accept={this.props.formats}
+          onChange={this.onChangeHandler}
+        />
+        <button type="button" className="btn btn-success btn-primary" onClick={this.onClickHandler}>
+          Upload
+        </button>
         <div className="form-group">
           <Progress max="100" color="success" value={this.state.loaded} >{Math.round(this.state.loaded,2) }%</Progress>
         </div>

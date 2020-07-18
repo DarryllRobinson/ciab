@@ -52,11 +52,11 @@ export default class MysqlLayer {
   // Post route for Login only as there is no validateSession
   async PostLogin(path, object) {
     //this.security.validateSession();
-    //console.log('path: ', path);
-    //console.log('object: ', object);
+    console.log('path: ', path);
+    console.log('object: ', object);
     try {
       let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
-      //console.log('response: ', response);
+      console.log('response: ', response);
       return response;
     } catch(e) {
       console.log('e: ', e);
@@ -118,14 +118,21 @@ export default class MysqlLayer {
     const https = require('https');
     let user = sessionStorage.getItem('cwsUser');
     //console.log('user: ', user);
+
     return {
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        "Accept": "application/json, application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
         'User': user
       }
+      /*headers: {
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        "Access-Control-Allow-Methods": "POST",
+        "Access-Control-Allow-Headers": "Origin, Methods, Content-Type",
+
+      }*/
       , httpsAgent: new https.Agent({ rejectUnauthorized: false, withCredentials: true }),
-      user: user
+      //user: user
     }
   }
 }

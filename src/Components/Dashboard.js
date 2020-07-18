@@ -3,6 +3,7 @@ import MysqlLayer from '../Utilities/MysqlLayer';
 import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
+import Download from '../Utilities/Download';
 
 class Dashboard extends Component {
   constructor(props) {
@@ -250,6 +251,7 @@ class Dashboard extends Component {
         <div className="container">
           <div className="cols-12">
             <Welcome user={this.state.user}/>
+            <Download />
             {workspace}
           </div>
         </div>
