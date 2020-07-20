@@ -36,7 +36,7 @@ link.click();
   downloadFile() {
     console.log('downloading...');
     //console.log('__dirname: ', __dirname);
-    const fileName = '2020-07-18 18:58:10-Proof of ID.pdf';
+    const fileName = '2020-07-18 18:58:17-Proof of residence.pdf';
     this.mysqlLayer.Post(`/download/document/${fileName}` )
       .then(({ data }) => {
         console.log('data: ', data);

@@ -3,7 +3,6 @@ import MysqlLayer from '../Utilities/MysqlLayer';
 import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
-import Download from '../Utilities/Download';
 
 class Dashboard extends Component {
   constructor(props) {
@@ -81,7 +80,7 @@ class Dashboard extends Component {
         let completeWorklist = statusArr.filter(this.onlyUnique);
         //console.log('Got the completeWorklist: ', completeWorklist);
         let worklists = [];
-        if (completeWorklist.length > 0) worklists = this.filterWorklists(completeWorklist);
+        if (completeWorklist.length > 0) worklists = this.filterWorklists(workspace, completeWorklist);
 
         let items = [];
         worklists.forEach(async worklist => {
@@ -176,48 +175,91 @@ class Dashboard extends Component {
     }
   }
 
-  filterWorklists(lists) {
+  filterWorklists(workspace, lists) {
     //console.log('lists: ', lists);
     let role = sessionStorage.getItem('cwsRole');
     //console.log('role: ', role);
     let finalList = [];
     let recordStatuses = [];
 
-    switch (role) { // Must include filter for Collections
-      case 'agent':
-        recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Agent', 'DeclineReview - Agent', 'Referred'];
+    switch (workspace) {
+      case 'applications':
+        switch (role) {
+          case 'agent':
+            recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Agent', 'DeclineReview - Agent', 'Referred'];
 
-        lists.forEach(list => {
-          //console.log('list: ', list);
-          //console.log(recordStatuses.find(recordStatus => list === recordStatus));
-          if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
-        });
-        //console.log('finalList: ', finalList);
-        return finalList;
-      case 'store':
-        recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Store', 'DeclineReview - Store'];
+            lists.forEach(list => {
+              //console.log('list: ', list);
+              //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+              if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+            });
+            //console.log('finalList: ', finalList);
+            return finalList;
+          case 'store':
+            recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Store', 'DeclineReview - Store'];
 
-        lists.forEach(list => {
-          //console.log('list: ', list);
-          //console.log(recordStatuses.find(recordStatus => list === recordStatus));
-          if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
-        });
-        //console.log('finalList: ', finalList);
-        return finalList;
-      case 'god':
-        recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Agent', 'DeclineReview - Agent', 'Pended - Store', 'DeclineReview - Store', 'Referred'];
+            lists.forEach(list => {
+              //console.log('list: ', list);
+              //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+              if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+            });
+            //console.log('finalList: ', finalList);
+            return finalList;
+          case 'god':
+            recordStatuses = ['Approved', 'Declined', 'Cancelled', 'Pended - Agent', 'DeclineReview - Agent', 'Pended - Store', 'DeclineReview - Store', 'Referred'];
 
-        lists.forEach(list => {
-          //console.log('list: ', list);
-          //console.log(recordStatuses.find(recordStatus => list === recordStatus));
-          if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
-        });
-        //console.log('finalList: ', finalList);
-        return finalList;
+            lists.forEach(list => {
+              //console.log('list: ', list);
+              //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+              if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+            });
+            //console.log('finalList: ', finalList);
+            return finalList;
+          default:
+            finalList = ['No record statuses for this user'];
+            return finalList;
+        }
+
+      case 'collections':
+        switch (role) {
+          case 'agent':
+            recordStatuses = ['Open', 'Closed', 'Pended'];
+
+            lists.forEach(list => {
+              //console.log('list: ', list);
+              //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+              if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+            });
+            //console.log('finalList: ', finalList);
+            return finalList;
+          case 'store':
+            recordStatuses = ['Open', 'Closed', 'Pended'];
+            lists.forEach(list => {
+              //console.log('list: ', list);
+              //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+              if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+            });
+            //console.log('finalList: ', finalList);
+            return finalList;
+          case 'god':
+            recordStatuses = ['Open', 'Closed', 'Pended'];
+            lists.forEach(list => {
+              //console.log('list: ', list);
+              //console.log(recordStatuses.find(recordStatus => list === recordStatus));
+              if (recordStatuses.find(recordStatus => list === recordStatus)) finalList.push(list);
+            });
+            //console.log('finalList: ', finalList);
+            return finalList;
+          default:
+            finalList = ['No record statuses for this user'];
+            return finalList;
+        }
+
       default:
         finalList = ['No record statuses for this user'];
         return finalList;
     }
+
   }
 
   onlyUnique(value, index, self) {
@@ -251,7 +293,6 @@ class Dashboard extends Component {
         <div className="container">
           <div className="cols-12">
             <Welcome user={this.state.user}/>
-            <Download />
             {workspace}
           </div>
         </div>

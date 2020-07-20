@@ -3,7 +3,7 @@ import Worklist from './Worklist';
 import AppButton from '../Applications/AppButton';
 
 function Workspace(props) {
-  //console.log('Workspace props: ', props);
+  console.log('Workspace props: ', props);
   if (props.workspaces) {
     const workspace = props.workspaces.workspace;
     const records = props.records;

@@ -19,14 +19,14 @@ class Workzone extends Component {
   }
 
   async componentDidMount() {
-    //console.log('Workzone props: ', this.props);
+    console.log('Workzone props: ', this.props);
     //console.log('this.props.location.state: ', this.props.location.state);
 
     // Figure out what workspace to extract
     const workspace = this.props.location.state.workspace ?
       this.props.location.state.workspace :
       this.getWorkspaceName(this.props.history.location.pathname);
-    //console.log('mounting workspace: ', workspace);
+    console.log('mounting workspace: ', workspace);
 
     // Determine which currentStatus to set, fallback to default if required
     let recordStatus = '';
@@ -35,7 +35,7 @@ class Workzone extends Component {
     } else if (workspace === 'collections') {
       recordStatus = this.props.location.state.currentStatus ? this.props.location.state.currentStatus : 'Open';
     }
-    //console.log('mounting recordStatus: ', recordStatus);
+    console.log('mounting recordStatus: ', recordStatus);
 
     await this.setState({
       recordStatus: recordStatus,
@@ -88,9 +88,9 @@ class Workzone extends Component {
 
     let records = [];
     let clientId = sessionStorage.getItem('cwsClient');
-    if (!this.props.location.state.records || this.props.location.state.records.length === 0) { records = await this.mysqlLayer.Get(`/workspace/${workspace}/${clientId}`); }
-    else { records = this.props.location.state.records; }
-    //console.log('records: ', records);
+    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */records = await this.mysqlLayer.Get(`/workspace/${workspace}/${clientId}`); //}
+    //else { records = this.props.location.state.records; }
+    console.log('records: ', records);
     let recordStatus = currentStatus;
     let rows = [];
     let columns = [];
