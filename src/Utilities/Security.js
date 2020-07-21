@@ -12,6 +12,7 @@ export default class Security {
       sessionStorage.setItem('cwsFirstName', user[0].firstName);
       sessionStorage.setItem('cwsSurname', user[0].surname);
       sessionStorage.setItem('cwsRole', user[0].role);
+      sessionStorage.setItem('cwsType', user[0].type);
       sessionStorage.setItem('cwsSession', loginTime);
       sessionStorage.setItem('cwsStoreId', user[0].storeId);
       sessionStorage.setItem('cwsClient', user[0].clientId);

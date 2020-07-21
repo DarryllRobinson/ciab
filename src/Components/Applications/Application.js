@@ -26,9 +26,18 @@ class Application extends Component {
 
   async componentDidMount() {
     console.log('Application.js props: ', this.props);
-    let record = [];
-    record = await this.mysqlLayer.Get(this.props.location.pathname);
+    const recordId = this.props.location.state.recordId;
+    const type = this.props.location.state.type;
+    const workrecord = this.props.location.state.workrecord;
+    const workspace = this.props.location.state.workspace;
+
+    console.log(`record coming from: /${type}/${workspace}/${workrecord}/${recordId}`);
+    let record = await this.mysqlLayer.Get(`/${type}/${workspace}/${workrecord}/${recordId}`);
     await this.setState({
+      recordId: recordId,
+      type: type,
+      workrecord: workrecord,
+      workspace: workspace,
       application: record,
       agentComments: record.agentComments,
       storeComments: record.storeComments,
@@ -61,7 +70,7 @@ class Application extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       }
 
-      await this.mysqlLayer.Put(`/workspace/applications/application/${this.state.application[0].id}`, update);
+      await this.mysqlLayer.Put(`/${this.state.type}/${this.state.workspace}/${this.state.workrecord}/${this.state.recordId}`, update);
       this.props.history.push({
         pathname: `/workzone/applications`,
         state: 'Referred'
@@ -73,8 +82,9 @@ class Application extends Component {
 
   async closeRecord() {
     if (this.state.changesMade) alert('The changes you made have been lost');
+    console.log('state: ', this.state);
     this.props.history.push({
-      pathname: '/workspace/applications',
+      pathname: `${this.state.type}/${this.state.workspace}/${this.state.workrecord}s`,
       state: 'Referred'
     });
   }

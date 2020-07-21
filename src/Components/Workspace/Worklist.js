@@ -4,6 +4,7 @@ import Item from './Item';
 function Worklist(props) {
   const workspace = props.workspace;
   const records = props.records;
+  const type = props.type;
   const worklist = props.worklist.worklist;
   const items = props.worklist.items;
 
@@ -12,6 +13,7 @@ function Worklist(props) {
       key={idx}
       records={records}
       workspace={workspace}
+      type={type}
       item={item.item}
       count={item.count} />
   );

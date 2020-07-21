@@ -88,7 +88,12 @@ class Workzone extends Component {
 
     let records = [];
     let clientId = sessionStorage.getItem('cwsClient');
-    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */records = await this.mysqlLayer.Get(`/workspace/${workspace}/${clientId}`); //}
+    const type = this.props.location.state.type;
+    //const workspace = this.props.location.state.workspace;
+    console.log('typeof: ', typeof workspace);
+    const workrecord = workspace.substring(0, workspace.length - 1);
+    console.log('workrecord: ', workrecord);
+    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */records = await this.mysqlLayer.Get(`/${type}/${workspace}/${clientId}`); //}
     //else { records = this.props.location.state.records; }
     console.log('records: ', records);
     let recordStatus = currentStatus;
@@ -110,9 +115,12 @@ class Workzone extends Component {
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
             id: <Link className="nav-link" to={{
-                pathname: `/workspace/applications/application/${record.id}`,
+                pathname: `/${type}/${workspace}/${workrecord}/${record.id}`,
                 state: {
-                  recordId: record.id
+                  recordId: record.id,
+                  type: type,
+                  workrecord: workrecord,
+                  workspace: workspace
                 }
               }}
               style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>

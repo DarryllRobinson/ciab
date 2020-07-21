@@ -3,10 +3,11 @@ import Worklist from './Worklist';
 import AppButton from '../Applications/AppButton';
 
 function Workspace(props) {
-  console.log('Workspace props: ', props);
+  //console.log('Workspace props: ', props);
   if (props.workspaces) {
     const workspace = props.workspaces.workspace;
     const records = props.records;
+    const type = props.type;
     const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1)
     const worklists = props.workspaces.worklists;
 
@@ -16,6 +17,7 @@ function Workspace(props) {
         records={records}
         workspace={workspace}
         worklist={worklist}
+        type={type}
         items={worklist.items} />
     );
 
