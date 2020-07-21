@@ -21,6 +21,7 @@ import Blog from './Components/Community/Blog';
 import NewBlog from './Components/Community/NewBlog';
 
 import Registration from './Components/Auth/Registration';
+import ExcelReader from './Utilities/ExcelReader';
 
 class App extends Component {
   constructor(props) {
@@ -147,7 +148,7 @@ class App extends Component {
             <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
             <Route exact path='/auth/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
-
+            
           </Switch>
         </div>
       );
@@ -227,6 +228,7 @@ class App extends Component {
 
             <Route exact path='/community/blogs' render={props => (<Blogs {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
         </div>

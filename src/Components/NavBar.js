@@ -28,6 +28,9 @@ class NavBar extends React.Component {
               <li className="nav-item active">
                 <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
               </li>
+              <li className="nav-item active">
+                <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
+              </li>
             </ul>
           </div>
           <div className="navbar-brand">{firstName}</div>

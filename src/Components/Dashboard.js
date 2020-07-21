@@ -70,8 +70,9 @@ class Dashboard extends Component {
         let type = service.type;
         console.log('Got the workspace: ', workspace);
         console.log('Got the type: ', type);
+        let task = 'list_all';
 
-        let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${client}`);
+        let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
         console.log('records: ', records);
         console.log('workspace: ', workspace);
         //await this.setState({ records: records });

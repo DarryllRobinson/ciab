@@ -31,7 +31,8 @@
     "react-scripts": "3.4.1",
     "react-toastify": "^6.0.5",
     "react-tracker": "0.0.8",
-    "reactstrap": "^8.5.1"
+    "reactstrap": "^8.5.1",
+    "xlsx": "^0.16.4"
   },
   "devDependencies": {
     "@types/history": "4.7.2",
