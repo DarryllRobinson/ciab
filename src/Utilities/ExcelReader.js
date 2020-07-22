@@ -125,6 +125,22 @@ class ExcelReader extends Component {
   }
 
   async saveAccountRecordsToDatabase(record, insertId) {
+    const paymentDueDate = record.paymentDueDate ?
+      moment(record.paymentDueDate).format('YYYY-MM-DD') :
+      null;
+
+    const debitOrderDate = record.debitOrderDate ?
+      moment(record.debitOrderDate).format('YYYY-MM-DD') :
+      null;
+
+    const lastPaymentDate = record.lastPaymentDate ?
+      moment(record.lastPaymentDate).format('YYYY-MM-DD') :
+      null;
+
+    const lastPTPDate = record.lastPTPDate ?
+      moment(record.lastPTPDate).format('YYYY-MM-DD') :
+      null;
+
     let account = [
       {
         accountRef: record.accountRef,
@@ -138,7 +154,10 @@ class ExcelReader extends Component {
         days90: record.days90,
         days120: record.days120,
         f_customerId: insertId,
-        lastPTPDate: moment(record.lastPTPDate).format('YYYY-MM-DD'),
+        lastPTPDate: lastPTPDate,
+        paymentDueDate: paymentDueDate,
+        debitOrderDate: debitOrderDate,
+        lastPaymentDate: lastPaymentDate,
         paymentMethod: record.paymentMethod,
         paymentTermDays: record.paymentTermDays,
         totalBalance: record.totalBalance

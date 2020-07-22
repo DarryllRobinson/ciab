@@ -59,7 +59,7 @@ class Dashboard extends Component {
       this.props.history.push(`/admin/arrears`);
     } else {*/
       // what services are turned on?
-      console.log('getting clientservices');
+      //console.log('getting clientservices');
       const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${client}`);
 
       clientservices.forEach(async service => {
@@ -68,14 +68,14 @@ class Dashboard extends Component {
 
         let workspace = service.service
         let type = service.type;
-        console.log('Got the workspace: ', workspace);
-        console.log('Got the type: ', type);
+        //console.log('Got the workspace: ', workspace);
+        //console.log('Got the type: ', type);
         let task = 'list_all';
-        console.log(`url: /${type}/${workspace}/${task}/${client}`);
+        //console.log(`url: /${type}/${workspace}/${task}/${client}`);
 
         let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
-        console.log('records: ', records);
-        console.log('workspace: ', workspace);
+        //console.log('records: ', records);
+        //console.log('workspace: ', workspace);
         //await this.setState({ records: records });
 
         let statusArr = [];

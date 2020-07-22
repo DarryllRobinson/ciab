@@ -186,6 +186,26 @@ class Collection extends Component {
     const collection = this.state.collection;
     if (collection === null) return <p>Loading...</p>;
 
+    const paymentDueDate = this.state.collection[0].paymentDueDate ?
+      moment(collection[0].paymentDueDate).format('YYYY-MM-DD') :
+      '';
+
+    const debitOrderDate = this.state.collection[0].debitOrderDate ?
+      moment(collection[0].debitOrderDate).format('YYYY-MM-DD') :
+      '';
+
+    const lastPaymentDate = this.state.collection[0].lastPaymentDate ?
+      moment(collection[0].lastPaymentDate).format('YYYY-MM-DD') :
+      '';
+
+    const lastPTPDate = this.state.collection[0].lastPTPDate ?
+      moment(collection[0].lastPTPDate).format('YYYY-MM-DD') :
+      '';
+
+    const nextVisitDate = this.state.collection[0].nextVisitDate ?
+      moment(collection[0].nextVisitDate).format('YYYY-MM-DD') :
+      '';
+
     return (
 
       <div className="container">
@@ -418,7 +438,7 @@ class Collection extends Component {
                       type="text"
                       name="paymentDueDate"
                       className="form-control"
-                      value={collection[0].paymentDueDate || ''}
+                      value={paymentDueDate}
                     />
                   </div>
                 </div>
@@ -431,7 +451,7 @@ class Collection extends Component {
                       type="text"
                       name="debitOrderDate"
                       className="form-control"
-                      value={collection[0].debitOrderDate || ''}
+                      value={debitOrderDate}
                     />
                   </div>
                 </div>
@@ -454,7 +474,7 @@ class Collection extends Component {
                       type="text"
                       name="lastPaymentDate"
                       className="form-control"
-                      value={collection[0].lastPaymentDate || ''}
+                      value={lastPaymentDate}
                     />
                   </div>
                 </div>
@@ -490,7 +510,7 @@ class Collection extends Component {
                       type="text"
                       name="ptpDate"
                       className="form-control"
-                      value={moment(collection[0].ptpDate).format('YYYY-MM-DD') || ''}
+                      value={lastPTPDate}
                     />
                   </div>
                 </div>
@@ -526,7 +546,7 @@ class Collection extends Component {
                       type="text"
                       name="nextVisitDate"
                       className="form-control"
-                      value={moment(collection[0].nextVisitDate).format('YYYY-MM-DD') || ''}
+                      value={nextVisitDate}
                     />
                   </div>
                 </div>

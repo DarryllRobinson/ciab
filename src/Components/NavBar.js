@@ -19,15 +19,15 @@ class NavBar extends React.Component {
         <>
           <div className="collapse navbar-collapse" id="navbarColor01">
             <ul className="navbar-nav mr-auto">
-              <li className="nav-item active">
+              {/*<li className="nav-item active">
                 <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
-              </li>
+              </li>*/}
               <li className="nav-item active">
                 <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
               </li>
-              <li className="nav-item active">
+              {/*<li className="nav-item active">
                 <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
-              </li>
+              </li>*/}
               <li className="nav-item active">
                 <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
               </li>
@@ -44,15 +44,15 @@ class NavBar extends React.Component {
         <>
           <div className="collapse navbar-collapse" id="navbarColor01">
             <ul className="navbar-nav mr-auto">
-            <li className="nav-item active">
-              <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
-            </li>
+              {/*<li className="nav-item active">
+                <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
+              </li>*/}
             <li className="nav-item active">
               <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
             </li>
-            <li className="nav-item active">
+            {/*<li className="nav-item active">
               <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
-            </li>
+            </li>*/}
             <li className="nav-item active">
               <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
             </li>
@@ -80,7 +80,7 @@ class NavBar extends React.Component {
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <Link className="navbar-brand" to="/">
-          Customer Workflow System
+          The System
           <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
