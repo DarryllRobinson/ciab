@@ -7,10 +7,14 @@ class Collection extends Component {
     super(props);
 
     this.state = {
+      clientId: sessionStorage.getItem('cwsClient'),
+      type: this.props.location.state.type,
+      workspace: this.props.location.state.workspace,
+      recordId: this.props.location.state.caseId,
       collection: null,
       disabled: false,
       caseNotes: '',
-      user: "Darryll",
+      user: sessionStorage.getItem('cwsUser'),
       changesMade: false,
       ptpDate: null,
       ptpAmount: 0,
@@ -28,8 +32,14 @@ class Collection extends Component {
 
   async componentDidMount() {
     let record = [];
-    console.log('this.props.location.pathname: ', this.props.location.pathname);
-    record = await this.mysqlLayer.Get(this.props.location.pathname);
+    console.log('this.props.location: ', this.props.location);
+
+    const type = this.state.type;
+    const workspace = this.state.workspace;
+    const clientId = this.state.clientId;
+    const recordId = this.state.recordId;
+
+    record = await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`);
     //console.log('this.props.location.pathname: ', this.props.location.pathname);
     console.log('record: ', record);
     await this.setState({
@@ -54,8 +64,13 @@ class Collection extends Component {
   cancel() {
     alert('All changes have been lost');
     this.props.history.push({
-      pathname: '/workspace/collections',
-      currentStatus: 'Open'
+      pathname: '/workzone/collections',
+      state: {
+        recordStatus: 'Open',
+        clientId: this.state.clientId,
+        type: this.state.type,
+        workspace: this.state.workspace
+      }
     });
   }
 
@@ -77,14 +92,17 @@ class Collection extends Component {
         nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
       };
 
-      //console.log(`Putting to '/workspace/cases/${this.state.collection[0].f_caseNumber}'`);
-      await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
-      //console.log(`Putting to '/workspace/outcomes/${this.state.collection[0].id}'`);
-      await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
-        pathname: '/workspace/collections',
-        currentStatus: 'Pended'
+        pathname: '/workzone/collections',
+        state: {
+          recordStatus: 'Pended',
+          clientId: this.state.clientId,
+          type: this.state.type,
+          workspace: this.state.workspace
+        }
       });
     } else {
       alert('Please enter a note longer than 10 characters and provide a Next Visit Date');
@@ -110,11 +128,17 @@ class Collection extends Component {
         ptpAmount: this.state.ptpAmount
       };
 
-      await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
-      await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+
+      await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
-        pathname: '/workspace/collections',
-        currentStatus: 'Open'
+        pathname: '/workzone/collections',
+        state: {
+          recordStatus: 'Open',
+          clientId: this.state.clientId,
+          type: this.state.type,
+          workspace: this.state.workspace
+        }
       });
     } else {
       alert('Please enter a note longer than 10 characters and provide a PTP date and amount');
@@ -141,11 +165,17 @@ class Collection extends Component {
         resolution: this.state.resolution
       };
 
-      await this.mysqlLayer.Put(`/workspace/cases/${this.state.collection[0].f_caseNumber}`, caseUpdate);
-      await this.mysqlLayer.Put(`/workspace/outcomes/${this.state.collection[0].id}`, outcomeUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+
+      await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
       this.props.history.push({
-        pathname: '/workspace/collections',
-        currentStatus: 'Open'
+        pathname: '/workzone/collections',
+        state: {
+          recordStatus: 'Open',
+          clientId: this.state.clientId,
+          type: this.state.type,
+          workspace: this.state.workspace
+        }
       });
     } else {
       alert('Please enter a note longer than 10 characters and provide a resolution');
@@ -162,13 +192,13 @@ class Collection extends Component {
         <div className="row">{console.log('collection: ', collection)}
           <div className="col-12">
             <div className="card border-primary">
-              <div className="card-header">Account Number {collection[0].accountNumber}</div>
+              <div className="card-header">Case Number {collection[0].f_caseNumber}</div>
               <div className="card-body text-left">
 
               <div className="row">
                 <div className="col-12">
                   <div className="form-group">
-                    <label htmlFor="exampleInputaccountNotes">Account Notes</label>
+                    <label htmlFor="exampleInputaccountNotes">Account Number {collection[0].accountNumber} - Notes</label>
                     <textarea
                       disabled={true}
                       rows="3"
@@ -183,28 +213,28 @@ class Collection extends Component {
               <br />
 
               <div className="row">
-                <div className="col-4">
+                <div className="col-8">
                   <div className="form-group">
-                    <label htmlFor="exampleInputFirstName">First Name</label>
+                    <label htmlFor="exampleInputCompanyName">Company Name</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="firstName"
+                      name="name"
                       className="form-control"
-                      value={collection[0].firstName || ''}
+                      value={collection[0].name || ''}
                     />
                   </div>
                 </div>
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputSurname">Surname</label>
+                    <label htmlFor="exampleInputRegNumber">Reg Number</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="surname"
+                      name="regNumber"
                       className="form-control"
-                      value={collection[0].surname || ''}
+                      value={collection[0].regNumber || ''}
                     />
                   </div>
                 </div>
@@ -213,14 +243,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputIDNumber">ID Number</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="idNumber"
-                      className="form-control"
-                      value={collection[0].idNumber || ''}
-                    />
+
                   </div>
                 </div>
               </div>

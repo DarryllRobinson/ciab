@@ -23,17 +23,29 @@ class Workzone extends Component {
     //console.log('this.props.location.state: ', this.props.location.state);
 
     // Figure out what workspace to extract
-    const workspace = this.props.location.state.workspace ?
-      this.props.location.state.workspace :
-      this.getWorkspaceName(this.props.history.location.pathname);
+    let workspace = '';
+    if (this.props.location.state === undefined) {
+      workspace = this.getWorkspaceName(this.props.history.location.pathname);
+    } else {
+      workspace = this.props.location.state.workspace
+    }
+
     console.log('mounting workspace: ', workspace);
 
     // Determine which currentStatus to set, fallback to default if required
     let recordStatus = '';
     if (workspace === 'applications') {
-      recordStatus = this.props.location.state.currentStatus ? this.props.location.state.currentStatus : 'Referred';
+      if (this.props.location.state === undefined) {
+        recordStatus = 'Referred'
+      } else {
+        recordStatus = this.props.location.state.recordStatus;
+      }
     } else if (workspace === 'collections') {
-      recordStatus = this.props.location.state.currentStatus ? this.props.location.state.currentStatus : 'Open';
+      if (this.props.location.state === undefined) {
+        recordStatus = 'Open'
+      } else {
+        recordStatus = this.props.location.state.recordStatus;
+      }
     }
     console.log('mounting recordStatus: ', recordStatus);
 
@@ -65,16 +77,16 @@ class Workzone extends Component {
     console.log('apiLength: ', apiLength);*/
 
     // For routes with /api/{resource}/{table}/{appcurrentStatus}/:id pattern
-    //if (indexOfFifth < 0) console.log('5: ', pathname.substring(indexOfThird + 1, indexOfFourth));
+    if (indexOfFifth < 0) console.log('5: ', pathname.substring(indexOfThird + 1, indexOfFourth));
     if (indexOfFifth < 0) return pathname.substring(indexOfThird + 1, indexOfFourth);
     // For routes with /api/{resource}/{table}/:id pattern
-    //if (indexOfFourth < 0) console.log('4: ', pathname.substring(indexOfThird + 1, apiLength));
+    if (indexOfFourth < 0) console.log('4: ', pathname.substring(indexOfThird + 1, apiLength));
     if (indexOfFourth < 0) return pathname.substring(indexOfThird + 1, apiLength);
     // For routes with /api/{table}/:id pattern
-    //if (indexOfThird < 0) console.log('3: ', pathname.substring(indexOfSecond + 1, apiLength));
+    if (indexOfThird < 0) console.log('3: ', pathname.substring(indexOfSecond + 1, apiLength));
     if (indexOfThird < 0) return pathname.substring(indexOfSecond + 1, apiLength);
     // For routes with /api/{table} pattern
-    //if (indexOfSecond < 0) console.log('2: ', pathname.substring(indexOfFirst, indexOfSecond + 1));
+    if (indexOfSecond < 0) console.log('2: ', pathname.substring(indexOfFirst, indexOfSecond + 1));
     if (indexOfSecond < 0) return pathname.substring(indexOfFirst, apiLength);
   }
 
@@ -89,11 +101,12 @@ class Workzone extends Component {
     let records = [];
     let clientId = sessionStorage.getItem('cwsClient');
     const type = this.props.location.state.type;
+    //if (workspace === 'cases') workspace = 'collections';
     //const workspace = this.props.location.state.workspace;
     console.log('typeof: ', typeof workspace);
     const workrecord = workspace.substring(0, workspace.length - 1);
     console.log('workrecord: ', workrecord);
-    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */records = await this.mysqlLayer.Get(`/${type}/${workspace}/${clientId}`); //}
+    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */records = await this.mysqlLayer.Get(`/${type}/${workspace}/list_all/${clientId}`); //}
     //else { records = this.props.location.state.records; }
     console.log('records: ', records);
     let recordStatus = currentStatus;
@@ -115,7 +128,7 @@ class Workzone extends Component {
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
             id: <Link className="nav-link" to={{
-                pathname: `/${type}/${workspace}/${workrecord}/${record.id}`,
+                pathname: `/workzone/${workspace}/${workrecord}/${record.id}`,
                 state: {
                   recordId: record.id,
                   type: type,
@@ -180,8 +193,9 @@ class Workzone extends Component {
           let row = {
             recordId: record.id,
             accountNumber: record.accountNumber,
-            firstName: record.firstName,
-            surname: record.surname,
+            caseId: record.f_caseNumber,
+            name: record.name,
+            regNumber: record.regNumber,
             debtorAge: record.debtorAge,
             creditLimit: record.creditLimit,
             totalBalance: record.totalBalance,
@@ -206,9 +220,11 @@ class Workzone extends Component {
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
             id: <Link className="nav-link" to={{
-                pathname: `/workspace/collections/collection/${record.accountNumber}`,
+                pathname: `/workzone/${workspace}/${workrecord}/${record.f_caseNumber}`,
                 state: {
-                  accountNumber: record.accountNumber
+                  caseId: record.f_caseNumber,
+                  type: type,
+                  workspace: workspace
                 }
               }}
               style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>
@@ -216,18 +232,23 @@ class Workzone extends Component {
           rows.push(row);
           columns = [
             {
+              label: 'Case Number',
+              field: 'caseId',
+              sort: 'asc'
+            },
+            {
               label: 'Account Number',
               field: 'accountNumber',
               sort: 'asc'
             },
             {
-              label: 'First Name',
-              field: 'firstName',
+              label: 'Company Name',
+              field: 'name',
               sort: 'asc'
             },
             {
-              label: 'Surname',
-              field: 'surname',
+              label: 'Reg Number',
+              field: 'regNumber',
               sort: 'asc'
             },
             {

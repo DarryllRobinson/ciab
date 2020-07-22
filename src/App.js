@@ -148,7 +148,7 @@ class App extends Component {
             <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
             <Route exact path='/auth/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
-            
+
           </Switch>
         </div>
       );
@@ -220,7 +220,8 @@ class App extends Component {
             <Route exact path='/workspace/applications/application/:id' render={props => (<Application {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
-            <Route exact path='/workspace/collections/collection/:id' render={props => (<Collection {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/collections/collection/:id' render={props => (<Collection {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/applications/application/:id' render={props => (<Application {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
             {/*<Route exact path='/workspace/collections' render={props => (<Collections {...props} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />

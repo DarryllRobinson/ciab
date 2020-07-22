@@ -11,12 +11,14 @@ class ExcelReader extends Component {
     this.state = {
       file: {},
       data: [],
-      cols: []
+      cols: [],
+      progress: 0
     }
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.uploadData = this.uploadData.bind(this);
     this.saveAccountRecordsToDatabase = this.saveAccountRecordsToDatabase.bind(this);
+    this.saveCustomerRecordsToDatabase = this.saveCustomerRecordsToDatabase.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
   }
@@ -68,13 +70,73 @@ class ExcelReader extends Component {
 
   async uploadData(data) {
     console.log('data: ', data);
+
+    data.forEach(async datum => {
+      let customerId = await this.saveCustomerRecordsToDatabase(datum);
+      let accountId = await this.saveAccountRecordsToDatabase(datum, customerId);
+      let count = this.state.progress;
+      await this.setState({ progress: count + 1 });
+    });
     // Post data to customer table first
-    this.saveAccountRecordsToDatabase(data);
-    //await this.mysqlLayer.Post(`/${type}/${workspace}/upload`, data);
+    /*const insertId = await this.saveCustomerRecordsToDatabase(data);
+    console.log('uploadData insertId: ', insertId);
+    const uploadStatus = await this.saveAccountRecordsToDatabase(data, insertId);
+    console.log('uploadStatus: ', uploadStatus);*/
   }
 
-  async saveAccountRecordsToDatabase(records) {
-    let accounts = [];
+  async saveCustomerRecordsToDatabase(record) {
+    let customer = [
+      {
+        customerRefNo: record.customerRefNo,
+        name: record.name,
+        createdBy: record.createdBy,
+        type: record.type,
+        regNumber: record.regNumber,
+        representativeName: record.representativeName,
+        telephone: record.telephone,
+        f_clientId: sessionStorage.getItem('cwsClient')
+      }
+    ];
+    /*let customers = [];
+    records.forEach(record => {
+      customers.push({
+        customerRefNo: record.customerRefNo,
+        name: record.name,
+        createdBy: record.createdBy,
+        type: record.type,
+        regNumber: record.regNumber,
+        representativeName: record.representativeName,
+        telephone: record.telephone,
+        f_clientId: sessionStorage.getItem('cwsClient')
+      });
+    });*/
+
+    const response = await this.postToDb(customer, 'customers');
+    console.log('saveCustomerRecordsToDatabase response: ', response);
+    return response.data.insertId;
+  }
+
+  async saveAccountRecordsToDatabase(record, insertId) {
+    let account = [
+      {
+        accountRef: record.accountRef,
+        amountDue: record.amountDue,
+        createdBy: record.createdBy,
+        //createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        creditLimit: record.creditLimit,
+        currentBalance: record.currentBalance,
+        days30: record.days30,
+        days60: record.days60,
+        days90: record.days90,
+        days120: record.days120,
+        f_customerId: insertId,
+        lastPTPDate: moment(record.lastPTPDate).format('YYYY-MM-DD'),
+        paymentMethod: record.paymentMethod,
+        paymentTermDays: record.paymentTermDays,
+        totalBalance: record.totalBalance
+      }
+    ];
+    /*let accounts = [];
     records.forEach(record => {
       accounts.push({
         accountRef: record.accountRef,
@@ -87,24 +149,34 @@ class ExcelReader extends Component {
         days60: record.days60,
         days90: record.days90,
         days120: record.days120,
-        f_customerId: record.f_customerId,
+        f_customerId: insertId,
         lastPTPDate: moment(record.lastPTPDate).format('YYYY-MM-DD'),
         paymentMethod: record.paymentMethod,
         paymentTermDays: record.paymentTermDays,
         totalBalance: record.totalBalance
       });
-    });
+    });*/
 
-    await this.postToDb(accounts, 'accounts');
+    //console.log('Number of records in [accounts]: ', accounts.length);
+
+    //accounts.forEach(async account => {
+      let response = await this.postToDb(account, 'accounts');
+      console.log('saveAccountRecordsToDatabase response: ', response);
+    //});
+
+    /*const response = await this.postToDb(accounts, 'accounts');
+    console.log('saveAccountRecordsToDatabase response: ', response);
+    return response;*/
   }
 
   async postToDb(records, workspace) {
     let type = this.state.type;
     //let workspace = workspace;
-    let task = 'create_item';
+    let task = 'create_items';
     let clientId = sessionStorage.getItem('cwsClient');
 
-    await this.mysqlLayer.Post(`/${type}/${workspace}/${task}/${clientId}`, records);
+    const response = await this.mysqlLayer.Post(`/${type}/${workspace}/${task}/${clientId}`, records);
+    return response;
   }
 
   render() {
@@ -118,6 +190,7 @@ class ExcelReader extends Component {
           value="Upload"
           onClick={this.handleFile}
         />
+        <p>Number of records uploaded: {this.state.progress}</p>
       </div>
 
     )

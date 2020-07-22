@@ -13,9 +13,9 @@ function Item(props) {
     <li className="list-group-item d-flex justify-content-between align-items-center">
       <Link className="nav-link"
         to={{
-          pathname: `/workzone/${type}/${workspace}`,
+          pathname: `/workzone/${workspace}`,
           state: {
-            currentStatus: item,
+            recordStatus: item,
             records: records,
             type: type,
             workspace: workspace

@@ -71,6 +71,7 @@ class Dashboard extends Component {
         console.log('Got the workspace: ', workspace);
         console.log('Got the type: ', type);
         let task = 'list_all';
+        console.log(`url: /${type}/${workspace}/${task}/${client}`);
 
         let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
         console.log('records: ', records);
