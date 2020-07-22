@@ -12,7 +12,9 @@ class ExcelReader extends Component {
       file: {},
       data: [],
       cols: [],
-      progress: 0
+      progress: 0,
+      accountErrors: [],
+      customerErrors: []
     }
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -112,7 +114,13 @@ class ExcelReader extends Component {
     });*/
 
     const response = await this.postToDb(customer, 'customers');
-    console.log('saveCustomerRecordsToDatabase response: ', response);
+    //console.log('saveCustomerRecordsToDatabase response: ', response);
+    if (response.data.errno) {
+      let error =[];
+      error = this.state.customerErrors;
+      error.push(response.data);
+      await this.setState({ customerErrors: error });
+    }
     return response.data.insertId;
   }
 
@@ -161,7 +169,13 @@ class ExcelReader extends Component {
 
     //accounts.forEach(async account => {
       let response = await this.postToDb(account, 'accounts');
-      console.log('saveAccountRecordsToDatabase response: ', response);
+      //console.log('saveAccountRecordsToDatabase response: ', response);
+      if (response.data.errno) {
+        let error =[];
+        error = this.state.accountErrors;
+        error.push(response.data);
+        await this.setState({ accountErrors: error });
+      }
     //});
 
     /*const response = await this.postToDb(accounts, 'accounts');
@@ -180,6 +194,15 @@ class ExcelReader extends Component {
   }
 
   render() {
+
+    const customerErrors = this.state.customerErrors.map((err, idx) =>
+      <p key={idx}>Customer error: {err.sqlMessage}</p>
+    );
+
+    const accountErrors = this.state.accountErrors.map((err, idx) =>
+      <p key={idx}>Account error: {err.sqlMessage}</p>
+    );
+
     return (
       <div>
         <label htmlFor="file">Import new records</label>
@@ -191,6 +214,8 @@ class ExcelReader extends Component {
           onClick={this.handleFile}
         />
         <p>Number of records uploaded: {this.state.progress}</p>
+        {customerErrors}
+        {accountErrors}
       </div>
 
     )
