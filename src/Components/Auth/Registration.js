@@ -17,6 +17,7 @@ export default class Registration extends Component {
       password: '',
       role: '',
       storeId: '',
+      type: '',
       f_clientId: '',
       createdDate: '',
       registrationErrors: '',
@@ -54,6 +55,7 @@ export default class Registration extends Component {
       phone,
       role,
       storeId,
+      type,
       f_clientId
     } = this.state;
 
@@ -76,15 +78,21 @@ export default class Registration extends Component {
            password: hash,
            role: role,
            storeId: storeId,
+           type: type,
            f_clientId: f_clientId,
            createdDate: createdDate
          }
 
          //console.log('user: ', user);
 
-         this.mysqlLayer.Post(`/admin/users`, user, { withCredentials: true }
+         this.mysqlLayer.Post(`/admin/user`, user, { withCredentials: true }
          ).then(response => {
-           if (response) {
+           console.log('response: ', response);
+           if (response.data === 'user exists') {
+             let message = 'User already exists. Please create a new username (email).';
+             this.handleFailedReg(message);
+           }
+           if (response.data.affectedRows === 1) {
              this.handleSuccessfulAuth();
            } else {
              console.log('Log error to registrationErrors');
@@ -106,6 +114,18 @@ export default class Registration extends Component {
     }
   }
 
+  handleFailedReg(message) {
+    toast(message, {
+      position: "top-center",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined
+    });
+  }
+
   handleSuccessfulAuth() {
     toast(`${this.state.firstName} has been added to the system`, {
       position: "top-center",
@@ -125,6 +145,7 @@ export default class Registration extends Component {
       password: '',
       role: '',
       storeId: '',
+      type: '',
       f_clientId: '',
       createdDate: ''
     });
@@ -205,6 +226,14 @@ export default class Registration extends Component {
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <select className="custom-select" name="type" onChange={this.handleChange} required>
+                <option >Type</option>
+                <option value="business">Business</option>
+                <option value="consumer">Consumer</option>
               </select>
             </div>
 

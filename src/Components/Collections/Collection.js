@@ -31,29 +31,32 @@ class Collection extends Component {
   }
 
   async componentDidMount() {
-    let record = [];
-    console.log('this.props.location: ', this.props.location);
+    //let record = [];
+    //console.log('this.props.location: ', this.props.location);
 
     const type = this.state.type;
     const workspace = this.state.workspace;
     const clientId = this.state.clientId;
     const recordId = this.state.recordId;
 
-    record = await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`);
+    let record = await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`);
+    let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
     //console.log('this.props.location.pathname: ', this.props.location.pathname);
-    console.log('record: ', record);
+    //console.log('record: ', record);
+    console.log('resolutions: ', resolutions);
     await this.setState({
       collection: record,
-      caseNotes: record.caseNotes
+      caseNotes: record.caseNotes,
+      resolutions: resolutions
     });
     //console.log('collection: ', this.state.collection);
   }
 
   async handleChange(e) {
     const value = e.target.value;
-    //console.log('value: ', value);
-    //const name = [e.target.name];
-    //console.log('[e.target.name]: ', name);
+    console.log('value: ', value);
+    const name = [e.target.name];
+    console.log('[e.target.name]: ', name);
     await this.setState({
       [e.target.name]: value,
       changesMade: true
@@ -205,6 +208,18 @@ class Collection extends Component {
     const nextVisitDate = this.state.collection[0].nextVisitDate ?
       moment(collection[0].nextVisitDate).format('YYYY-MM-DD') :
       '';
+
+    let resolutionList = [<option key="0" value="---">Resolution</option>];
+    console.log('resolutionList before: ', resolutionList);
+    resolutionList.push(this.state.resolutions.map(resolution =>
+      <option key={resolution.id} value={resolution.shortCode}>{resolution.resolution}</option>
+    ));
+
+
+    /*<option value="unable">Unable to pay</option>
+    <option value="already">Customer already paid</option>
+    <option value="refuses">Customer refuses to pay</option>*/
+    console.log('resolutionList after: ', resolutionList);
 
     return (
 
@@ -553,13 +568,27 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    {/* This space left blank intentionally */}
+                    <label htmlFor="exampleInputrepName">Representative Name</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="representativeName"
+                      className="form-control"
+                      value={collection[0].representativeName}
+                    />
                   </div>
                 </div>
 
                 <div className="col-4">
                   <div className="form-group">
-                    {/* This space left blank intentionally */}
+                    <label htmlFor="exampleInputrepTelephone">Representative Telephone</label>
+                    <input
+                      disabled={true}
+                      type="text"
+                      name="telephone"
+                      className="form-control"
+                      value={collection[0].telephone}
+                    />
                   </div>
                 </div>
               </div>
@@ -642,11 +671,7 @@ class Collection extends Component {
                         name="resolution"
                         onChange={this.handleChange}
                       >
-                        <option value="---">Resolution</option>
-                        <option value="ptp">PTP created</option>
-                        <option value="unable">Unable to pay</option>
-                        <option value="already">Customer already paid</option>
-                        <option value="refuses">Customer refuses to pay</option>
+                      {resolutionList}
                       </select>
                     </div>
                   </div>

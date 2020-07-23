@@ -54,6 +54,9 @@ class NavBar extends React.Component {
               <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
             </li>*/}
             <li className="nav-item active">
+              <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
+            </li>
+            <li className="nav-item active">
               <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
             </li>
             </ul>

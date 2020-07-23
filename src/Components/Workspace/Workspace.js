@@ -8,7 +8,7 @@ function Workspace(props) {
     const workspace = props.workspaces.workspace;
     const records = props.records;
     const type = props.type;
-    const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1)
+    const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1);
     const worklists = props.workspaces.worklists;
 
     const worklist = worklists.map((worklist, idx) =>

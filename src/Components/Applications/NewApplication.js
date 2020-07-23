@@ -126,7 +126,8 @@ class NewApplication extends Component {
     }
 
     //console.log('this.state.appId: ', this.state.appId);
-    const response = await this.mysqlLayer.Put(`/workspace/applications/application/${this.state.appId}`, application, { withCredentials: true });
+    //const response = await this.mysqlLayer.Put(`/workspace/applications/application/${this.state.appId}`, application, { withCredentials: true });
+    await this.mysqlLayer.Put(`/workspace/applications/application/${this.state.appId}`, application, { withCredentials: true });
     //console.log('response: ', response);
     //const appId = response.insertId;
 

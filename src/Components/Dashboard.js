@@ -52,7 +52,7 @@ class Dashboard extends Component {
     // get client from user who logged in
     const client = data.clientId ? data.clientId : this.props.user[0].client;//await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
     //console.log('Dashboard client: ', client);
-    const type = sessionStorage.getItem('cwsType');
+    //const type = sessionStorage.getItem('cwsType');
 
     // has client paid? - still thinking about this one...
     /*if (client[0].hasPaid === 0) {

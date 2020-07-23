@@ -55,7 +55,8 @@ class ExcelReader extends Component {
         //console.log(JSON.stringify(this.state.data, null, 2));
         //console.log('data: ', data);
         try {
-          this.uploadData(this.state.data);
+          //this.uploadData(this.state.data);
+          console.log('data loaded: ', data);
         } catch(e) {
           console.log('Uploading Collection update file problem (e): ', e);
         }
@@ -75,7 +76,8 @@ class ExcelReader extends Component {
 
     data.forEach(async datum => {
       let customerId = await this.saveCustomerRecordsToDatabase(datum);
-      let accountId = await this.saveAccountRecordsToDatabase(datum, customerId);
+      //let accountId = await this.saveAccountRecordsToDatabase(datum, customerId);
+      await this.saveAccountRecordsToDatabase(datum, customerId);
       let count = this.state.progress;
       await this.setState({ progress: count + 1 });
     });
