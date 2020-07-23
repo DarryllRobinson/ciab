@@ -91,8 +91,7 @@ export default class Registration extends Component {
            if (response.data === 'user exists') {
              let message = 'User already exists. Please create a new username (email).';
              this.handleFailedReg(message);
-           }
-           if (response.data.affectedRows === 1) {
+           } else if (response.data.affectedRows === 1) {
              this.handleSuccessfulAuth();
            } else {
              console.log('Log error to registrationErrors');
