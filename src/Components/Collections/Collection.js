@@ -19,6 +19,7 @@ class Collection extends Component {
       ptpDate: null,
       ptpAmount: 0,
       nextVisitDate: null,
+      pendReason: '---',
       resolution: '---'
     }
 
@@ -41,12 +42,16 @@ class Collection extends Component {
 
     let record = await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`);
     let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
+    let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
     //console.log('this.props.location.pathname: ', this.props.location.pathname);
     //console.log('record: ', record);
     //console.log('resolutions: ', resolutions);
+
+    console.log('pends: ', pends);
     await this.setState({
       collection: record,
       caseNotes: record.caseNotes,
+      pendReasons: pends,
       resolutions: resolutions
     });
     // lock the record so no other agent accidentally opens it
@@ -85,7 +90,7 @@ class Collection extends Component {
 
   async pendRecord() {
     const notes = this.state.caseNotes;
-    if (notes && notes.length > 10 && this.state.nextVisitDate !== null) {
+    if (notes && notes.length > 10 && this.state.nextVisitDate !== null && this.state.pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
@@ -93,6 +98,7 @@ class Collection extends Component {
       let caseUpdate = {
         caseNotes: newNote,
         currentStatus: 'Pended',
+        pendReason: this.state.pendReason,
         updatedBy: this.state.user, // must add actual username
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
@@ -114,7 +120,7 @@ class Collection extends Component {
         }
       });
     } else {
-      alert('Please enter a note longer than 10 characters and provide a Next Visit Date');
+      alert('Please enter a note longer than 10 characters, provide a Next Visit Date and select a Pend Reason');
     }
   }
 
@@ -216,9 +222,15 @@ class Collection extends Component {
       '';
 
     let resolutionList = [<option key="0" value="---">Resolution</option>];
-    console.log('resolutionList before: ', resolutionList);
+    //console.log('resolutionList before: ', resolutionList);
     resolutionList.push(this.state.resolutions.map(resolution =>
       <option key={resolution.id} value={resolution.shortCode}>{resolution.resolution}</option>
+    ));
+
+    let pendList = [<option key="0" value="---">Pend Reason</option>];
+    console.log('pendList before: ', pendList);
+    pendList.push(this.state.pendReasons.map(pend =>
+      <option key={pend.id} value={pend.shortCode}>{pend.pendreason}</option>
     ));
 
 
@@ -226,6 +238,7 @@ class Collection extends Component {
     <option value="already">Customer already paid</option>
     <option value="refuses">Customer refuses to pay</option>*/
     console.log('resolutionList after: ', resolutionList);
+    console.log('pendList after: ', pendList);
 
     return (
 
@@ -684,7 +697,13 @@ class Collection extends Component {
 
                   <div className="col-4">
                     <div className="form-group">
-                      {/* This space left blank intentionally */}
+                      <select className="custom-select"
+                        required
+                        name="pendReason"
+                        onChange={this.handleChange}
+                      >
+                      {pendList}
+                      </select>
                     </div>
                   </div>
 
