@@ -43,12 +43,15 @@ class Collection extends Component {
     let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
     //console.log('this.props.location.pathname: ', this.props.location.pathname);
     //console.log('record: ', record);
-    console.log('resolutions: ', resolutions);
+    //console.log('resolutions: ', resolutions);
     await this.setState({
       collection: record,
       caseNotes: record.caseNotes,
       resolutions: resolutions
     });
+    // lock the record so no other agent accidentally opens it
+    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Locked' });
+
     //console.log('collection: ', this.state.collection);
   }
 
@@ -64,8 +67,11 @@ class Collection extends Component {
     //console.log('this.state after change: ', this.state);
   }
 
-  cancel() {
+  async cancel() {
     alert('All changes have been lost');
+    // unlock the record and release it to the pool
+    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Open' });
+
     this.props.history.push({
       pathname: '/workzone/collections',
       state: {

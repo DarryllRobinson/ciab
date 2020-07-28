@@ -14,7 +14,9 @@ class ExcelReader extends Component {
       cols: [],
       progress: 0,
       accountErrors: [],
-      customerErrors: []
+      customerErrors: [],
+      errors: [],
+      compliance: ''
     }
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -51,12 +53,15 @@ class ExcelReader extends Component {
       /* Convert array of arrays */
       const data = XLSX.utils.sheet_to_json(ws);
       /* Update state */
-      this.setState({ data: data, cols: make_cols(ws['!ref']) }, () => {
+      this.setState({ data: data, cols: make_cols(ws['!ref']) }, async () => {
         //console.log(JSON.stringify(this.state.data, null, 2));
         //console.log('data: ', data);
         try {
           //this.uploadData(this.state.data);
-          console.log('data loaded: ', data);
+          //console.log('data loaded: ', data);
+          let cont = await this.checkData(this.state.data);
+          //console.log('cont: ', cont);
+          if (cont) this.uploadData(this.state.data);
         } catch(e) {
           console.log('Uploading Collection update file problem (e): ', e);
         }
@@ -69,6 +74,38 @@ class ExcelReader extends Component {
     } else {
       reader.readAsArrayBuffer(this.state.file);
     };
+  }
+
+  async checkData(records) {
+    await this.setState({ compliance: `Checking ${records.length} records for compliance` });
+    let errors = [];
+
+    records.forEach((record, idx) => {
+      if (record.name === undefined) errors.push(`Record id: ${idx + 1} Name is missing`);
+      if (record.type === undefined) errors.push(`Record id: ${idx + 1} Type is missing`);
+      if (record.accountRef === undefined) errors.push(`Record id: ${idx + 1} accountRef is missing`);
+      if (record.paymentTermDays === undefined) errors.push(`Record id: ${idx + 1} paymentTermDays is missing`);
+      if (record.creditLimit === undefined) errors.push(`Record id: ${idx + 1} creditLimit is missing`);
+      //if (record.currentStatus === undefined) errors.push(`Record id: ${idx + 1} currentStatus is missing`);
+      //for (const [key, value] of Object.entries(record)) {
+
+    //  }
+      //console.log('record: ', record);
+
+      //idx = idx + 1;
+      //if (record.name === 'SERENGETI GOLF & WILDLIFE EST. MARKETING') errors.push(`Problem with record ${idx + 1} - Name: ${Object.keys(record)}`);
+      //idx = idx - 1;
+    //  if (record.name === 'SERENGETI GOLF & WILDLIFE EST. MARKETING') {
+        //for (const [key, value] of Object.entries(record)) {
+          //if (value === null) console.log('Got one: ', key, value);
+          //console.log(`${key}: ${value}`);
+        //}
+    //  }
+    });
+    await this.setState({ errors: errors });
+    if (errors.length > 0) return false;
+    return true;
+    //console.log('errors: ', errors);
   }
 
   async uploadData(data) {
@@ -224,6 +261,10 @@ class ExcelReader extends Component {
       <p key={idx}>Account error: {err.sqlMessage}</p>
     );
 
+    const recordErrors = this.state.errors.map((err, idx) =>
+      <p key={idx}>Upload error: {err}</p>
+    );
+
     return (
       <div>
         <label htmlFor="file">Import new records</label>
@@ -234,9 +275,10 @@ class ExcelReader extends Component {
           value="Upload"
           onClick={this.handleFile}
         />
-        <p>Number of records uploaded: {this.state.progress}</p>
+        <p>{this.state.compliance}</p>
         {customerErrors}
         {accountErrors}
+        {recordErrors}
       </div>
 
     )

@@ -79,11 +79,27 @@ class NavBar extends React.Component {
     }
   }
 
+  nametoDisplay() {
+    if (process.env.NODE_ENV === 'development') {
+      return ('The System - Dev');
+    } else {
+      return ('The System');
+    }
+  }
+
+  colourToUse() {
+    if (process.env.NODE_ENV === 'development') {
+      return ("navbar navbar-expand-lg navbar-dark bg-secondary fixed-top");
+    } else {
+      return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
+    }
+  }
+
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+      <nav className={this.colourToUse()}>
         <Link className="navbar-brand" to="/">
-          The System
+          {this.nametoDisplay()}
           <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>

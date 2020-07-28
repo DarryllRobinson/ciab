@@ -111,7 +111,7 @@ class Dashboard extends Component {
           worklists.push({
             worklist: 'Queues',
             items: items
-          },
+          }/*,
           {
             worklist: 'Community',
             items: [
@@ -145,7 +145,7 @@ class Dashboard extends Component {
                 count: 2
               }
             ]
-          });
+          }*/);
 
           //console.log('worklists: ', worklists);
           //await this.setState({ worklists: [...this.state.worklists, ...worklists ] }); //another array

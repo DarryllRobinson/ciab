@@ -51,5 +51,6 @@ export default class Security {
       sessionStorage.removeItem('cwsSession', null);
       sessionStorage.removeItem('cwsStoreId', null);
       sessionStorage.removeItem('cwsClient', null);
+      sessionStorage.removeItem('cwsType', null);
     }
 }

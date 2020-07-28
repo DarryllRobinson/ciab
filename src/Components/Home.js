@@ -31,7 +31,7 @@ class Home extends Component {
               <h1>The System</h1>
                 <p className="lead">Your one-stop-shop for a complete customer lifecycle workflow solution</p>
                 <hr className="my-4" />
-                <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+                <p>It puts the lotion on its skin or it gets the hose again</p>
                 <p className="lead">
                   <a className="btn btn-primary btn-lg" href=" # " role="button">Learn more</a>
                 </p>
