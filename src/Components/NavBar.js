@@ -27,10 +27,10 @@ class NavBar extends React.Component {
               </li>
               {/*<li className="nav-item active">
                 <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
-              </li>*/}
+              </li>
               <li className="nav-item active">
                 <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
-              </li>
+              </li>*/}
             </ul>
           </div>
           <div className="navbar-brand">{firstName}</div>

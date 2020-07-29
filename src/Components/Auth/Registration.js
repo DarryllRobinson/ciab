@@ -53,6 +53,7 @@ export default class Registration extends Component {
       surname,
       email,
       phone,
+      //password,
       role,
       storeId,
       type,

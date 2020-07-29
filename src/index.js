@@ -1,19 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {BrowserRouter} from 'react-router-dom';
-import { TrackerProvider, Tracker } from 'react-tracker';
+import { disableReactDevTools } from '@fvilers/disable-react-devtools';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-const tracker = new Tracker();
+if (process.env.NODE_ENV === 'production') {
+  disableReactDevTools();
+}
 
 ReactDOM.render(
-  <TrackerProvider tracker={tracker}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </TrackerProvider>
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
 , document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

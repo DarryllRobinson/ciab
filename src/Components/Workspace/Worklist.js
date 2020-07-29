@@ -23,7 +23,7 @@ function Worklist(props) {
     <div className="col-lg-4">
       <div className="bs-component">
         <ul className="list-group">
-          <p className="lead">{worklist}</p>
+          <h5 className="card-subtitle" style={{ padding: "15px" }}>{worklist}</h5>
             {item}
         </ul>
       </div>

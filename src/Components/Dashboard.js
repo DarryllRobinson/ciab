@@ -286,7 +286,7 @@ class Dashboard extends Component {
     } else {
 
       const workspace = this.state.workspaces.map((workspace, idx) =>
-        <div key={idx} className="card border-primary mb-3" style={{padding: "20px"}}>
+        <div key={idx} className="card border-light mb-3" style={{padding: "20px"}}>
           {/*console.log('workspace: ', workspace)*/}
           <Workspace
             key={idx}

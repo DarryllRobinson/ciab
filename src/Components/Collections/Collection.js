@@ -1,5 +1,7 @@
 import React, {Component} from 'react';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 
 class Collection extends Component {
@@ -13,14 +15,15 @@ class Collection extends Component {
       recordId: this.props.location.state.caseId,
       collection: null,
       disabled: false,
-      caseNotes: '',
+      caseNotes: null,
       user: sessionStorage.getItem('cwsUser'),
       changesMade: false,
       ptpDate: null,
       ptpAmount: 0,
       nextVisitDate: null,
       pendReason: '---',
-      resolution: '---'
+      resolution: '---',
+      problems: []
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -47,7 +50,7 @@ class Collection extends Component {
     //console.log('record: ', record);
     //console.log('resolutions: ', resolutions);
 
-    console.log('pends: ', pends);
+    //console.log('pends: ', pends);
     await this.setState({
       collection: record,
       caseNotes: record.caseNotes,
@@ -56,8 +59,79 @@ class Collection extends Component {
     });
     // lock the record so no other agent accidentally opens it
     await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Locked' });
-
     //console.log('collection: ', this.state.collection);
+  }
+
+  notify(type, message, autoClose) {
+    switch (type) {
+      case 'info':
+        toast.info(message, {
+          position: "top-center",
+          autoClose: autoClose,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
+        break;
+      case 'success':
+        toast.success(message, {
+          position: "top-center",
+          autoClose: autoClose,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: 1
+        });
+        break;
+      case 'warn':
+        toast.warn(message, {
+          position: "top-center",
+          autoClose: autoClose,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
+        break;
+      case 'error':
+        toast.error(message, {
+          position: "top-center",
+          autoClose: autoClose,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
+        break;
+      case 'default':
+        toast(message, {
+          position: "top-center",
+          autoClose: autoClose,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: 1
+        });
+        break;
+      default:
+        toast('No type selected', {
+          position: "top-center",
+          autoClose: autoClose,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined
+        });
+        break;
+    }
+
   }
 
   async handleChange(e) {
@@ -73,11 +147,11 @@ class Collection extends Component {
   }
 
   async cancel() {
-    alert('All changes have been lost');
+    this.notify('warn', 'All changes have been lost', false);
     // unlock the record and release it to the pool
     await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Open' });
 
-    this.props.history.push({
+    setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
       state: {
         recordStatus: 'Open',
@@ -85,11 +159,18 @@ class Collection extends Component {
         type: this.state.type,
         workspace: this.state.workspace
       }
-    });
+    }), 3000);
   }
 
   async pendRecord() {
     const notes = this.state.caseNotes;
+
+    // checking all the mandatory fields are populated
+    let problems = [];
+    if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (this.state.nextVisitDate === null) problems.push('Please provide a Next Visit Date');
+    if (this.state.pendReason === '---') problems.push('Please select a Pend Reason');
+
     if (notes && notes.length > 10 && this.state.nextVisitDate !== null && this.state.pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
@@ -120,7 +201,7 @@ class Collection extends Component {
         }
       });
     } else {
-      alert('Please enter a note longer than 10 characters, provide a Next Visit Date and select a Pend Reason');
+      problems.forEach(problem => this.notify('error', problem, true));
     }
   }
 
@@ -228,7 +309,7 @@ class Collection extends Component {
     ));
 
     let pendList = [<option key="0" value="---">Pend Reason</option>];
-    console.log('pendList before: ', pendList);
+    //console.log('pendList before: ', pendList);
     pendList.push(this.state.pendReasons.map(pend =>
       <option key={pend.id} value={pend.shortCode}>{pend.pendreason}</option>
     ));
@@ -237,13 +318,13 @@ class Collection extends Component {
     /*<option value="unable">Unable to pay</option>
     <option value="already">Customer already paid</option>
     <option value="refuses">Customer refuses to pay</option>*/
-    console.log('resolutionList after: ', resolutionList);
-    console.log('pendList after: ', pendList);
+    //console.log('resolutionList after: ', resolutionList);
+    //console.log('pendList after: ', pendList);
 
     return (
 
       <div className="container">
-        <div className="row">{console.log('collection: ', collection)}
+        <div className="row">
           <div className="col-12">
             <div className="card border-primary">
               <div className="card-header">Case Number {collection[0].f_caseNumber}</div>
@@ -827,7 +908,7 @@ class Collection extends Component {
             </div>
           </div>
         </div>
-
+        <ToastContainer />
 
       </div>
     )

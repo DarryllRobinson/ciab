@@ -23,7 +23,7 @@ function Workspace(props) {
 
     return (
       <>
-        <p className="lead">{workspaceCapitalised}</p>
+        <h3 className="card-title">{workspaceCapitalised}</h3>
         <AppButton workspace={workspace}/>
         <div className="row">
           {worklist}
