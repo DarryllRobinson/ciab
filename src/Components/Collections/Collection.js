@@ -202,7 +202,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}` + `\n\r` + `Pend reason: ${this.state.pendReason}` + `\n\r` + `Notes: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nPend reason: ${this.state.pendReason}\nNotes: ${this.state.caseNotes}`;
       let caseUpdate = {
         caseNotes: newNote,
         currentStatus: 'Pended',
@@ -245,7 +245,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nPTP Date: ${this.state.ptpDate}  PTP Amount: ${this.state.ptpAmount}\nNotes: ${this.state.caseNotes}`;
       let caseUpdate = {
         caseNotes: newNote,
         currentStatus: 'Open',
@@ -287,7 +287,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nResolution: ${this.state.resolution}\nNotes: ${this.state.caseNotes}`;
       let caseUpdate = {
         caseNotes: newNote,
         currentStatus: 'Closed',
