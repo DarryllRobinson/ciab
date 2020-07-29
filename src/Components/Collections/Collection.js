@@ -22,8 +22,7 @@ class Collection extends Component {
       ptpAmount: 0,
       nextVisitDate: null,
       pendReason: '---',
-      resolution: '---',
-      problems: []
+      resolution: '---'
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -207,6 +206,13 @@ class Collection extends Component {
 
   async updateRecord() {
     const notes = this.state.caseNotes;
+
+    // checking all the mandatory fields are populated
+    let problems = [];
+    if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (this.state.ptpDate === null) problems.push('Please provide a PTP Date');
+    if (this.state.ptpAmount === 0) problems.push('Please select a PTP Amount');
+
     if (notes && notes.length > 10 && this.state.ptpDate !== null && this.state.ptpAmount !== 0) {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
@@ -237,12 +243,18 @@ class Collection extends Component {
         }
       });
     } else {
-      alert('Please enter a note longer than 10 characters and provide a PTP date and amount');
+      problems.forEach(problem => this.notify('error', problem, true));
     }
   }
 
   async closeRecord() {
     const notes = this.state.caseNotes;
+
+    // checking all the mandatory fields are populated
+    let problems = [];
+    if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (this.state.resolution === '---') problems.push('Please provide a resolution');
+
     if (notes && notes.length > 10 && this.state.resolution !== "---") {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
@@ -274,7 +286,7 @@ class Collection extends Component {
         }
       });
     } else {
-      alert('Please enter a note longer than 10 characters and provide a resolution');
+      problems.forEach(problem => this.notify('error', problem, true));
     }
   }
 
