@@ -202,7 +202,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${this.state.user} - ${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}` + `\n\r` + `Pend reason: ${this.state.pendReason}` + `\n\r` + `Notes: ${this.state.caseNotes}`;
       let caseUpdate = {
         caseNotes: newNote,
         currentStatus: 'Pended',
