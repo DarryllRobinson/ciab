@@ -1,8 +1,10 @@
 import React, {Component} from 'react';
+import {Link} from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
+import NumberFormat from 'react-number-format';
 
 class Collection extends Component {
   constructor(props) {
@@ -10,9 +12,9 @@ class Collection extends Component {
 
     this.state = {
       clientId: sessionStorage.getItem('cwsClient'),
-      type: this.props.location.state.type,
-      workspace: this.props.location.state.workspace,
-      recordId: this.props.location.state.caseId,
+      type: null,
+      workspace: null,
+      recordId: null,
       collection: null,
       disabled: false,
       caseNotes: null,
@@ -35,30 +37,52 @@ class Collection extends Component {
 
   async componentDidMount() {
     //let record = [];
-    //console.log('this.props.location: ', this.props.location);
+    console.log('this.props.location: ', this.props.location);
+    console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
+    // check if there are any props or send to the dashboard again
+    if (this.props.location.state === undefined) {
+      this.notify('error', 'The record was not found. Returning to the dashboard.', false);
+      //alert('Buggered');
+    } else if (this.props.location.state !== undefined) {
+      // initial setting of state - need this in case someone tries to pull a record not found in the db
+      const type = this.props.location.state.type;
+      const workspace = this.props.location.state.workspace;
+      const recordId = this.props.location.state.caseId;
+      await this.setState({
+        recordId: recordId,
+        type: type,
+        workspace: workspace
+      });
 
-    const type = this.state.type;
-    const workspace = this.state.workspace;
-    const clientId = this.state.clientId;
-    const recordId = this.state.recordId;
+      const clientId = this.state.clientId;
 
-    let record = await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`);
-    let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
-    let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
-    //console.log('this.props.location.pathname: ', this.props.location.pathname);
-    //console.log('record: ', record);
-    //console.log('resolutions: ', resolutions);
+      let record = null;
+      await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`)
+        .then(response => {
+          console.log('Collection response: ', response);
+          if (response) record = response;
+        }
+      );
+      let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
+      let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
+      //console.log('this.props.location.pathname: ', this.props.location.pathname);
+      //console.log('record: ', record);
+      //console.log('resolutions: ', resolutions);
 
-    //console.log('pends: ', pends);
-    await this.setState({
-      collection: record,
-      caseNotes: record.caseNotes,
-      pendReasons: pends,
-      resolutions: resolutions
-    });
-    // lock the record so no other agent accidentally opens it
-    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Locked' });
-    //console.log('collection: ', this.state.collection);
+      //console.log('pends: ', pends);
+      await this.setState({
+        collection: record,
+        caseNotes: record.caseNotes,
+        pendReasons: pends,
+        resolutions: resolutions
+      });
+      // lock the record so no other agent accidentally opens it
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Locked' });
+      //console.log('collection: ', this.state.collection);
+    } else {
+      this.notify('error', 'The record was not found. Returning to the dashboard.', false);
+      setTimeout(() => this.props.history.push('/dashboard'), 3000);
+    }
   }
 
   notify(type, message, autoClose) {
@@ -296,7 +320,8 @@ class Collection extends Component {
 
   render() {
     const collection = this.state.collection;
-    if (collection === null) return <p>Loading...</p>;
+    if (collection === null && this.props.location.state !== undefined) return <p>Loading...</p>;
+    if (this.props.location.state === undefined) return <p>Record not found. Please return to the <Link to={"/dashboard"}>dashboard</Link></p>;
 
     const paymentDueDate = this.state.collection[0].paymentDueDate ?
       moment(collection[0].paymentDueDate).format('YYYY-MM-DD') :
@@ -416,12 +441,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputcreditLimit">Credit Limit</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="creditLimit"
                       className="form-control"
-                      value={collection[0].creditLimit || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].creditLimit.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -429,12 +456,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputtotalBalance">Total Balance</label>
-                    <input
-                      disabled={true}
-                      type="number"
+                    <NumberFormat
+                      displayType={'input'}
                       name="totalBalance"
                       className="form-control"
-                      value={collection[0].totalBalance || 0}
+                      disabled={true}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].totalBalance.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -444,12 +473,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputamountDue">Amount Due</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="amountDue"
                       className="form-control"
-                      value={collection[0].amountDue || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].amountDue.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -457,12 +488,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputcurrentBalance">Current Balance</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="currentBalance"
                       className="form-control"
-                      value={collection[0].currentBalance || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].currentBalance.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -480,12 +513,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays30">30 Days</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="days30"
                       className="form-control"
-                      value={collection[0].days30 || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].days30.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -493,12 +528,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays60">60 Days</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="days60"
                       className="form-control"
-                      value={collection[0].days60 || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].days60.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -506,12 +543,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays90">90 Days</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="days90"
                       className="form-control"
-                      value={collection[0].days90 || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].days90.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -521,12 +560,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays120">120 Days</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="days120"
                       className="form-control"
-                      value={collection[0].days120 || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].days120.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -534,12 +575,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays150">150 Days</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="days150"
                       className="form-control"
-                      value={collection[0].days150 || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].days150.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -547,12 +590,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays180">180 Days</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
-                      name="days180"
+                      displayType={'input'}
+                      name="days150"
                       className="form-control"
-                      value={collection[0].days180 || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].days150.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -613,12 +658,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputlastPaymentAmount">Last Payment Amount</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
-                      name="lastPaymentAmount"
+                      displayType={'input'}
                       className="form-control"
-                      value={collection[0].lastPaymentAmount || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      name="lastPaymentAmount"
+                      value={collection[0].lastPaymentAmount.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -649,12 +696,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputptpAmount">Last PTP Amount</label>
-                    <input
+                    <NumberFormat
                       disabled={true}
-                      type="number"
+                      displayType={'input'}
                       name="ptpAmount"
                       className="form-control"
-                      value={collection[0].ptpAmount || 0}
+                      thousandSeparator={true}
+                      prefix={'R'}
+                      value={collection[0].ptpAmount.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -690,7 +739,7 @@ class Collection extends Component {
                       type="text"
                       name="representativeName"
                       className="form-control"
-                      value={collection[0].representativeName}
+                      value={collection[0].representativeName || ''}
                     />
                   </div>
                 </div>
@@ -703,7 +752,7 @@ class Collection extends Component {
                       type="text"
                       name="telephone"
                       className="form-control"
-                      value={collection[0].telephone}
+                      value={collection[0].telephone || ''}
                     />
                   </div>
                 </div>
@@ -753,12 +802,13 @@ class Collection extends Component {
                   <div className="col-4">
                     <div className="form-group">
                       <label htmlFor="exampleInputptpAmount">PTP Amount</label>
-                      <input
+                      <NumberFormat
+                        displayType={'input'}
+                        className="form-control"
+                        thousandSeparator={true}
                         disabled={false}
-                        type="number"
                         name="ptpAmount"
                         onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
                         value={this.state.ptpAmount || ''}
                       />
                     </div>
@@ -894,28 +944,36 @@ class Collection extends Component {
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.pendRecord()}}>
+                      onClick={() => {this.pendRecord()}}
+                      style={{ margin: "5px" }}
+                    >
                       Save and Pend
                     </button>
 
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.closeRecord()}}>
+                      onClick={() => {this.closeRecord()}}
+                      style={{ margin: "5px" }}
+                    >
                       Close
                     </button>
 
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.updateRecord()}}>
+                      onClick={() => {this.updateRecord()}}
+                      style={{ margin: "5px" }}
+                    >
                       Update
                     </button>
 
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.cancel()}}>
+                      onClick={() => {this.cancel()}}
+                      style={{ margin: "5px" }}
+                    >
                       Cancel
                     </button>
                   </div>
