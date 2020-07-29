@@ -146,7 +146,11 @@ class Collection extends Component {
   }
 
   async cancel() {
-    this.notify('warn', 'All changes have been lost', false);
+    let timer = 0;
+    if (this.state.changesMade) {
+      this.notify('warn', 'All changes have been lost', false);
+      timer = 3000;
+    }
     // unlock the record and release it to the pool
     await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Open' });
 
@@ -158,7 +162,7 @@ class Collection extends Component {
         type: this.state.type,
         workspace: this.state.workspace
       }
-    }), 3000);
+    }), timer);
   }
 
   async pendRecord() {
