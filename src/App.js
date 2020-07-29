@@ -22,6 +22,7 @@ import NewBlog from './Components/Community/NewBlog';
 
 import Registration from './Components/Auth/Registration';
 import ExcelReader from './Utilities/ExcelReader';
+import Reports from './Components/Reports';
 
 class App extends Component {
   constructor(props) {
@@ -153,6 +154,7 @@ class App extends Component {
 
             <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/auth/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/reports' render={props => (<Reports {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
         </div>
