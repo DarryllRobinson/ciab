@@ -194,10 +194,11 @@ class Workzone extends Component {
             recordId: record.id,
             accountNumber: record.accountNumber,
             caseId: record.f_caseNumber,
+            caseNotes: record.caseNotes,
             name: record.name,
             regNumber: record.regNumber,
             debtorAge: record.debtorAge,
-            creditLimit: record.creditLimit,
+            resolution: record.resolution,
             totalBalance: record.totalBalance,
             amountDue: record.amountDue,
             currentBalance: record.currentBalance,
@@ -214,8 +215,10 @@ class Workzone extends Component {
             lastPTPDate: record.lastPTPDate,
             lastPTPAmount: record.lastPTPAmount,
             accountNotes: record.accountNotes,
-            nextVisitDate: record.nextVisitDate,
+            nextVisitDate: moment(record.nextVisitDate).format('YYYY-MM-DD'),
             currentStatus: record.currentStatus,
+            updatedBy: record.updatedBy,
+            updatedDate: moment(record.updatedDate).format('YYYY-MM-DD HH:mm:ss'),
             createdBy: record.createdBy,
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
             //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
@@ -257,8 +260,8 @@ class Workzone extends Component {
               sort: 'asc'
             },
             {
-              label: 'Credit Limit',
-              field: 'creditLimit',
+              label: 'Case Notes',
+              field: 'caseNotes',
               sort: 'asc'
             },
             {
@@ -274,6 +277,11 @@ class Workzone extends Component {
             {
               label: 'Current Balance',
               field: 'currentBalance',
+              sort: 'asc'
+            },
+            {
+              label: 'Resolution',
+              field: 'resolution',
               sort: 'asc'
             },
             /*{
@@ -340,25 +348,25 @@ class Workzone extends Component {
               label: 'Account Notes',
               field: 'accountNotes',
               sort: 'asc'
-            },
+            },*/
             {
               label: 'Next Visit Date',
               field: 'nextVisitDate',
               sort: 'asc'
-            },*/
+            },
             {
               label: 'Current Status',
               field: 'currentStatus',
               sort: 'asc'
             },
             {
-              label: 'Agent',
-              field: 'createdBy',
+              label: 'Updated By',
+              field: 'updatedBy',
               sort: 'asc'
             },
             {
-              label: 'Date Created',
-              field: 'createdDate',
+              label: 'Date Updated',
+              field: 'updatedDate',
               sort: 'asc'
             },
             {

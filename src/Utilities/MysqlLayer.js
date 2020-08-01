@@ -11,7 +11,7 @@ export default class MysqlLayer {
     this.security.validateSession();
 
     try {
-      console.log(`Getting from ${AppSettings.serverEndpoint}${path}`);
+      //console.log(`Getting from ${AppSettings.serverEndpoint}${path}`);
       let response = await axios.get(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
     } catch(e) {
@@ -33,7 +33,7 @@ export default class MysqlLayer {
     this.security.validateSession();
 
     try {
-      console.log(`Posting to ${AppSettings.serverEndpoint}${path}`);
+      //console.log(`Posting to ${AppSettings.serverEndpoint}${path}`);
       let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       //console.log('response: ', response);
       return response;
@@ -54,10 +54,10 @@ export default class MysqlLayer {
   // Post route for Login only as there is no validateSession
   async PostLogin(path, object) {
     //this.security.validateSession();
-    console.log('path: ', path);
-    console.log('object: ', object);
+    //console.log('path: ', path);
+    //console.log('object: ', object);
     try {
-      console.log(`Posting login to from ${AppSettings.serverEndpoint}${path}`);
+      //console.log(`Posting login to from ${AppSettings.serverEndpoint}${path}`);
       let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       console.log('response: ', response);
       return response;
@@ -80,7 +80,7 @@ export default class MysqlLayer {
     this.security.validateSession();
 
     try {
-      console.log(`Putting into ${AppSettings.serverEndpoint}${path}`);
+      //console.log(`Putting into ${AppSettings.serverEndpoint}${path}`);
       let response = await axios.put(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       return response.data;
     } catch(e) {
@@ -102,7 +102,7 @@ export default class MysqlLayer {
     this.security.validateSession();
 
     try {
-      console.log(`Deleting from ${AppSettings.serverEndpoint}${path}`);
+      //console.log(`Deleting from ${AppSettings.serverEndpoint}${path}`);
       let response = await axios.delete(`${AppSettings.serverEndpoint}${path}`, this.setHeaders());
       return response.data;
     } catch(e) {

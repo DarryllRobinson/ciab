@@ -17,7 +17,7 @@ export default class Reports extends Component {
     this.state = {
       type: 'business',
       workspace: 'collections',
-      clientId: 1
+      clientId: sessionStorage.getItem('cwsClient')
     };
 
     this.loadCollectionRecords = this.loadCollectionRecords.bind(this);

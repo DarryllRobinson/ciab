@@ -42,7 +42,7 @@ class NavBar extends React.Component {
 
       return (
         <>
-          <div className="collapse navbar-collapse" id="navbarColor01">
+          <div className="collapse navbar-collapse" id="thesystemNavBar">
             <ul className="navbar-nav mr-auto">
               {/*<li className="nav-item active">
                 <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
@@ -57,10 +57,10 @@ class NavBar extends React.Component {
               <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
             </li>
             <li className="nav-item active">
-              <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
+              <Link className="nav-link" to="/reports">Reports <span className="sr-only"></span></Link>
             </li>
             <li className="nav-item active">
-              <Link className="nav-link" to="/reports">Reports <span className="sr-only"></span></Link>
+              <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
             </li>
             </ul>
           </div>
@@ -83,18 +83,33 @@ class NavBar extends React.Component {
   }
 
   nametoDisplay() {
-    if (process.env.NODE_ENV === 'development') {
-      return ('The System - Dev');
-    } else {
-      return ('The System');
+    //console.log('process.env.REACT_APP_STAGE: ', process.env.REACT_APP_STAGE);
+    switch (process.env.REACT_APP_STAGE) {
+      case 'development':
+        return ('The System - Dev');
+      case 'production':
+        return ('The System');
+      case 'sit':
+        return ('The System - SIT');
+      case 'uat':
+        return ('The System - UAT');
+      default:
+        return ('The System - ???');
     }
   }
 
   colourToUse() {
-    if (process.env.NODE_ENV === 'development') {
-      return ("navbar navbar-expand-lg navbar-dark bg-secondary fixed-top");
-    } else {
-      return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
+    switch (process.env.REACT_APP_STAGE) {
+      case 'development':
+        return ("navbar navbar-expand-lg navbar-dark bg-light fixed-top");
+      case 'production':
+        return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
+      case 'sit':
+        return ("navbar navbar-expand-lg navbar-dark bg-dark fixed-top");
+      case 'uat':
+        return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
+      default:
+        return ('The System - ???');
     }
   }
 
@@ -103,7 +118,7 @@ class NavBar extends React.Component {
       <nav className={this.colourToUse()}>
         <Link className="navbar-brand" to="/">
           {this.nametoDisplay()}
-          <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+          <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#thesystemNavBar" aria-controls="thesystemNavBar" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
         </Link>

@@ -76,8 +76,14 @@ class Collection extends Component {
         pendReasons: pends,
         resolutions: resolutions
       });
+
       // lock the record so no other agent accidentally opens it
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Locked' });
+      const dateTime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      const update = {
+        currentStatus: 'Locked',
+        lockedDatetime: dateTime
+      };
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, update);
       //console.log('collection: ', this.state.collection);
     } else {
       this.notify('error', 'The record was not found. Returning to the dashboard.', false);
@@ -175,8 +181,12 @@ class Collection extends Component {
       this.notify('warn', 'All changes have been lost', false);
       timer = 3000;
     }
+
     // unlock the record and release it to the pool
-    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, { currentStatus: 'Open' });
+    const update = {
+      currentStatus: 'Open'
+    };
+    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, update);
 
     setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
@@ -197,12 +207,15 @@ class Collection extends Component {
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
     if (this.state.nextVisitDate === null) problems.push('Please provide a Next Visit Date');
     if (this.state.pendReason === '---') problems.push('Please select a Pend Reason');
+    if (this.state.ptpDate && this.state.ptpAmount === 0) problems.push('Please provide a PTP Amount');
+    if (!this.state.ptpDate && this.state.ptpAmount !== 0) problems.push('Please provide a PTP Date');
 
     if (notes && notes.length > 10 && this.state.nextVisitDate !== null && this.state.pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
       let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nPend reason: ${this.state.pendReason}\nNotes: ${this.state.caseNotes}`;
+
       let caseUpdate = {
         caseNotes: newNote,
         currentStatus: 'Pended',
@@ -211,9 +224,18 @@ class Collection extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let outcomeUpdate = {
-        nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
-      };
+      let outcomeUpdate = '';
+      if (!this.state.ptpDate) {
+        outcomeUpdate = {
+          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+        };
+      } else {
+        outcomeUpdate = {
+          ptpDate: this.state.ptpDate,
+          ptpAmount: this.state.ptpAmount,
+          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+        };
+      }
 
       await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
@@ -234,14 +256,16 @@ class Collection extends Component {
 
   async updateRecord() {
     const notes = this.state.caseNotes;
+    console.log('Updating...');
 
     // checking all the mandatory fields are populated
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
-    if (this.state.ptpDate === null) problems.push('Please provide a PTP Date');
-    if (this.state.ptpAmount === 0) problems.push('Please select a PTP Amount');
+    if (this.state.ptpDate && this.state.ptpAmount === 0) problems.push('Please provide a PTP Amount');
+    if (!this.state.ptpDate && this.state.ptpAmount !== 0) problems.push('Please provide a PTP Date');
+    //if (this.state.ptpAmount === 0) problems.push('Please select a PTP Amount');
 
-    if (notes && notes.length > 10 && this.state.ptpDate !== null && this.state.ptpAmount !== 0) {
+    if (notes && notes.length > 10) {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
 
@@ -253,14 +277,32 @@ class Collection extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let outcomeUpdate = {
-        ptpDate: moment(this.state.ptpDate).format('YYYY-MM-DD'),
-        ptpAmount: this.state.ptpAmount
-      };
+      let outcomeUpdate = null;
+      if (!this.state.ptpDate && this.state.nextVisitDate) {
+        outcomeUpdate = {
+          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+        };
+      } else if (this.state.ptpDate && this.state.nextVisitDate) {
+        outcomeUpdate = {
+          ptpDate: this.state.ptpDate,
+          ptpAmount: this.state.ptpAmount,
+          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+        };
+      } else if (this.state.ptpDate && !this.state.nextVisitDate) {
+        outcomeUpdate = {
+          ptpDate: this.state.ptpDate,
+          ptpAmount: this.state.ptpAmount
+        };
+      }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      let casePut = await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
-      await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
+      let outcomePut = null;
+      if (outcomeUpdate) outcomePut = await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
+
+      console.log('casePut: ', casePut);
+      console.log('outcomePut: ', outcomePut);
+
       this.props.history.push({
         pathname: '/workzone/collections',
         state: {
@@ -282,6 +324,8 @@ class Collection extends Component {
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
     if (this.state.resolution === '---') problems.push('Please provide a resolution');
+    if (this.state.ptpDate && this.state.ptpAmount === 0) problems.push('Please provide a PTP Amount');
+    if (!this.state.ptpDate && this.state.ptpAmount !== 0) problems.push('Please provide a PTP Date');
 
     if (notes && notes.length > 10 && this.state.resolution !== "---") {
       this.setState({ disabled: true });
@@ -295,11 +339,22 @@ class Collection extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let outcomeUpdate = {
-        closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-        closedBy: this.state.user,
-        resolution: this.state.resolution
-      };
+      let outcomeUpdate = '';
+      if (!this.state.ptpDate) {
+        outcomeUpdate = {
+          closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          closedBy: this.state.user,
+          resolution: this.state.resolution
+        };
+      } else {
+        outcomeUpdate = {
+          ptpDate: this.state.ptpDate,
+          ptpAmount: this.state.ptpAmount,
+          closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          closedBy: this.state.user,
+          resolution: this.state.resolution
+        };
+      }
 
       await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
@@ -447,7 +502,7 @@ class Collection extends Component {
                       name="creditLimit"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].creditLimit.toFixed(2) || 0}
                     />
                   </div>
@@ -462,7 +517,7 @@ class Collection extends Component {
                       className="form-control"
                       disabled={true}
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].totalBalance.toFixed(2) || 0}
                     />
                   </div>
@@ -479,7 +534,7 @@ class Collection extends Component {
                       name="amountDue"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].amountDue.toFixed(2) || 0}
                     />
                   </div>
@@ -494,7 +549,7 @@ class Collection extends Component {
                       name="currentBalance"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].currentBalance.toFixed(2) || 0}
                     />
                   </div>
@@ -519,7 +574,7 @@ class Collection extends Component {
                       name="days30"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].days30.toFixed(2) || 0}
                     />
                   </div>
@@ -534,7 +589,7 @@ class Collection extends Component {
                       name="days60"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].days60.toFixed(2) || 0}
                     />
                   </div>
@@ -549,7 +604,7 @@ class Collection extends Component {
                       name="days90"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].days90.toFixed(2) || 0}
                     />
                   </div>
@@ -566,7 +621,7 @@ class Collection extends Component {
                       name="days120"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].days120.toFixed(2) || 0}
                     />
                   </div>
@@ -581,7 +636,7 @@ class Collection extends Component {
                       name="days150"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].days150.toFixed(2) || 0}
                     />
                   </div>
@@ -596,7 +651,7 @@ class Collection extends Component {
                       name="days150"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].days150.toFixed(2) || 0}
                     />
                   </div>
@@ -663,7 +718,7 @@ class Collection extends Component {
                       displayType={'input'}
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       name="lastPaymentAmount"
                       value={collection[0].lastPaymentAmount.toFixed(2) || 0}
                     />
@@ -702,7 +757,7 @@ class Collection extends Component {
                       name="ptpAmount"
                       className="form-control"
                       thousandSeparator={true}
-                      prefix={'R'}
+                      prefix={'R '}
                       value={collection[0].ptpAmount.toFixed(2) || 0}
                     />
                   </div>
