@@ -9,12 +9,12 @@ class Dashboard extends Component {
     super(props);
 
     this.state = {
+      user: null,
+      client: null,
       loading: true,
-      tasks: [
-        'list_all',
-        'list_today'
-      ],
+      role: null,
       records: null,
+      service: null,
       worklists: [],
       workspaces: []
     }
@@ -24,36 +24,10 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
-    //console.log('Dashboard props: ', this.props);
-    //console.log('starting state: ', this.state);
+    console.log('Dashboard props: ', this.props);
 
-    await this.setUser();
-    const clientId = this.state.user[0].clientId;
-
-    //console.log('clientId: ', clientId);
-    await this.getClientServices(clientId);
-    const type = this.state.type;
-    const workspace = this.state.workspace;
-    const tasks = this.state.tasks;
-    console.log(type, workspace, tasks);
-
-    let worklists = await this.setWorklists(type, workspace, tasks, clientId);
-    console.log('worklists: ', worklists);
-    let workspaces = [];
-    workspaces.push({
-      workspace: workspace,
-      worklists: worklists
-    });
-
-    await this.setState({
-      loading: false,
-      workspaces: [...this.state.workspaces, ...workspaces ]
-    });
-    console.log('final state: ', this.state);
-    console.log('final workspaces: ', this.state.workspaces);
-  }
-
-  async setUser() {
+    //this.props.checkLoginStatus();
+    // get user fields from session
     let data = {
       firstName: sessionStorage.getItem('cwsFirstName'),
       surname: sessionStorage.getItem('cwsSurname'),
@@ -64,110 +38,143 @@ class Dashboard extends Component {
       clientId: sessionStorage.getItem('cwsClient')
     };
 
-    let user = [];
-    user.push(data);
-    await this.setState({ user: user });
-  }
+    //if (Object.keys(this.props.user).length === 0) {
+      let user = [];
+      user.push(data);
+      await this.setState({ user: user });
+    /*} else {
+      let user = this.props.user;
+      await this.setState({ user: user });
+    }*/
+    //const user = data ? data : ;//await this.mysqlLayer.Get(`/admin/users/${this.state.userId}`);
+    //console.log('Dashboard user: ', this.state.user);
 
-  async getClientServices(clientId) {
-    let clientServices = await this.mysqlLayer.Get(`/admin/clientservices/${clientId}`);
-    await this.setState({
-      type: clientServices[0].type,
-      workspace: clientServices[0].service,
-    });
-  }
+    // get client from user who logged in
+    const client = data.clientId ? data.clientId : this.props.user[0].client;//await this.mysqlLayer.Get(`/admin/clients/${user[0].f_clientId}`);
+    //console.log('Dashboard client: ', client);
+    //const type = sessionStorage.getItem('cwsType');
 
-  async setWorklists(type, workspace, tasks, client) {
-    //console.log('setWorklist: ', tasks);
+    // has client paid? - still thinking about this one...
+    /*if (client[0].hasPaid === 0) {
+      this.props.history.push(`/admin/arrears`);
+    } else {*/
+      // what services are turned on?
+      //console.log('getting clientservices');
+      const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${client}`);
 
-    let lists = [];
-    tasks.forEach(async task => {
-      //console.log('task: ', task);
+      clientservices.forEach(async service => {
+        // Ensuring the state.worklists are empty
+        await this.setState({ worklists: [] });
 
-      let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
-      let statusArr = [];
-      records.forEach(record => {
-        //console.log('currentStatus: ', record.currentStatus);
-        statusArr.push(record.currentStatus);
-      });
-      await this.setState({ records: records });
-      let worklist = statusArr.filter(this.onlyUnique);
-      //console.log('worklist: ', worklist);
+        let workspace = service.service
+        let type = service.type;
+        //console.log('Got the workspace: ', workspace);
+        //console.log('Got the type: ', type);
+        let task = 'list_all';
+        //console.log(`url: /${type}/${workspace}/${task}/${client}`);
 
-      // Need to ensure unapproved record statuses aren't shown
-      let worklists = [];
-      if (worklist.length > 0) worklists = this.filterWorklists(workspace, worklist);
-      //console.log('worklists: ', worklists);
+        let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
+        //console.log('records: ', records);
+        //console.log('workspace: ', workspace);
+        //await this.setState({ records: records });
 
-      worklists.forEach(async worklist => {
-        console.log('forEach worklist: ', worklist);
-        //let list = [{worklist: task}];
-        let items = await this.setItems(worklist, records);
-        //console.log('list: ', list);
-        console.log('items: ', items);
-        lists.push({
-          worklist: task,
-          items: items
-        });
-      });
-      //console.log('lists: ', lists);
-    });
-    return lists;
-  }
-/*
-
-      let items = [];
-      worklists.forEach(async worklist => {
-        let count = 0;
+        let statusArr = [];
         records.forEach(record => {
-          if (record.currentStatus === worklist) {
-            ++count;
-          }
+          //console.log('currentStatus: ', record.currentStatus);
+          statusArr.push(record.currentStatus);
         });
-
-        items.push({
-          item: worklist,
-          count: count
-        });
-        console.log('items: ', items);
-
-        switch (task) {
-          case 'list_all':
-            task = 'Queues';
-            break;
-          case 'list_today':
-            task = 'Work for today';
-            break;
-          default:
-            task = 'Task not found';
-            break;
-        }
-
+        //console.log('statusArr: ', statusArr);
+        let completeWorklist = statusArr.filter(this.onlyUnique);
+        //console.log('Got the completeWorklist: ', completeWorklist);
         let worklists = [];
-        worklists.push({
-          worklist: task,
-          items: items
-        })
+        if (completeWorklist.length > 0) worklists = this.filterWorklists(workspace, completeWorklist);
+
+        let items = [];
+        worklists.forEach(async worklist => {
+          let count = 0;
+          records.forEach(record => {
+            if (record.currentStatus === worklist) {
+              ++count;
+            }
+          });
+          //console.log('worklist: ', worklist);
+          //console.log('record: ', record);
+
+          //console.log('count: ', count);
+          items.push({
+            item: worklist,
+            count: count
+          });
+          //console.log('items: ', items);
+
+          let worklists = [];
+          worklists.push({
+            worklist: 'Queues',
+            items: items
+          }/*,
+          {
+            worklist: 'Today',
+            items: [
+              {
+                item: 'Community 1',
+                count: 12
+              },
+              {
+                item: 'Community 2',
+                count: 3
+              },
+              {
+                item: 'Community 3',
+                count: 2
+              }
+            ]
+          },
+          {
+            worklist: 'News',
+            items: [
+              {
+                item: 'News 1',
+                count: 12
+              },
+              {
+                item: 'News 2',
+                count: 3
+              },
+              {
+                item: 'News 3',
+                count: 2
+              }
+            ]
+          }*/);
+
+          //console.log('worklists: ', worklists);
+          //await this.setState({ worklists: [...this.state.worklists, ...worklists ] }); //another array
+          await this.setState({ worklists: worklists });
+          //console.log('this.state.worklists: ', this.state.worklists);
+        });
+
+        let workspaces = [];
+        workspaces.push({
+          workspace: workspace,
+          worklists: this.state.worklists
+        });
+
+        //console.log('workspaces: ', workspaces);
+
+        // Push into State
+        await this.setState({
+          client: client,
+          //user: user,
+          records: records,
+          type: type,
+          workspaces: [...this.state.workspaces, ...workspaces ]
+        });
+
       });
-    });
 
-  }*/
-
-  async setItems(task, records) {
-    //console.log('setItems task: ', task);
-    let items = [];
-    let count = 0;
-    records.forEach(record => {
-      if (record.currentStatus === task) {
-        ++count;
-      }
-    });
-    //console.log(task, count);
-    items.push({
-      item: task,
-      count: count
-    });
-    return items;
+      // Should be good to render now
+      this.setState({ loading: false });
+    //}   this is for the hasPaid check
   }
 
   componentDidUpdate() {
@@ -264,6 +271,9 @@ class Dashboard extends Component {
   }
 
   onlyUnique(value, index, self) {
+    /*console.log('value: ', value);
+    console.log('index: ', index);
+    console.log('self: ', self);*/
     return self.indexOf(value) === index;
   }
 

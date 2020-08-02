@@ -2,6 +2,7 @@ import React from 'react';
 import Item from './Item';
 
 function Worklist(props) {
+  //console.log('Worklist props: ', props);
   const workspace = props.workspace;
   const records = props.records;
   const type = props.type;

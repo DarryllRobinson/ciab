@@ -10,16 +10,21 @@ function Workspace(props) {
     const type = props.type;
     const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1);
     const worklists = props.workspaces.worklists;
+    //console.log('Workspace worklists: ', worklists);
 
-    const worklist = worklists.map((worklist, idx) =>
-      <Worklist
-        key={idx}
-        records={records}
-        workspace={workspace}
-        worklist={worklist}
-        type={type}
-        items={worklist.items} />
-    );
+    const worklist = worklists.map((worklist, idx) => {
+      //console.log('worklist idx: ', worklist, idx);
+      return (
+        <Worklist
+          key={idx}
+          records={records}
+          workspace={workspace}
+          worklist={worklist}
+          type={type}
+          items={worklist.items}
+        />
+      );
+    });
 
     return (
       <>
