@@ -15,6 +15,7 @@ class ExcelReader extends Component {
       progress: 0,
       accountErrors: [],
       customerErrors: [],
+      contactErrors: [],
       caseErrors: [],
       outcomeErrors: [],
       errors: [],
@@ -22,6 +23,7 @@ class ExcelReader extends Component {
       workspaces: [
         'customers',
         'accounts',
+        'contacts',
         'cases',
         'outcomes'
       ]
@@ -29,8 +31,9 @@ class ExcelReader extends Component {
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.uploadData = this.uploadData.bind(this);
-    this.saveAccountRecordsToDatabase = this.saveAccountRecordsToDatabase.bind(this);
     this.saveCustomerRecordsToDatabase = this.saveCustomerRecordsToDatabase.bind(this);
+    this.saveAccountRecordsToDatabase = this.saveAccountRecordsToDatabase.bind(this);
+    this.saveContactRecordsToDatabase = this.saveContactRecordsToDatabase.bind(this);
     this.saveCaseRecordsToDatabase = this.saveCaseRecordsToDatabase.bind(this);
     this.saveOutcomeRecordsToDatabase = this.saveOutcomeRecordsToDatabase.bind(this);
 
@@ -70,7 +73,7 @@ class ExcelReader extends Component {
         //console.log('data: ', data);
         try {
           //this.uploadData(this.state.data);
-          console.log('data loaded: ', data);
+          //console.log('data loaded: ', data);
           let cont = await this.checkData(workspace, this.state.data);
           //console.log('cont: ', cont);
           if (cont) this.uploadData(workspace, this.state.data);
@@ -106,6 +109,11 @@ class ExcelReader extends Component {
           if (record.CustomerRefNo === undefined) errors.push(`Record id: ${idx + 1} CustomerRefNo is missing`);
         });
         break;
+      case 'contacts':
+        records.forEach((record, idx) => {
+          if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
+        });
+        break;
       case 'cases':
         records.forEach((record, idx) => {
           if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
@@ -137,6 +145,9 @@ class ExcelReader extends Component {
           break;
         case 'accounts':
           await this.saveAccountRecordsToDatabase(datum);
+          break;
+        case 'contacts':
+          await this.saveContactRecordsToDatabase(datum);
           break;
         case 'cases':
           await this.saveCaseRecordsToDatabase(datum);
@@ -337,11 +348,22 @@ class ExcelReader extends Component {
   async saveOutcomeRecordsToDatabase(record) {
 
     const createdDate = record.DateCreated ?
-      moment(record.DateCreated).format('YYYY-MM-DD') :
+      moment(record.DateCreated).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
+    /*const nextVisitDateTime = record.NextVisitDate ?
+      (record.NextVisitDate + ' ' + record.NextVisitTime) :
+      null;
+
+      console.log('record.NextVisitDate: ', record.NextVisitDate);
+      console.log('record.NextVisitDate: ', moment(record.NextVisitDate).format('YYYY-MM-DD'));
+      console.log('record.NextVisitDate: ', moment(record.NextVisitDate).format('DD-MM-YYYY'));
+      console.log('record.NextVisitTime: ', moment(record.NextVisitTime).format('HH:mm:ss'));
+      const newDate = this.ExcelDateToJSDate(record.NextVisitDate);
+      console.log('newDate: ', moment(newDate).format('YYYY-MM-DD'));*/
+
     const nextVisitDate = record.NextVisitDate ?
-      moment(record.NextVisitDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.NextVisitDate)).format('YYYY-MM-DD') :
       null;
 
     const nextVisitTime = record.NextVisitTime ?
@@ -379,7 +401,7 @@ class ExcelReader extends Component {
     ];
 
     let response = await this.postToDb(outcome, 'outcomes');
-      console.log('saveOutcomeRecordsToDatabase response: ', response);
+      //console.log('saveOutcomeRecordsToDatabase response: ', response);
       if (response.data.errno) {
         let error =[];
         error = this.state.outcomeErrors;
@@ -391,6 +413,56 @@ class ExcelReader extends Component {
     /*const response = await this.postToDb(accounts, 'accounts');
     console.log('saveAccountRecordsToDatabase response: ', response);
     return response;*/
+  }
+
+  async saveContactRecordsToDatabase(record) {
+    let contact = [
+      {
+        f_accountNumber: record.AccountNumber,
+        primaryContactName: record.PrimaryContactName,
+        primaryContactNumber: record.PrimaryContactNumber,
+        priimaryContactEmail: record.PriimaryContactEmail,
+        representativeName: record.RepresentativeName,
+        representativeNumber: record.RepresentativeNumber,
+        representativeEmail: record.RepresentativeEmail,
+        alternativeRepName: record.AltRepName,
+        alternativeRepNumber: record.AltRepContact,
+        alternativeRepEmail: record.AltRepEmail,
+        otherNumber1: record.OtherNumber1,
+        otherNumber2: record.OtherNumber2,
+        otherNumber3: record.OtherNumber3,
+        otherNumber4: record.OtherNumber4,
+        otherNumber5: record.OtherNumber5,
+        otherEmail1: record.OtherEmail1,
+        otherEmail2: record.OtherEmail2,
+        otherEmail3: record.OtherEmail3,
+        otherEmail4: record.OtherEmail4,
+        otherEmail5: record.OtherEmail5,
+        dnc1: record.DNC1,
+        dnc2: record.DNC2,
+        dnc3: record.DNC3,
+        dnc4: record.DNC4,
+        dnc5: record.DNC5
+      }
+    ];
+
+    let response = await this.postToDb(contact, 'contacts');
+      console.log('saveContactRecordsToDatabase response: ', response);
+      if (response.data.errno) {
+        let error =[];
+        error = this.state.contactErrors;
+        error.push(response.data);
+        await this.setState({ contactErrors: error });
+      }
+    //});
+
+    /*const response = await this.postToDb(accounts, 'accounts');
+    console.log('saveAccountRecordsToDatabase response: ', response);
+    return response;*/
+  }
+
+  ExcelDateToJSDate(date) {
+    return new Date(Math.round((date - 25569)*86400*1000));
   }
 
   async postToDb(records, workspace) {
@@ -411,6 +483,10 @@ class ExcelReader extends Component {
 
     const accountErrors = this.state.accountErrors.map((err, idx) =>
       <p key={idx}>Account error: {err.sqlMessage}</p>
+    );
+
+    const contactErrors = this.state.contactErrors.map((err, idx) =>
+      <p key={idx}>Contact error: {err}</p>
     );
 
     const caseErrors = this.state.caseErrors.map((err, idx) =>
@@ -463,6 +539,7 @@ class ExcelReader extends Component {
             {recordErrors}
             {caseErrors}
             {outcomeErrors}
+            {contactErrors}
           </div>
         </div>
       </div>
