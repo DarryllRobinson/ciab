@@ -32,7 +32,7 @@ class ExcelReader extends Component {
     this.saveAccountRecordsToDatabase = this.saveAccountRecordsToDatabase.bind(this);
     this.saveCustomerRecordsToDatabase = this.saveCustomerRecordsToDatabase.bind(this);
     this.saveCaseRecordsToDatabase = this.saveCaseRecordsToDatabase.bind(this);
-    //this.saveOutcomeRecordsToDatabase = this.saveOutcomeRecordsToDatabase.bind(this);
+    this.saveOutcomeRecordsToDatabase = this.saveOutcomeRecordsToDatabase.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
   }
@@ -99,22 +99,27 @@ class ExcelReader extends Component {
           if (record.companyName === undefined) errors.push(`Record id: ${idx + 1} companyName is missing`);
         });
         break;
-        case 'accounts':
-          records.forEach((record, idx) => {
-            if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
-            if (record.AccountStatus === undefined) errors.push(`Record id: ${idx + 1} AccountStatus is missing`);
-            if (record.CustomerRefNo === undefined) errors.push(`Record id: ${idx + 1} CustomerRefNo is missing`);
-          });
+      case 'accounts':
+        records.forEach((record, idx) => {
+          if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
+          if (record.AccountStatus === undefined) errors.push(`Record id: ${idx + 1} AccountStatus is missing`);
+          if (record.CustomerRefNo === undefined) errors.push(`Record id: ${idx + 1} CustomerRefNo is missing`);
+        });
         break;
-        case 'cases':
-          records.forEach((record, idx) => {
-            if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
-            if (record.CurrentAssignment === undefined) errors.push(`Record id: ${idx + 1} CurrentAssignment is missing`);
-            if (record.CurrentStatus === undefined) errors.push(`Record id: ${idx + 1} CurrentStatus is missing`);
-          });
-          break;
-        default:
-        errors.push(`No workspace identified for ${workspace}`);
+      case 'cases':
+        records.forEach((record, idx) => {
+          if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
+          if (record.CurrentAssignment === undefined) errors.push(`Record id: ${idx + 1} CurrentAssignment is missing`);
+          if (record.CurrentStatus === undefined) errors.push(`Record id: ${idx + 1} CurrentStatus is missing`);
+        });
+        break;
+      case 'outcomes':
+        records.forEach((record, idx) => {
+          if (record.CaseNumber === undefined) errors.push(`Record id: ${idx + 1} CaseNumber is missing`);
+        });
+        break;
+      default:
+      errors.push(`No workspace identified for ${workspace}`);
     }
 
     await this.setState({ errors: errors });
@@ -135,6 +140,9 @@ class ExcelReader extends Component {
           break;
         case 'cases':
           await this.saveCaseRecordsToDatabase(datum);
+          break;
+        case 'outcomes':
+          await this.saveOutcomeRecordsToDatabase(datum);
           break;
         default:
 
@@ -312,12 +320,71 @@ class ExcelReader extends Component {
     ];
 
     let response = await this.postToDb(caseUpdate, 'cases');
-      console.log('saveCaseRecordsToDatabase response: ', response);
+      //console.log('saveCaseRecordsToDatabase response: ', response);
       if (response.data.errno) {
         let error =[];
         error = this.state.caseErrors;
         error.push(response.data);
         await this.setState({ caseErrors: error });
+      }
+    //});
+
+    /*const response = await this.postToDb(accounts, 'accounts');
+    console.log('saveAccountRecordsToDatabase response: ', response);
+    return response;*/
+  }
+
+  async saveOutcomeRecordsToDatabase(record) {
+
+    const createdDate = record.DateCreated ?
+      moment(record.DateCreated).format('YYYY-MM-DD') :
+      null;
+
+    const nextVisitDate = record.NextVisitDate ?
+      moment(record.NextVisitDate).format('YYYY-MM-DD') :
+      null;
+
+    const nextVisitTime = record.NextVisitTime ?
+      moment(record.NextVisitTime).format('HH:mm:ss') :
+      null;
+
+    const ptpDate = record.PTPDate ?
+      moment(record.PTPDate).format('YYYY-MM-DD') :
+      null;
+
+    const debitResubmissionDate = record.DebtOrderDate ?
+      moment(record.DebtOrderDate).format('YYYY-MM-DD') :
+      null;
+
+
+    let outcome = [
+      {
+        f_caseNumber: record.CaseNumber,
+        createdDate: createdDate,
+        createdBy: record.CreatedBy,
+        TransactionType: record.transactionType,
+        numberCalled: record.PhoneNumberCalled,
+        EmailAddressUsed: record.emailUsed,
+        contactPerson: record.ContactPerson,
+        outcome: record.Resolution,
+        nextVisitDate: nextVisitDate,
+        nextVisitTime: nextVisitTime,
+        nextSteps: record.NextSteps,
+        ptpDate: ptpDate,
+        ptpAmount: record.PTPAmount,
+        debitResubmissionDate: record.DebtOrderDate,
+        debitResubmissionAmount: record.DebitOrderAmount,
+        outcomeNotes: record.OutcomeNotes
+      }
+    ];
+
+    let response = await this.postToDb(outcome, 'outcomes');
+      console.log('saveOutcomeRecordsToDatabase response: ', response);
+      if (response.data.errno) {
+        let error =[];
+        error = this.state.outcomeErrors;
+        error.push(response.data);
+        await this.setState({ outcomeErrors: error });
       }
     //});
 
