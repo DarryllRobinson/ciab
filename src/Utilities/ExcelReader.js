@@ -345,7 +345,7 @@ class ExcelReader extends Component {
       null;
 
     const nextVisitTime = record.NextVisitTime ?
-      moment(record.NextVisitTime).format('HH:mm:ss') :
+      moment(record.NextVisitTime).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
     const ptpDate = record.PTPDate ?
@@ -372,7 +372,7 @@ class ExcelReader extends Component {
         nextSteps: record.NextSteps,
         ptpDate: ptpDate,
         ptpAmount: record.PTPAmount,
-        debitResubmissionDate: record.DebtOrderDate,
+        debitResubmissionDate: debitResubmissionDate,
         debitResubmissionAmount: record.DebitOrderAmount,
         outcomeNotes: record.OutcomeNotes
       }
