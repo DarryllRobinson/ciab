@@ -5,12 +5,13 @@ import AppButton from '../Applications/AppButton';
 function Workspace(props) {
   //console.log('Workspace props: ', props);
   if (props.workspaces) {
+    console.log('Workspace props loaded: ', props);
     const workspace = props.workspaces.workspace;
     const records = props.records;
     const type = props.type;
     const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1);
     const worklists = props.workspaces.worklists;
-    //console.log('Workspace worklists: ', worklists);
+    console.log('Workspace worklists: ', worklists);
 
     const worklist = worklists.map((worklist, idx) => {
       //console.log('worklist idx: ', worklist, idx);
@@ -25,6 +26,8 @@ function Workspace(props) {
         />
       );
     });
+
+    console.log('Worklists created in workspace: ', worklists);
 
     return (
       <>

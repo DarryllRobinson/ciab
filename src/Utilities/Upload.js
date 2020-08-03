@@ -18,7 +18,7 @@ class Upload extends Component {
   }
 
   componentDidMount() {
-    console.log('Upload props: ', this.props);
+    //console.log('Upload props: ', this.props);
     //console.log('mime: ', mime);
   }
 

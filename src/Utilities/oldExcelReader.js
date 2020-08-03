@@ -16,13 +16,7 @@ class ExcelReader extends Component {
       accountErrors: [],
       customerErrors: [],
       errors: [],
-      compliance: '',
-      workspaces: [
-        'customers',
-        'accounts',
-        'cases',
-        'outcomes'
-      ]
+      compliance: ''
     }
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -34,7 +28,7 @@ class ExcelReader extends Component {
   }
 
   async componentDidMount() {
-    //console.log('ExcelReader props: ', this.props);
+    console.log('ExcelReader props: ', this.props);
     await this.setState({
       type: sessionStorage.getItem('cwsType')
     });
@@ -45,9 +39,8 @@ class ExcelReader extends Component {
     if (files && files[0]) this.setState({ file: files[0] });
   }
 
-  handleFile(e) {
+  handleFile() {
     /* Boilerplate to set up FileReader */
-    const workspace = e.target.name;
     const reader = new FileReader();
     const rABS = !!reader.readAsBinaryString;
 
@@ -66,10 +59,10 @@ class ExcelReader extends Component {
         //console.log('data: ', data);
         try {
           //this.uploadData(this.state.data);
-          console.log('data loaded: ', data);
-          let cont = await this.checkData(workspace, this.state.data);
+          //console.log('data loaded: ', data);
+          let cont = await this.checkData(this.state.data);
           //console.log('cont: ', cont);
-          if (cont) this.uploadData(workspace, this.state.data);
+          if (cont) this.uploadData(this.state.data);
         } catch(e) {
           console.log('Uploading Collection update file problem (e): ', e);
         }
@@ -84,45 +77,48 @@ class ExcelReader extends Component {
     };
   }
 
-  async checkData(workspace, records) {
-    await this.setState({ compliance: `${records.length} ${workspace} records processed for compliance` });
+  async checkData(records) {
+    await this.setState({ compliance: `Checking ${records.length} records for compliance` });
     let errors = [];
 
-    switch (workspace) {
-      case 'customers':
-        records.forEach((record, idx) => {
-          if (record.customerRefNo === undefined) errors.push(`Record id: ${idx + 1} customerRefNo is missing`);
-          if (record.companyName === undefined) errors.push(`Record id: ${idx + 1} companyName is missing`);
-        });
-        break;
-      default:
-        errors.push(`No workspace identified for ${workspace}`);
-    }
+    records.forEach((record, idx) => {
+      if (record.name === undefined) errors.push(`Record id: ${idx + 1} Name is missing`);
+      if (record.type === undefined) errors.push(`Record id: ${idx + 1} Type is missing`);
+      if (record.accountRef === undefined) errors.push(`Record id: ${idx + 1} accountRef is missing`);
+      if (record.paymentTermDays === undefined) errors.push(`Record id: ${idx + 1} paymentTermDays is missing`);
+      if (record.creditLimit === undefined) errors.push(`Record id: ${idx + 1} creditLimit is missing`);
+      //if (record.currentStatus === undefined) errors.push(`Record id: ${idx + 1} currentStatus is missing`);
+      //for (const [key, value] of Object.entries(record)) {
 
+    //  }
+      //console.log('record: ', record);
+
+      //idx = idx + 1;
+      //if (record.name === 'SERENGETI GOLF & WILDLIFE EST. MARKETING') errors.push(`Problem with record ${idx + 1} - Name: ${Object.keys(record)}`);
+      //idx = idx - 1;
+    //  if (record.name === 'SERENGETI GOLF & WILDLIFE EST. MARKETING') {
+        //for (const [key, value] of Object.entries(record)) {
+          //if (value === null) console.log('Got one: ', key, value);
+          //console.log(`${key}: ${value}`);
+        //}
+    //  }
+    });
     await this.setState({ errors: errors });
     if (errors.length > 0) return false;
     return true;
     //console.log('errors: ', errors);
   }
 
-  async uploadData(workspace, data) {
-    //console.log('data: ', data);
+  async uploadData(data) {
+    console.log('data: ', data);
+
     data.forEach(async datum => {
-      switch (workspace) {
-        case 'customers':
-          let customerId = await this.saveCustomerRecordsToDatabase(datum);
-          break;
-        default:
-
-      }
-    let count = this.state.progress;
-    await this.setState({ progress: count + 1 });
-  });
-
+      let customerId = await this.saveCustomerRecordsToDatabase(datum);
       //let accountId = await this.saveAccountRecordsToDatabase(datum, customerId);
-      //await this.saveAccountRecordsToDatabase(datum, customerId);
-
-
+      await this.saveAccountRecordsToDatabase(datum, customerId);
+      let count = this.state.progress;
+      await this.setState({ progress: count + 1 });
+    });
     // Post data to customer table first
     /*const insertId = await this.saveCustomerRecordsToDatabase(data);
     console.log('uploadData insertId: ', insertId);
@@ -133,14 +129,13 @@ class ExcelReader extends Component {
   async saveCustomerRecordsToDatabase(record) {
     let customer = [
       {
-        operatorShortCode: record.operatorShortCode,
         customerRefNo: record.customerRefNo,
-        companyName: record.companyName,
+        name: record.name,
+        createdBy: record.createdBy,
+        type: record.type,
         regNumber: record.regNumber,
-        customerType: record.customerType,
-        productType: record.productType,
-        createdBy: 'System',
-        cipcStatus: record.cipcStatus,
+        representativeName: record.representativeName,
+        telephone: record.telephone,
         f_clientId: sessionStorage.getItem('cwsClient')
       }
     ];
@@ -159,7 +154,7 @@ class ExcelReader extends Component {
     });*/
 
     const response = await this.postToDb(customer, 'customers');
-    console.log('saveCustomerRecordsToDatabase response: ', response);
+    //console.log('saveCustomerRecordsToDatabase response: ', response);
     if (response.data.errno) {
       let error =[];
       error = this.state.customerErrors;
@@ -271,44 +266,20 @@ class ExcelReader extends Component {
       <p key={idx}>Upload error: {err}</p>
     );
 
-    const filesToUpload = this.state.workspaces.map((workspace, idx) =>
-      <div key={idx} className="container">
-        <div className="row">
-          <div className="col-8">
-            <label htmlFor="file">Import new {workspace}</label>
-            <br />
-            <input
-              type="file"
-              id="file"
-              accept={SheetJSFT}
-              onChange={this.handleChange}
-            />
-            <input
-              type='submit'
-              name={workspace}
-              value="Upload file"
-              onClick={this.handleFile}
-            />
-            <br /><br />
-          </div>
-        </div>
-      </div>
-    );
-
     return (
-      <div className="container">
-        <div className="row">
-          <div className="col-8">
-            {filesToUpload}
-
-          </div>
-          <div className="col-4">
-            <p style={{"fontWeight": "bold"}}>{this.state.compliance}</p>
-            {customerErrors}
-            {accountErrors}
-            {recordErrors}
-          </div>
-        </div>
+      <div>
+        <label htmlFor="file">Import new records</label>
+        <br />
+        <input type="file" className="form-control" id="file" accept={SheetJSFT} onChange={this.handleChange} />
+        <br />
+        <input type='submit'
+          value="Upload"
+          onClick={this.handleFile}
+        />
+        <p>{this.state.compliance}</p>
+        {customerErrors}
+        {accountErrors}
+        {recordErrors}
       </div>
 
     )

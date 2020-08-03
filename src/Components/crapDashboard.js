@@ -39,41 +39,6 @@ const workspaces = [
         ]
       }
     ]
-  },
-  {
-    workspace: 'applications',
-    worklists: [
-      {
-        worklist: 'Queues',
-        items: [
-          {
-            item: 'Open',
-            count: 3
-          },
-          {
-            item: 'Pended',
-            count: 5
-          },
-          {
-            item: 'Closed',
-            count: 7
-          }
-        ]
-      },
-      {
-        worklist: 'Work for today',
-        items: [
-          {
-            item: 'Call back',
-            count: 11
-          },
-          {
-            item: 'Admin',
-            count: 13
-          }
-        ]
-      }
-    ]
   }
 ];
 
@@ -108,22 +73,25 @@ class Dashboard extends Component {
     const type = this.state.type;
     const workspace = this.state.workspace;
     const tasks = this.state.tasks;
-    //console.log('type workspace tasks: ', type, this.state.workspace, tasks);
+    //console.log(type, workspace, tasks);
 
     let worklists = await this.setWorklists(type, workspace, tasks, clientId);
-    //console.log('mounted worklists: ', worklists);
-
+    //console.log('worklists: ', worklists);
+    await this.setState({ worklists: worklists });
     let workspaces = [];
     workspaces.push({
       workspace: workspace,
-      worklists: worklists
+      worklists: this.state.worklists
     });
     //console.log('workspaces: ', workspaces);
 
     await this.setState({
       loading: false,
-      workspaces: workspaces
+      workspaces: [...this.state.workspaces, ...workspaces ]
+      //workspaces: workspaces
     });
+    //console.log('final state: ', this.state);
+    //console.log('final workspaces: ', this.state.workspaces);
   }
 
   async setUser() {
@@ -151,87 +119,171 @@ class Dashboard extends Component {
   }
 
   async setWorklists(type, workspace, tasks, client) {
-    //console.log('tasks: ', tasks);
-    let worklists = [];
-
+    //console.log('setting worklists with: ', type, workspace, tasks, client);
+    let worklist = [];
+    // Taking the each task and asking the next function to return the item title and count
     tasks.forEach(async task => {
       //console.log('task: ', task);
       let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
+      //console.log('task and count: ', task, records.length);
 
-      // Send records to determine item and count thereof
-      let items = await this.setItems(workspace, task, records);
-      //console.log('returned items: ', items);
-      worklists.push({
+      let statusArr = [];
+      records.forEach(record => {
+        //console.log('currentStatus: ', record.currentStatus);
+        statusArr.push(record.currentStatus);
+      });
+      await this.setState({ records: records });
+      let worklistTitles = statusArr.filter(this.onlyUnique);
+      //console.log('worklistTitles: ', worklistTitles);
+      // sending to setItems to get a split of count by worklistTitle
+      let items = await this.setItems(task, worklistTitles, records);
+      //console.log('items: ', items);
+      switch (task) {
+        case 'list_all':
+          task = 'Queues';
+          break;
+        case 'list_today':
+          task = 'Work for today';
+          break;
+        default:
+          task = 'Task not found';
+          break;
+      }
+      worklist.push({
         worklist: task,
         items: items
-      })
+      });
     });
-    //console.log('prepared worklists: ', worklists);
-    return worklists;
+    //console.log('worklist: ', worklist);
+    return worklist;
   }
 
-  async setItems(workspace, task, records) {
-    //console.log('setItems task records.count: ', task, records.length);
-
-    // Get distinct statuses
-    let statusArr = [];
-    records.forEach(record => {
-      //console.log('currentStatus: ', record.currentStatus);
-      statusArr.push(record.currentStatus);
-    });
-
-    let completeWorklist = statusArr.filter(this.onlyUnique);
-    //console.log('Got the completeWorklist: ', completeWorklist);
-
-    let worklists = [];
-    if (completeWorklist.length > 0) worklists = this.filterWorklists(workspace, completeWorklist);
-
+  async setItems(task, worklists, records) {
+    //console.log('setItems task worklists, record count: ', task, worklists, records.length);
     let items = [];
-    worklists.forEach(async worklist => {
+    // Loop through worklists to count records that match
+    worklists.forEach(worklist => {
+      //console.log('worklist: ', worklist);
+      // Reset the counter
       let count = 0;
       records.forEach(record => {
         if (record.currentStatus === worklist) {
-          ++count;
+          //console.log('Got one');
+          count++;
         }
       });
-      //console.log('worklist: ', worklist);
-      //console.log('record: ', record);
-
-      //console.log('count: ', count);
+      //console.log('worklist count: ', worklist, count);
       items.push({
         item: worklist,
         count: count
       });
-      //console.log('setItems items: ', items);
     });
-    //console.log('setItems items: ', items);
+    //console.log('items: ', items);
     return items;
   }
 
-  changeWorklistName(worklistName) {
-    //let newNames = [];
-    //worklistNames.forEach(worklistName => {
-      switch (worklistName) {
-        case 'list_all':
-          worklistName = 'Queues';
-          break;
-        case 'list_today':
-          worklistName = 'Work for today';
-          break;
-        default:
-          worklistName = 'worklistName not found';
-          break;
-      }
-      /*newNames.push(
-        {
-          worklist: worklistName
+  async xxxsetWorklists(type, workspace, tasks, client) {
+    console.log('setWorklist: ', tasks);
+
+    let lists = [];
+    tasks.forEach(async task => {
+      console.log('task: ', task);
+
+      let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
+      let statusArr = [];
+      records.forEach(record => {
+        //console.log('currentStatus: ', record.currentStatus);
+        statusArr.push(record.currentStatus);
+      });
+      await this.setState({ records: records });
+      let worklistTitles = statusArr.filter(this.onlyUnique);
+      //console.log('unique worklist: ', worklist);
+
+      // Need to ensure unapproved record statuses aren't shown
+      let worklists = [];
+      if (worklistTitles.length > 0) worklists = this.filterWorklists(workspace, worklistTitles);
+      //console.log('unique approved worklists: ', worklists);
+
+      let items = await this.setItems(worklists, records);
+      lists.push(items);
+      //console.log('items: ', items);
+
+      /*worklists.forEach(async worklist => {
+        console.log('forEach worklist: ', worklist);
+        //let list = [{worklist: task}];
+        let items = await this.setItems(worklist, records);
+        //console.log('list: ', list);
+        console.log('items: ', items);
+        lists.push({
+          worklist: task,
+          items: items
+        });
+      });*/
+      //console.log('lists: ', lists);
+    });
+    return lists;
+  }
+/*
+
+      let items = [];
+      worklists.forEach(async worklist => {
+        let count = 0;
+        records.forEach(record => {
+          if (record.currentStatus === worklist) {
+            ++count;
+          }
+        });
+
+        items.push({
+          item: worklist,
+          count: count
+        });
+        console.log('items: ', items);
+
+        switch (task) {
+          case 'list_all':
+            task = 'Queues';
+            break;
+          case 'list_today':
+            task = 'Work for today';
+            break;
+          default:
+            task = 'Task not found';
+            break;
         }
-      );
+
+        let worklists = [];
+        worklists.push({
+          worklist: task,
+          items: items
+        })
+      });
     });
 
-    return newNames;
-    */
-    return worklistName;
+  }*/
+
+  async xxxsetItems(tasks, records) {
+    //console.log('setItems tasks: ', tasks);
+    let worklist = [];
+
+    tasks.forEach(task => {
+      let items = [];
+      let count = 0;
+      records.forEach(record => {
+        if (record.currentStatus === task) {
+          count++;
+        }
+      });
+      //console.log('task count: ', task, count);
+      items.push({
+        worklist: task,
+        count: count
+      });
+      //console.log('setItems items: ', items);
+      worklist.push(items);
+    });
+
+    return worklist;
   }
 
   componentDidUpdate() {
