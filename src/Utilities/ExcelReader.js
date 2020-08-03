@@ -15,6 +15,8 @@ class ExcelReader extends Component {
       progress: 0,
       accountErrors: [],
       customerErrors: [],
+      caseErrors: [],
+      outcomeErrors: [],
       errors: [],
       compliance: '',
       workspaces: [
@@ -29,6 +31,8 @@ class ExcelReader extends Component {
     this.uploadData = this.uploadData.bind(this);
     this.saveAccountRecordsToDatabase = this.saveAccountRecordsToDatabase.bind(this);
     this.saveCustomerRecordsToDatabase = this.saveCustomerRecordsToDatabase.bind(this);
+    this.saveCaseRecordsToDatabase = this.saveCaseRecordsToDatabase.bind(this);
+    //this.saveOutcomeRecordsToDatabase = this.saveOutcomeRecordsToDatabase.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
   }
@@ -40,7 +44,7 @@ class ExcelReader extends Component {
     });
   }
 
-  handleChange(e) {
+  async handleChange(e) {
     const files = e.target.files;
     if (files && files[0]) this.setState({ file: files[0] });
   }
@@ -95,7 +99,21 @@ class ExcelReader extends Component {
           if (record.companyName === undefined) errors.push(`Record id: ${idx + 1} companyName is missing`);
         });
         break;
-      default:
+        case 'accounts':
+          records.forEach((record, idx) => {
+            if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
+            if (record.AccountStatus === undefined) errors.push(`Record id: ${idx + 1} AccountStatus is missing`);
+            if (record.CustomerRefNo === undefined) errors.push(`Record id: ${idx + 1} CustomerRefNo is missing`);
+          });
+        break;
+        case 'cases':
+          records.forEach((record, idx) => {
+            if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
+            if (record.CurrentAssignment === undefined) errors.push(`Record id: ${idx + 1} CurrentAssignment is missing`);
+            if (record.CurrentStatus === undefined) errors.push(`Record id: ${idx + 1} CurrentStatus is missing`);
+          });
+          break;
+        default:
         errors.push(`No workspace identified for ${workspace}`);
     }
 
@@ -110,7 +128,13 @@ class ExcelReader extends Component {
     data.forEach(async datum => {
       switch (workspace) {
         case 'customers':
-          let customerId = await this.saveCustomerRecordsToDatabase(datum);
+          await this.saveCustomerRecordsToDatabase(datum);
+          break;
+        case 'accounts':
+          await this.saveAccountRecordsToDatabase(datum);
+          break;
+        case 'cases':
+          await this.saveCaseRecordsToDatabase(datum);
           break;
         default:
 
@@ -169,7 +193,7 @@ class ExcelReader extends Component {
     return response.data.insertId;
   }
 
-  async saveAccountRecordsToDatabase(record, insertId) {
+  async saveAccountRecordsToDatabase(record) {
     const paymentDueDate = record.paymentDueDate ?
       moment(record.paymentDueDate).format('YYYY-MM-DD') :
       null;
@@ -186,26 +210,35 @@ class ExcelReader extends Component {
       moment(record.lastPTPDate).format('YYYY-MM-DD') :
       null;
 
+    const openDate = record.DateCreated ?
+      moment(record.openDate).format('YYYY-MM-DD') :
+      null;
+
     let account = [
       {
-        accountRef: record.accountRef,
-        amountDue: record.amountDue,
-        createdBy: record.createdBy,
+        accountNumber: record.AccountNumber,
+        accountName: record.AccountName,
+        createdBy: 'System',
         //createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-        creditLimit: record.creditLimit,
-        currentBalance: record.currentBalance,
+        debtorAge: record.DebtorAge,
+        creditLimit: record.CreditLimit,
+        currentBalance: record.CurrentBalance,
         days30: record.days30,
         days60: record.days60,
         days90: record.days90,
         days120: record.days120,
-        f_customerId: insertId,
+        days150: record.days150,
+        days180: record.days180,
+        days180Over: record.days180Over,
+        f_customerId: record.AccountNumber,
         lastPTPDate: lastPTPDate,
         paymentDueDate: paymentDueDate,
         debitOrderDate: debitOrderDate,
         lastPaymentDate: lastPaymentDate,
         paymentMethod: record.paymentMethod,
-        paymentTermDays: record.paymentTermDays,
-        totalBalance: record.totalBalance
+        paymentTermDays: record.PaymentTerms,
+        totalBalance: record.TotalBalance,
+        openDate: openDate
       }
     ];
     /*let accounts = [];
@@ -247,6 +280,52 @@ class ExcelReader extends Component {
     return response;*/
   }
 
+  async saveCaseRecordsToDatabase(record) {
+
+    const createdDate = record.DateCreated ?
+      moment(record.DateCreated).format('YYYY-MM-DD') :
+      null;
+
+    const updatedDate = record.DateLastUpdated ?
+      moment(record.DateLastUpdated).format('YYYY-MM-DD') :
+      null;
+
+    const reopenedDate = record.DateReopened ?
+      moment(record.DateReopened).format('YYYY-MM-DD') :
+      null;
+
+    let caseUpdate = [
+      {
+        caseNumber: record.CaseNumber,
+        f_accountNumber: record.AccountNumber,
+        createdDate: createdDate,
+        createdBy: record.CreatedBy,
+        currentAssignment: record.CurrentAssignment,
+        updatedDate: updatedDate,
+        updatedBy: record.LastUpdatedBy,
+        reopenedDate: reopenedDate,
+        reopenedBy: record.ReopenedBy,
+        caseReason: record.CaseReason,
+        currentStatus: record.CurrentStatus,
+        caseNotes: record.CaseNotes
+      }
+    ];
+
+    let response = await this.postToDb(caseUpdate, 'cases');
+      console.log('saveCaseRecordsToDatabase response: ', response);
+      if (response.data.errno) {
+        let error =[];
+        error = this.state.caseErrors;
+        error.push(response.data);
+        await this.setState({ caseErrors: error });
+      }
+    //});
+
+    /*const response = await this.postToDb(accounts, 'accounts');
+    console.log('saveAccountRecordsToDatabase response: ', response);
+    return response;*/
+  }
+
   async postToDb(records, workspace) {
     let type = this.state.type;
     //let workspace = workspace;
@@ -265,6 +344,14 @@ class ExcelReader extends Component {
 
     const accountErrors = this.state.accountErrors.map((err, idx) =>
       <p key={idx}>Account error: {err.sqlMessage}</p>
+    );
+
+    const caseErrors = this.state.caseErrors.map((err, idx) =>
+      <p key={idx}>Case error: {err.sqlMessage}</p>
+    );
+
+    const outcomeErrors = this.state.outcomeErrors.map((err, idx) =>
+      <p key={idx}>Outcome error: {err.sqlMessage}</p>
     );
 
     const recordErrors = this.state.errors.map((err, idx) =>
@@ -307,6 +394,8 @@ class ExcelReader extends Component {
             {customerErrors}
             {accountErrors}
             {recordErrors}
+            {caseErrors}
+            {outcomeErrors}
           </div>
         </div>
       </div>
