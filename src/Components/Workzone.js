@@ -193,7 +193,7 @@ class Workzone extends Component {
           let row = {
             recordId: record.id,
             accountNumber: record.accountNumber,
-            caseId: record.f_caseNumber,
+            caseNumber: record.caseNumber,
             caseNotes: record.caseNotes,
             name: record.companyName,
             regNumber: record.regNumber,
@@ -240,7 +240,7 @@ class Workzone extends Component {
             },
             {
               label: 'Case Number',
-              field: 'caseId',
+              field: 'caseNumber',
               sort: 'asc'
             },
             {

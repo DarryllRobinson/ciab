@@ -63,8 +63,11 @@ class Collection extends Component {
           if (response) record = response;
         }
       );
+
+      // Getting all the config for dropdown lists, etc
       let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
       let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
+      let transactionTypes = await this.mysqlLayer.Get(`/admin/transactiontypes/list_all`);
       //console.log('this.props.location.pathname: ', this.props.location.pathname);
       //console.log('record: ', record);
       //console.log('resolutions: ', resolutions);
@@ -74,7 +77,8 @@ class Collection extends Component {
         collection: record,
         caseNotes: record.caseNotes,
         pendReasons: pends,
-        resolutions: resolutions
+        resolutions: resolutions,
+        transactionTypes: transactionTypes
       });
 
       // lock the record so no other agent accidentally opens it
@@ -402,16 +406,34 @@ class Collection extends Component {
       moment(collection[0].nextVisitTime).format('HH:mm:ss') :
       '';
 
-    let resolutionList = [<option key="0" value="---">Resolution</option>];
+    const outcomesNotes = this.state.collection.map(collection => {
+      return (
+        collection.outcomeNotes + '\n\r'
+      );
+    });
+
+    const outcomes = this.state.collection.map(collection => {
+      return (
+        collection.outcome + '\n\r'
+      );
+    });
+
+    const resolutionList = [<option key="0" value="---">Resolution</option>];
     //console.log('resolutionList before: ', resolutionList);
     resolutionList.push(this.state.resolutions.map(resolution =>
       <option key={resolution.id} value={resolution.shortCode}>{resolution.resolution}</option>
     ));
 
-    let pendList = [<option key="0" value="---">Pend Reason</option>];
+    const pendList = [<option key="0" value="---">Pend Reason</option>];
     //console.log('pendList before: ', pendList);
     pendList.push(this.state.pendReasons.map(pend =>
       <option key={pend.id} value={pend.shortCode}>{pend.pendreason}</option>
+    ));
+
+    const transactionTypeList = [<option key="0" value="---">Transaction Type</option>];
+    //console.log('pendList before: ', pendList);
+    transactionTypeList.push(this.state.transactionTypes.map(type =>
+      <option key={type.id} value={type.shortCode}>{type.transactiontype}</option>
     ));
 
 
@@ -433,7 +455,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-12">
                   <div className="form-group">
-                    <label htmlFor="exampleInputaccountNotes">Account Number {collection[0].accountNumber} - Notes</label>
+                    <label htmlFor="accountNotes">Account Number {collection[0].accountNumber} - Notes</label>
                     <textarea
                       disabled={true}
                       rows="3"
@@ -450,7 +472,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-12">
                   <div className="form-group">
-                    <label htmlFor="exampleInputcaseNotes">Case Number {collection[0].caseNumber} - Notes</label>
+                    <label htmlFor="caseNotes">Case Notes</label>
                     <textarea
                       disabled={true}
                       rows="3"
@@ -467,7 +489,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-8">
                   <div className="form-group">
-                    <label htmlFor="exampleInputCompanyName">Company Name</label>
+                    <label htmlFor="CompanyName">Company Name</label>
                     <input
                       disabled={true}
                       type="text"
@@ -477,10 +499,12 @@ class Collection extends Component {
                     />
                   </div>
                 </div>
+              </div>
 
+              <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputRegNumber">Reg Number</label>
+                    <label htmlFor="RegNumber">Reg Number</label>
                     <input
                       disabled={true}
                       type="text"
@@ -491,7 +515,19 @@ class Collection extends Component {
                   </div>
                 </div>
 
-
+                <div className="col-4">
+                  <div className="form-group">
+                    <label htmlFor="cipcStatus">CIPC Status</label>
+                    <input
+                      disabled={this.state.disabled}
+                      type="text"
+                      name="cipcStatus"
+                      className="form-control"
+                      onChange={(e) => {this.handleChange(e)}}
+                      value={collection[0].cipcStatus || ''}
+                    />
+                  </div>
+                </div>
 
                 <div className="col-4">
                   <div className="form-group">
@@ -500,10 +536,12 @@ class Collection extends Component {
                 </div>
               </div>
 
+              <br />
+
               <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdebtorAge">Debtor Age</label>
+                    <label htmlFor="debtorAge">Debtor Age</label>
                     <input
                       disabled={true}
                       type="number"
@@ -516,7 +554,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputcreditLimit">Credit Limit</label>
+                    <label htmlFor="creditLimit">Credit Limit</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -531,7 +569,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputtotalBalance">Total Balance</label>
+                    <label htmlFor="totalBalance">Total Balance</label>
                     <NumberFormat
                       displayType={'input'}
                       name="totalBalance"
@@ -548,7 +586,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputamountDue">Amount Due</label>
+                    <label htmlFor="amountDue">Amount Due</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -563,7 +601,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputcurrentBalance">Current Balance</label>
+                    <label htmlFor="currentBalance">Current Balance</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -578,7 +616,15 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    {/* This space left blank intentionally */}
+                    <label htmlFor="accountStatus">Account Status</label>
+                    <input
+                      disabled={this.state.disabled}
+                      type="text"
+                      name="accountStatus"
+                      className="form-control"
+                      onChange={(e) => {this.handleChange(e)}}
+                      value={collection[0].accountStatus || ''}
+                    />
                   </div>
                 </div>
               </div>
@@ -586,9 +632,9 @@ class Collection extends Component {
               <br /><br />
 
               <div className="row">
-                <div className="col-4">
+                <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays30">30 Days</label>
+                    <label htmlFor="days30">30 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -601,9 +647,9 @@ class Collection extends Component {
                   </div>
                 </div>
 
-                <div className="col-4">
+                <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays60">60 Days</label>
+                    <label htmlFor="days60">60 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -616,9 +662,9 @@ class Collection extends Component {
                   </div>
                 </div>
 
-                <div className="col-4">
+                <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays90">90 Days</label>
+                    <label htmlFor="days90">90 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -635,7 +681,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays120">120 Days</label>
+                    <label htmlFor="days120">120 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -650,7 +696,7 @@ class Collection extends Component {
 
                 <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays150">150 Days</label>
+                    <label htmlFor="days150">150 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -665,7 +711,7 @@ class Collection extends Component {
 
                 <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays180">180 Days</label>
+                    <label htmlFor="days180">180 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -680,7 +726,7 @@ class Collection extends Component {
 
                 <div className="col-3">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdays180Over">+180 Days</label>
+                    <label htmlFor="days180Over">+180 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -699,7 +745,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputpaymentDueDate">Payment Due Date</label>
+                    <label htmlFor="paymentDueDate">Payment Due Date</label>
                     <input
                       disabled={true}
                       type="text"
@@ -712,7 +758,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputdebitOrderDate">Debit Order Date</label>
+                    <label htmlFor="debitOrderDate">Debit Order Date</label>
                     <input
                       disabled={true}
                       type="text"
@@ -735,7 +781,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputlastPaymentDate">Last Payment Date</label>
+                    <label htmlFor="lastPaymentDate">Last Payment Date</label>
                     <input
                       disabled={true}
                       type="text"
@@ -748,7 +794,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputlastPaymentAmount">Last Payment Amount</label>
+                    <label htmlFor="lastPaymentAmount">Last Payment Amount</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -773,7 +819,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputptpDate">Last PTP Date</label>
+                    <label htmlFor="ptpDate">Last PTP Date</label>
                     <input
                       disabled={true}
                       type="text"
@@ -786,7 +832,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputptpAmount">Last PTP Amount</label>
+                    <label htmlFor="ptpAmount">Last PTP Amount</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
@@ -811,7 +857,7 @@ class Collection extends Component {
               <div className="row">
                 <div className="col-2">
                   <div className="form-group">
-                    <label htmlFor="exampleInputnextVisitDate">Next Visit Date</label>
+                    <label htmlFor="nextVisitDate">Next Visit Date</label>
                     <input
                       disabled={true}
                       type="text"
@@ -824,7 +870,7 @@ class Collection extends Component {
 
                 <div className="col-2">
                   <div className="form-group">
-                    <label htmlFor="exampleInputnextVisitTime">Next Visit Time</label>
+                    <label htmlFor="nextVisitTime">Next Visit Time</label>
                     <input
                       disabled={true}
                       type="text"
@@ -837,7 +883,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputrepName">Representative Name</label>
+                    <label htmlFor="repName">Representative Name</label>
                     <input
                       disabled={true}
                       type="text"
@@ -850,7 +896,7 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputrepresentativeNumber">Representative Number</label>
+                    <label htmlFor="representativeNumber">Representative Number</label>
                     <input
                       disabled={true}
                       type="text"
@@ -881,90 +927,40 @@ class Collection extends Component {
           </div>
         </div>
 
-
+{/* --------------------------------------------- Outcome History section ------------------------------------------------------- */}
         <div className="row">
           <div className="col-12">
             <div className="card border-primary">
-              <div className="card-header">New Case Activity</div>
+              <div className="card-header">Outcome History</div>
               <div className="card-body text-left">
 
                 <div className="row">
-                  <div className="col-4">
+                  <div className="col-6">
                     <div className="form-group">
-                      <label htmlFor="exampleInputptpDate">PTP Date</label>
-                      <input
-                        disabled={false}
-                        type="date"
-                        name="ptpDate"
-                        onChange={(e) => {this.handleChange(e)}}
+                      <label htmlFor="outcomes">Outcomes</label>
+                      <textarea
+                        disabled={true}
+                        rows="10"
+                        name="outcomes"
                         className="form-control"
-                        value={this.state.ptpDate || ''}
+                        value={outcomes}
                       />
                     </div>
                   </div>
 
-                  <div className="col-4">
+                  <div className="col-6">
                     <div className="form-group">
-                      <label htmlFor="exampleInputptpAmount">PTP Amount</label>
-                      <NumberFormat
-                        displayType={'input'}
+                      <label htmlFor="outcomesNotes">Outcome Notes</label>
+                      <textarea
+                        disabled={true}
+                        rows="10"
+                        name="outcomesNotes"
                         className="form-control"
-                        thousandSeparator={true}
-                        disabled={false}
-                        name="ptpAmount"
-                        onChange={(e) => {this.handleChange(e)}}
-                        value={this.state.ptpAmount || ''}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="exampleInputnextVisitDate">Next Visit Date</label>
-                      <input
-                        disabled={false}
-                        type="date"
-                        name="nextVisitDate"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.nextVisitDate || ''}
+                        value={outcomesNotes}
                       />
                     </div>
                   </div>
                 </div>
-
-                <div className="row">
-                  <div className="col-4">
-                    <div className="form-group">
-                      <select className="custom-select"
-                        required
-                        name="resolution"
-                        onChange={this.handleChange}
-                      >
-                      {resolutionList}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      <select className="custom-select"
-                        required
-                        name="pendReason"
-                        onChange={this.handleChange}
-                      >
-                      {pendList}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      {/* This space left blank intentionally */}
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
@@ -986,25 +982,191 @@ class Collection extends Component {
             </div>
           </div>
 
+{/* --------------------------------------------- New activity section ------------------------------------------------------- */}
           <div className="col-12">
             <div className="card border-primary">
-              <div className="card-header">Case Notes History</div>
+              <div className="card-header">New Case Activity</div>
               <div className="card-body text-left">
 
                 <div className="row">
-                  <div className="col-12">
+                  <div className="col-4">
                     <div className="form-group">
-                      <label htmlFor="exampleInputcaseNotes">Case Notes</label>
-                      <textarea
-                        disabled={true}
-                        rows="10"
-                        name="caseNotes"
+                      <label htmlFor="transactionType">Transaction Type</label>
+                      <select className="custom-select"
+                        required
+                        name="transactionType"
+                        onChange={this.handleChange}
+                      >
+                      {transactionTypeList}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="numberCalled">Number Called</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="numberCalled"
+                        onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
-                        value={this.state.collection[0].caseNotes || ''}
+                        value={this.state.numberCalled || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="contactPerson">Person Contacted</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="contactPerson"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.contactPerson || ''}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="emailUsed">Email Used</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="emailUsed"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.emailUsed || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-8">
+                    <div className="form-group">
+                      <label htmlFor="nextSteps">Next Steps</label>
+                      <input
+                        disabled={this.state.disabled}
+                        type="text"
+                        name="nextSteps"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.nextSteps || ''}
                       />
                     </div>
                   </div>
                 </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="ptpDate">PTP Date</label>
+                      <input
+                        disabled={false}
+                        type="date"
+                        name="ptpDate"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.ptpDate || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="ptpAmount">PTP Amount</label>
+                      <NumberFormat
+                        displayType={'input'}
+                        className="form-control"
+                        thousandSeparator={true}
+                        disabled={false}
+                        name="ptpAmount"
+                        onChange={(e) => {this.handleChange(e)}}
+                        value={this.state.ptpAmount || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="exampleResolution">Resolution</label>
+                      <select className="custom-select"
+                        required
+                        name="resolution"
+                        onChange={this.handleChange}
+                      >
+                      {resolutionList}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="nextVisitDate">Next Visit Date</label>
+                      <input
+                        disabled={false}
+                        type="date"
+                        name="nextVisitDate"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.nextVisitDate || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="nextVisitTime">Next Visit Time</label>
+                      <input
+                        disabled={false}
+                        type="time"
+                        name="nextVisitTime"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.nextVisitTime || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="examplePendReason">Pend Reason</label>
+                      <select className="custom-select"
+                        required
+                        name="pendReason"
+                        onChange={this.handleChange}
+                      >
+                      {pendList}
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="outcome">Outcome</label>
+                      <textarea
+                        disabled={this.state.disabled}
+                        type="text"
+                        rows="3"
+                        name="outcome"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        value={this.state.outcome || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1034,11 +1196,12 @@ class Collection extends Component {
                 <div className="row">
                   <div className="col-12">
                     <div className="form-group">
-                      <label htmlFor="exampleInputAgentNotes">Case Notes</label>
-                      <input
+                      <label htmlFor="outcomeNotes">Outcome Notes</label>
+                      <textarea
                         disabled={this.state.disabled}
                         type="text"
-                        name="caseNotes"
+                        rows="3"
+                        name="outcomeNotes"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
                         placeholder="Remember to provide clear notes"
