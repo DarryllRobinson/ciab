@@ -101,7 +101,7 @@ class NavBar extends React.Component {
   colourToUse() {
     switch (process.env.REACT_APP_STAGE) {
       case 'development':
-        return ("navbar navbar-expand-lg navbar-dark bg-light fixed-top");
+        return ("navbar navbar-expand-lg navbar-dark bg-dark fixed-top");
       case 'production':
         return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
       case 'sit':

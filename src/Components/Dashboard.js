@@ -24,7 +24,7 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
-    console.log('Dashboard props: ', this.props);
+    //console.log('Dashboard props: ', this.props);
 
     //this.props.checkLoginStatus();
     // get user fields from session

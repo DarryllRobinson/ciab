@@ -2,7 +2,7 @@ import React from 'react';
 import {Link} from 'react-router-dom';
 
 function Item(props) {
-  console.log('Item props: ', props);
+  //console.log('Item props: ', props);
   if (props.workspace) {
     const workspace = props.workspace;
     const records = props.records;

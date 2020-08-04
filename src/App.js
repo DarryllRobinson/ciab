@@ -91,11 +91,13 @@ class App extends Component {
   async handleSuccessfulAuth(data) {
     //console.log('handleSuccessfulAuth data: ', data);
     await this.handleLogin(data);
+    //console.log('pushing to dashboard with :', this.state.loggedInStatus);
     this.props.history.push('/dashboard');
   }
 
   componentDidMount() {
     this.checkLoginStatus();
+    //console.log('App mounted: ', this.state.loggedInStatus);
   }
 
   render() {

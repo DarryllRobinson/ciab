@@ -98,8 +98,8 @@ class ExcelReader extends Component {
     switch (workspace) {
       case 'customers':
         records.forEach((record, idx) => {
-          if (record.customerRefNo === undefined) errors.push(`Record id: ${idx + 1} customerRefNo is missing`);
-          if (record.companyName === undefined) errors.push(`Record id: ${idx + 1} companyName is missing`);
+          if (record.CustomerNumber === undefined) errors.push(`Record id: ${idx + 1} CustomerNumber is missing`);
+          if (record.Customer === undefined) errors.push(`Record id: ${idx + 1} Customer is missing`);
         });
         break;
       case 'accounts':
@@ -137,6 +137,7 @@ class ExcelReader extends Component {
   }
 
   async uploadData(workspace, data) {
+    let count = 0;
     //console.log('data: ', data);
     data.forEach(async datum => {
       switch (workspace) {
@@ -156,60 +157,54 @@ class ExcelReader extends Component {
           await this.saveOutcomeRecordsToDatabase(datum);
           break;
         default:
-
+          ;;
+          break;
       }
-    let count = this.state.progress;
-    await this.setState({ progress: count + 1 });
-  });
-
-      //let accountId = await this.saveAccountRecordsToDatabase(datum, customerId);
-      //await this.saveAccountRecordsToDatabase(datum, customerId);
-
-
-    // Post data to customer table first
-    /*const insertId = await this.saveCustomerRecordsToDatabase(data);
-    console.log('uploadData insertId: ', insertId);
-    const uploadStatus = await this.saveAccountRecordsToDatabase(data, insertId);
-    console.log('uploadStatus: ', uploadStatus);*/
+      count++;
+      let message = `${count} files have been successfully uploaded to the ${workspace} table. You should feel good about yourself.`;
+      await this.setState({ compliance: message });
+    });
   }
 
   async saveCustomerRecordsToDatabase(record) {
-    let customer = [
-      {
-        operatorShortCode: record.operatorShortCode,
-        customerRefNo: record.customerRefNo,
-        companyName: record.companyName,
-        regNumber: record.regNumber,
-        customerType: record.customerType,
-        productType: record.productType,
-        createdBy: 'System',
-        cipcStatus: record.cipcStatus,
-        f_clientId: sessionStorage.getItem('cwsClient')
-      }
-    ];
-    /*let customers = [];
-    records.forEach(record => {
-      customers.push({
-        customerRefNo: record.customerRefNo,
-        name: record.name,
-        createdBy: record.createdBy,
-        type: record.type,
-        regNumber: record.regNumber,
-        representativeName: record.representativeName,
-        telephone: record.telephone,
-        f_clientId: sessionStorage.getItem('cwsClient')
-      });
-    });*/
+    if (record.CustomerEntity === 'Enterprise') {
+      let customer = [
+        {
+          operatorShortCode: record.operatorShortCode,
+          customerRefNo: record.CustomerNumber,
+          companyName: record.Customer,
+          regNumber: record.CompanyRegNo,
+          customerType: record.Customer_Type,
+          productType: record.ProductType,
+          createdBy: 'System',
+          cipcStatus: record.CIPCStatus,
+          f_clientId: sessionStorage.getItem('cwsClient')
+        }
+      ];
+      /*let customers = [];
+      records.forEach(record => {
+        customers.push({
+          customerRefNo: record.customerRefNo,
+          name: record.name,
+          createdBy: record.createdBy,
+          type: record.type,
+          regNumber: record.regNumber,
+          representativeName: record.representativeName,
+          telephone: record.telephone,
+          f_clientId: sessionStorage.getItem('cwsClient')
+        });
+      });*/
 
-    const response = await this.postToDb(customer, 'customers');
-    console.log('saveCustomerRecordsToDatabase response: ', response);
-    if (response.data.errno) {
-      let error =[];
-      error = this.state.customerErrors;
-      error.push(response.data);
-      await this.setState({ customerErrors: error });
+      const response = await this.postToDb(customer, 'customers');
+      //console.log('saveCustomerRecordsToDatabase response: ', response);
+      if (response.data.errno) {
+        let error =[];
+        error = this.state.customerErrors;
+        error.push(response.data);
+        await this.setState({ customerErrors: error });
+      }
+      return response.data.insertId;
     }
-    return response.data.insertId;
   }
 
   async saveAccountRecordsToDatabase(record) {
@@ -472,6 +467,7 @@ class ExcelReader extends Component {
     let clientId = sessionStorage.getItem('cwsClient');
 
     const response = await this.mysqlLayer.Post(`/${type}/${workspace}/${task}/${clientId}`, records);
+    //console.log('postToDb response: ', response);
     return response;
   }
 

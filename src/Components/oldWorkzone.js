@@ -189,7 +189,7 @@ class Workzone extends Component {
           ];
         } else if (record.currentStatus === recordStatus && workspace === 'collections') {
           //console.log('recordStatus: ', recordStatus);
-          console.log('records: ', record);
+          //console.log('records: collections');
           let row = {
             recordId: record.id,
             accountNumber: record.accountNumber,
@@ -221,10 +221,11 @@ class Workzone extends Component {
             updatedDate: moment(record.updatedDate).format('YYYY-MM-DD HH:mm:ss'),
             createdBy: record.createdBy,
             createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
+            //id: <button type="button" className="btn btn-secondary" name={record.id} size="sm" onClick={this.openRecord}>Open</button>
             id: <Link className="nav-link" to={{
-                pathname: `/workzone/${workspace}/${workrecord}/${record.caseNumber}`,
+                pathname: `/workzone/${workspace}/${workrecord}/${record.f_caseNumber}`,
                 state: {
-                  caseId: record.caseNumber,
+                  caseId: record.f_caseNumber,
                   type: type,
                   workspace: workspace
                 }
@@ -233,11 +234,6 @@ class Workzone extends Component {
           }
           rows.push(row);
           columns = [
-            {
-              label: 'Open',
-              field: 'id',
-              sort: 'asc'
-            },
             {
               label: 'Case Number',
               field: 'caseId',
@@ -284,8 +280,8 @@ class Workzone extends Component {
               sort: 'asc'
             },
             {
-              label: 'Resolution',
-              field: 'resolution',
+              label: 'Outcome',
+              field: 'outcome',
               sort: 'asc'
             },
             /*{
@@ -371,6 +367,11 @@ class Workzone extends Component {
             {
               label: 'Date Updated',
               field: 'updatedDate',
+              sort: 'asc'
+            },
+            {
+              label: 'Open',
+              field: 'id',
               sort: 'asc'
             }
           ];
@@ -482,7 +483,7 @@ class Workzone extends Component {
   render() {
     let gridData = { columns: this.state.columns, rows: this.state.rows }
     return (
-      <div className="col-12">
+      <div>
         {this.componentToLoad()}
 
         <MDBDataTable

@@ -398,10 +398,6 @@ class Collection extends Component {
       moment(collection[0].nextVisitDate).format('YYYY-MM-DD') :
       '';
 
-    const nextVisitTime = this.state.collection[0].nextVisitTime ?
-      moment(collection[0].nextVisitTime).format('HH:mm:ss') :
-      '';
-
     let resolutionList = [<option key="0" value="---">Resolution</option>];
     //console.log('resolutionList before: ', resolutionList);
     resolutionList.push(this.state.resolutions.map(resolution =>
@@ -427,7 +423,7 @@ class Collection extends Component {
         <div className="row">
           <div className="col-12">
             <div className="card border-primary">
-              <div className="card-header">Case Number {collection[0].caseNumber}</div>
+              <div className="card-header">Case Number {collection[0].f_caseNumber}</div>
               <div className="card-body text-left">
 
               <div className="row">
@@ -448,30 +444,13 @@ class Collection extends Component {
               <br />
 
               <div className="row">
-                <div className="col-12">
-                  <div className="form-group">
-                    <label htmlFor="exampleInputcaseNotes">Case Number {collection[0].caseNumber} - Notes</label>
-                    <textarea
-                      disabled={true}
-                      rows="3"
-                      name="caseNotes"
-                      className="form-control"
-                      value={this.state.collection[0].caseNotes || ''}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <br />
-
-              <div className="row">
                 <div className="col-8">
                   <div className="form-group">
                     <label htmlFor="exampleInputCompanyName">Company Name</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="companyName"
+                      name="name"
                       className="form-control"
                       value={collection[0].companyName || ''}
                     />
@@ -633,7 +612,7 @@ class Collection extends Component {
               </div>
 
               <div className="row">
-                <div className="col-3">
+                <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays120">120 Days</label>
                     <NumberFormat
@@ -648,7 +627,7 @@ class Collection extends Component {
                   </div>
                 </div>
 
-                <div className="col-3">
+                <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays150">150 Days</label>
                     <NumberFormat
@@ -663,32 +642,17 @@ class Collection extends Component {
                   </div>
                 </div>
 
-                <div className="col-3">
+                <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputdays180">180 Days</label>
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
-                      name="days180"
+                      name="days150"
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days180.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="exampleInputdays180Over">+180 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days180Over"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection[0].days180Over.toFixed(2) || 0}
+                      value={collection[0].days150.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -777,7 +741,7 @@ class Collection extends Component {
                     <input
                       disabled={true}
                       type="text"
-                      name="lastPTPDate"
+                      name="ptpDate"
                       className="form-control"
                       value={lastPTPDate}
                     />
@@ -790,11 +754,11 @@ class Collection extends Component {
                     <NumberFormat
                       disabled={true}
                       displayType={'input'}
-                      name="lastPTPAmount"
+                      name="ptpAmount"
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].lastPTPAmount.toFixed(2) || 0}
+                      value={collection[0].ptpAmount.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -809,7 +773,7 @@ class Collection extends Component {
               <br /><br />
 
               <div className="row">
-                <div className="col-2">
+                <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="exampleInputnextVisitDate">Next Visit Date</label>
                     <input
@@ -818,19 +782,6 @@ class Collection extends Component {
                       name="nextVisitDate"
                       className="form-control"
                       value={nextVisitDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-2">
-                  <div className="form-group">
-                    <label htmlFor="exampleInputnextVisitTime">Next Visit Time</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="nextVisitTime"
-                      className="form-control"
-                      value={nextVisitTime}
                     />
                   </div>
                 </div>
@@ -850,13 +801,13 @@ class Collection extends Component {
 
                 <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="exampleInputrepresentativeNumber">Representative Number</label>
+                    <label htmlFor="exampleInputrepTelephone">Representative Telephone</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="representativeNumber"
+                      name="telephone"
                       className="form-control"
-                      value={collection[0].representativeNumber || ''}
+                      value={collection[0].telephone || ''}
                     />
                   </div>
                 </div>
