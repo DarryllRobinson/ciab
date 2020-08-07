@@ -4,31 +4,46 @@ import MysqlLayer from '../../Utilities/MysqlLayer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
+import DateTime from 'react-datetime';
 import NumberFormat from 'react-number-format';
+import './datetime.css';
 
 class Collection extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      clientId: sessionStorage.getItem('cwsClient'),
-      type: null,
-      workspace: null,
-      recordId: null,
-      collection: null,
-      disabled: false,
+      accountStatus: null,
       caseNotes: null,
-      user: sessionStorage.getItem('cwsUser'),
       changesMade: false,
-      ptpDate: null,
-      ptpAmount: 0,
-      nextVisitDate: null,
+      cipcStatus: null,
+      clientId: sessionStorage.getItem('cwsClient'),
+      collection: null,
+      contactPerson: null,
+      debitResubmissionAmount: null,
+      debitResubmissionDate: null,
+      disabled: false,
+      emailUsed: null,
+      nextVisitDateTime: null,
+      nextSteps: null,
+      numberCalled: null,
+      outcome: null,
+      outcomeNotes: null,
+      outcomeStatus: null,
       pendReason: '---',
-      resolution: '---'
+      ptpAmount: null,
+      ptpDate: null,
+      recordId: null,
+      resolution: '---',
+      transactionType: null,
+      type: null,
+      user: sessionStorage.getItem('cwsUser'),
+      workspace: null,
     }
 
     this.mysqlLayer = new MysqlLayer();
     this.handleChange = this.handleChange.bind(this);
+    this.handleDate = this.handleDate.bind(this);
     this.pendRecord = this.pendRecord.bind(this);
     this.closeRecord = this.closeRecord.bind(this);
     this.updateRecord = this.updateRecord.bind(this);
@@ -68,14 +83,18 @@ class Collection extends Component {
       let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
       let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
       let transactionTypes = await this.mysqlLayer.Get(`/admin/transactiontypes/list_all`);
-      //console.log('this.props.location.pathname: ', this.props.location.pathname);
-      //console.log('record: ', record);
-      //console.log('resolutions: ', resolutions);
+      let outcomeStatuses = await this.mysqlLayer.Get(`/admin/outcomestatuses/list_all`);
+      let accountStatuses = await this.mysqlLayer.Get(`/admin/accountstatuses/list_all`);
+      let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
 
-      //console.log('pends: ', pends);
       await this.setState({
+        accountStatuses: accountStatuses,
+        accountStatus: record.accountStatus,
+        cipcStatuses: cipcStatuses,
+        cipcStatus: record.cipcStatus,
         collection: record,
         caseNotes: record.caseNotes,
+        outcomeStatuses: outcomeStatuses,
         pendReasons: pends,
         resolutions: resolutions,
         transactionTypes: transactionTypes
@@ -167,13 +186,21 @@ class Collection extends Component {
 
   }
 
-  async handleChange(e) {
+  handleDate(e){
+    if (typeof e !== 'string') {
+      const nextVisitDateTime = moment(e.toDate()).format("YYYY-MM-DD HH:mm:ss");
+      console.log('nextVisitDateTime: ', nextVisitDateTime);
+      this.setState({ nextVisitDateTime: nextVisitDateTime });
+    }
+ };
+
+ async handleChange(e) {
     const value = e.target.value;
     console.log('value: ', value);
     const name = [e.target.name];
     console.log('[e.target.name]: ', name);
     await this.setState({
-      [e.target.name]: value,
+      [e.target.name]: e.target.value,
       changesMade: true
     });
     //console.log('this.state after change: ', this.state);
@@ -203,47 +230,138 @@ class Collection extends Component {
     }), timer);
   }
 
+  xxxpendRecord() {
+    const collection = this.state.collection;
+    console.log('collection value: ', collection);
+    console.log('debitResubmissionAmount in state: ', this.state.debitResubmissionAmount);
+    console.log('debitResubmissionAmount in state typeof: ', typeof this.state.debitResubmissionAmount);
+    //console.log('debitResubmissionAmount in state typeof: ', typeof this.state.debitResubmissionAmount.toNumber());
+  }
+
   async pendRecord() {
-    const notes = this.state.caseNotes;
+    const {
+      contactPerson,
+      debitResubmissionAmount,
+      debitResubmissionDate,
+      emailUsed,
+      nextSteps,
+      nextVisitDateTime,
+      numberCalled,
+      outcome,
+      outcomeNotes,
+      outcomeStatus,
+      pendReason,
+      ptpDate,
+      ptpAmount,
+      transactionType,
+      user
+    } = this.state;
+    const notes = this.state.outcomeNotes;
 
     // checking all the mandatory fields are populated
     let problems = [];
+    if (contactPerson === null) problems.push('Please enter a contact person');
+    if (emailUsed === null && transactionType === 'email') problems.push('Please provide an email address');
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
-    if (this.state.nextVisitDate === null) problems.push('Please provide a Next Visit Date');
-    if (this.state.pendReason === '---') problems.push('Please select a Pend Reason');
-    if (this.state.ptpDate && this.state.ptpAmount === 0) problems.push('Please provide a PTP Amount');
-    if (!this.state.ptpDate && this.state.ptpAmount !== 0) problems.push('Please provide a PTP Date');
+    if (nextSteps === null) problems.push('Please provide the next steps');
+    if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
+    if (numberCalled === null && transactionType === 'call') problems.push('Please provide a telephone number');
+    if (outcome === null) problems.push('Please provide the outcome');
+    if (outcomeStatus === null) problems.push('Please select an outcome status');
+    if (pendReason === '---') problems.push('Please select a pend reason');
+    if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
+    if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
+    if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
+    if (!debitResubmissionDate && debitResubmissionAmount) problems.push('Please provide a debit resubmission date');
+    if (transactionType === null) problems.push('Please enter a transaction type');
 
-    if (notes && notes.length > 10 && this.state.nextVisitDate !== null && this.state.pendReason !== '---') {
+    if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
+      let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nPend reason: ${this.state.pendReason}\nNotes: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nPend reason: ${pendReason}\nNotes: ${outcomeNotes}`;
+
+      /*let customerUpdate = {
+        cipcStatus: this.state.cipcStatus
+      };*/
+
+      /*let accountUpdate = {
+        accountStatus: this.state.accountStatus
+      };*/
 
       let caseUpdate = {
-        caseNotes: newNote,
         currentStatus: 'Pended',
-        pendReason: this.state.pendReason,
-        updatedBy: this.state.user, // must add actual username
+        pendReason: pendReason,
+        updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let outcomeUpdate = '';
-      if (!this.state.ptpDate) {
-        outcomeUpdate = {
-          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+      let outcomeInsert = '';
+      if (!ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: outcomeStatus,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else {
-        outcomeUpdate = {
-          ptpDate: this.state.ptpDate,
-          ptpAmount: this.state.ptpAmount,
-          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+      } else if (ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: outcomeStatus,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          ptpDate: ptpDate,
+          ptpAmount: ptpAmount,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          f_caseNumber: this.state.collection[0].caseNumber
+        };
+      } else if (!ptpDate && debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: outcomeStatus,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
+          f_caseNumber: this.state.collection[0].caseNumber
+        };
+      } else if (!ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: outcomeStatus,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
-      await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
+      await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
         pathname: '/workzone/collections',
         state: {
@@ -398,13 +516,17 @@ class Collection extends Component {
       moment(collection[0].lastPTPDate).format('YYYY-MM-DD') :
       '';
 
-    const nextVisitDate = this.state.collection[0].nextVisitDate ?
+    const nextVisitDateTime = this.state.collection[2].nextVisitDateTime ?
+      moment(collection[2].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
+      '';
+
+    /*const nextVisitDate = this.state.collection[0].nextVisitDate ?
       moment(collection[0].nextVisitDate).format('YYYY-MM-DD') :
       '';
 
     const nextVisitTime = this.state.collection[0].nextVisitTime ?
       moment(collection[0].nextVisitTime).format('HH:mm:ss') :
-      '';
+      '';*/
 
     const outcomesNotes = this.state.collection.map(collection => {
       return (
@@ -436,12 +558,31 @@ class Collection extends Component {
       <option key={type.id} value={type.shortCode}>{type.transactiontype}</option>
     ));
 
+    const outcomeStatusList = [<option key="0" value="---">Outcome Status</option>];
+    //console.log('pendList before: ', pendList);
+    outcomeStatusList.push(this.state.outcomeStatuses.map(outcomeStatus =>
+      <option key={outcomeStatus.id} value={outcomeStatus.shortCode}>{outcomeStatus.outcomestatus}</option>
+    ));
 
-    /*<option value="unable">Unable to pay</option>
-    <option value="already">Customer already paid</option>
-    <option value="refuses">Customer refuses to pay</option>*/
-    //console.log('resolutionList after: ', resolutionList);
-    //console.log('pendList after: ', pendList);
+    const accountStatusList = [<option key="0" value="---">Account Status</option>];
+    //console.log('pendList before: ', pendList);
+    accountStatusList.push(this.state.accountStatuses.map(accountStatus =>
+      <option key={accountStatus.id} value={accountStatus.shortCode}>{accountStatus.accountStatus}</option>
+    ));
+
+    const cipcStatusList = [<option key="0" value="---">{this.state.cipcStatus}</option>];
+    //console.log('pendList before: ', pendList);
+    cipcStatusList.push(this.state.cipcStatuses.map(cipcStatus =>
+      <option key={cipcStatus.id} value={cipcStatus.shortCode}>{cipcStatus.cipcStatus}</option>
+    ));
+
+    // Setting dates earlier than today as disabled for Next Date and Time
+    const yesterday = DateTime.moment().subtract( 1, 'day' );
+    const valid = function( current ){
+      return current.isAfter( yesterday );
+    };
+
+    //const index = this.state.collections.length - 1;
 
     return (
 
@@ -518,14 +659,14 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="cipcStatus">CIPC Status</label>
-                    <input
-                      disabled={this.state.disabled}
-                      type="text"
+                    <select
+                      required
                       name="cipcStatus"
-                      className="form-control"
+                      className="custom-select"
                       onChange={(e) => {this.handleChange(e)}}
-                      value={collection[0].cipcStatus || ''}
-                    />
+                    >
+                      {cipcStatusList}
+                    </select>
                   </div>
                 </div>
 
@@ -617,14 +758,13 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="accountStatus">Account Status</label>
-                    <input
-                      disabled={this.state.disabled}
-                      type="text"
+                    <select className="custom-select"
+                      required
                       name="accountStatus"
-                      className="form-control"
-                      onChange={(e) => {this.handleChange(e)}}
-                      value={collection[0].accountStatus || ''}
-                    />
+                      onChange={this.handleChange}
+                    >
+                      {accountStatusList}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -855,28 +995,15 @@ class Collection extends Component {
               <br /><br />
 
               <div className="row">
-                <div className="col-2">
+                <div className="col-4">
                   <div className="form-group">
-                    <label htmlFor="nextVisitDate">Next Visit Date</label>
+                    <label htmlFor="nextVisitDateTime">Next Visit Date and Time</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="nextVisitDate"
+                      name="nextVisitDateTime"
                       className="form-control"
-                      value={nextVisitDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-2">
-                  <div className="form-group">
-                    <label htmlFor="nextVisitTime">Next Visit Time</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="nextVisitTime"
-                      className="form-control"
-                      value={nextVisitTime}
+                      value={nextVisitDateTime}
                     />
                   </div>
                 </div>
@@ -1033,7 +1160,7 @@ class Collection extends Component {
                 </div>
 
                 <div className="row">
-                  <div className="col-4">
+                  <div className="col-8">
                     <div className="form-group">
                       <label htmlFor="emailUsed">Email Used</label>
                       <input
@@ -1047,12 +1174,28 @@ class Collection extends Component {
                     </div>
                   </div>
 
-                  <div className="col-8">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="outcomeStatus">Outcome Status</label>
+                      <select className="custom-select"
+                        required
+                        name="outcomeStatus"
+                        onChange={this.handleChange}
+                      >
+                        {outcomeStatusList}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-12">
                     <div className="form-group">
                       <label htmlFor="nextSteps">Next Steps</label>
-                      <input
+                      <textarea
                         disabled={this.state.disabled}
                         type="text"
+                        rows="3"
                         name="nextSteps"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
@@ -1083,10 +1226,12 @@ class Collection extends Component {
                       <NumberFormat
                         displayType={'input'}
                         className="form-control"
+                        prefix={'R '}
                         thousandSeparator={true}
                         disabled={false}
-                        name="ptpAmount"
-                        onChange={(e) => {this.handleChange(e)}}
+                        name="debitResubmissionAmount"
+                        onValueChange={(values) => {
+                          this.setState({ ptpAmount: values.floatValue })}}
                         value={this.state.ptpAmount || ''}
                       />
                     </div>
@@ -1109,28 +1254,31 @@ class Collection extends Component {
                 <div className="row">
                   <div className="col-4">
                     <div className="form-group">
-                      <label htmlFor="nextVisitDate">Next Visit Date</label>
+                      <label htmlFor="debitResubmissionDate">Debit Resubmission Date</label>
                       <input
                         disabled={false}
                         type="date"
-                        name="nextVisitDate"
+                        name="debitResubmissionDate"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
-                        value={this.state.nextVisitDate || ''}
+                        value={this.state.debitResubmissionDate || ''}
                       />
                     </div>
                   </div>
 
                   <div className="col-4">
                     <div className="form-group">
-                      <label htmlFor="nextVisitTime">Next Visit Time</label>
-                      <input
-                        disabled={false}
-                        type="time"
-                        name="nextVisitTime"
-                        onChange={(e) => {this.handleChange(e)}}
+                      <label htmlFor="debitResubmissionAmount">Debit Resubmission Amount</label>
+                      <NumberFormat
+                        displayType={'input'}
                         className="form-control"
-                        value={this.state.nextVisitTime || ''}
+                        prefix={'R '}
+                        thousandSeparator={true}
+                        disabled={false}
+                        name="debitResubmissionAmount"
+                        onValueChange={(values) => {
+                          this.setState({ debitResubmissionAmount: values.floatValue })}}
+                        value={this.state.debitResubmissionAmount || ''}
                       />
                     </div>
                   </div>
@@ -1147,17 +1295,26 @@ class Collection extends Component {
                       </select>
                     </div>
                   </div>
-
                 </div>
 
                 <div className="row">
-                  <div className="col-12">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="nextVisitDateTime">Next Visit Date and Time</label>
+                      <DateTime
+                        isValidDate={ valid }
+                        onBlur={this.handleDate}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-8">
                     <div className="form-group">
                       <label htmlFor="outcome">Outcome</label>
                       <textarea
                         disabled={this.state.disabled}
                         type="text"
-                        rows="3"
+                        rows="8"
                         name="outcome"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
@@ -1165,6 +1322,7 @@ class Collection extends Component {
                       />
                     </div>
                   </div>
+
                 </div>
 
               </div>

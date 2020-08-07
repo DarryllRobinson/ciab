@@ -357,12 +357,16 @@ class ExcelReader extends Component {
       const newDate = this.ExcelDateToJSDate(record.NextVisitDate);
       console.log('newDate: ', moment(newDate).format('YYYY-MM-DD'));*/
 
-    const nextVisitDate = record.NextVisitDate ?
+    /*const nextVisitDate = record.NextVisitDate ?
       moment(this.ExcelDateToJSDate(record.NextVisitDate)).format('YYYY-MM-DD') :
       null;
 
     const nextVisitTime = record.NextVisitTime ?
       moment(record.NextVisitTime).format('YYYY-MM-DD HH:mm:ss') :
+      null;*/
+
+    const nextVisitDateTime = record.nextVisitDateTime ?
+      moment(this.ExcelDateToJSDate(record.nextVisitDateTime)).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
     const ptpDate = record.PTPDate ?
@@ -385,8 +389,7 @@ class ExcelReader extends Component {
         EmailAddressUsed: record.emailUsed,
         contactPerson: record.ContactPerson,
         outcome: record.Resolution,
-        nextVisitDate: nextVisitDate,
-        nextVisitTime: nextVisitTime,
+        nextVisitDateTime: nextVisitDateTime,
         nextSteps: record.NextSteps,
         ptpDate: ptpDate,
         ptpAmount: record.PTPAmount,

@@ -189,7 +189,7 @@ class Workzone extends Component {
           ];
         } else if (record.currentStatus === recordStatus && workspace === 'collections') {
           //console.log('recordStatus: ', recordStatus);
-          console.log('records: ', record);
+          //console.log('records: ', record);
           let row = {
             recordId: record.id,
             accountNumber: record.accountNumber,
