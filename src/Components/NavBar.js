@@ -83,7 +83,7 @@ class NavBar extends React.Component {
   }
 
   nametoDisplay() {
-    //console.log('process.env.REACT_APP_STAGE: ', process.env.REACT_APP_STAGE);
+    console.log('process.env.REACT_APP_STAGE: ', process.env.REACT_APP_STAGE);
     switch (process.env.REACT_APP_STAGE) {
       case 'development':
         return ('The System - Dev');

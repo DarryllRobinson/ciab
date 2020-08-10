@@ -26,31 +26,31 @@ class Home extends Component {
     return (
       <div className="container">
         <div className="row">
-          <div className="col-lg-10">
+          <div className="col-lg-12">
             <div className="jumbotron">
               <h1>The System</h1>
                 <p className="lead">Your one-stop-shop for a complete customer lifecycle workflow solution</p>
                 <hr className="my-4" />
-                <p>It puts the lotion on its skin or it gets the hose again</p>
-                <p className="lead">
-                  <a className="btn btn-primary btn-lg" href=" # " role="button">Learn more</a>
-                </p>
+
+                <div className="row">
+                  <h4>Recent updates</h4>
+                  <div className="col-8">
+                    <ul>
+                    <li>
+                      All outcomes now automatically close on update
+                    </li>
+                    <li>
+                      Cases without associated outcomes no longer crash the display
+                    </li>
+                    <li>
+                      All Save & Pend functionality for Collections cases and outcomes
+                    </li>
+                    </ul>
+                  </div>
+                </div>
+
             </div>
 
-            <div className="list-group">
-              <a href=" # " className="list-group-item list-group-item-action">
-                Application capture and processing - including scorecards
-              </a>
-              <a href=" # " className="list-group-item list-group-item-action">
-                Collection workflow to assist you with the inevitable
-              </a>
-              <a href=" # " className="list-group-item list-group-item-action">
-                Ticket logging system to handle customer requests and complaints - includes automated escalation
-              </a>
-              <a href=" # " className="list-group-item list-group-item-action">
-                Agent community with support for news articles, sharing information and assistance and blogs
-              </a>
-            </div>
           </div>
         </div>
       </div>

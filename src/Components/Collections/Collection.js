@@ -29,7 +29,7 @@ class Collection extends Component {
       numberCalled: null,
       outcome: null,
       outcomeNotes: null,
-      outcomeStatus: null,
+      outcomeRecords: null,
       pendReason: '---',
       ptpAmount: null,
       ptpDate: null,
@@ -79,11 +79,19 @@ class Collection extends Component {
         }
       );
 
+      // Check if there are any associated outcomes to load
+      let outcomeRecords = null;
+      await this.mysqlLayer.Get(`/${type}/${workspace}/read_outcomes/${clientId}/${recordId}`)
+        .then(outcomeResponse => {
+          console.log('Outcome records response: ', outcomeResponse);
+          if (outcomeResponse) outcomeRecords = outcomeResponse;
+        }
+      );
+
       // Getting all the config for dropdown lists, etc
       let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
       let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
       let transactionTypes = await this.mysqlLayer.Get(`/admin/transactiontypes/list_all`);
-      let outcomeStatuses = await this.mysqlLayer.Get(`/admin/outcomestatuses/list_all`);
       let accountStatuses = await this.mysqlLayer.Get(`/admin/accountstatuses/list_all`);
       let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
 
@@ -94,7 +102,7 @@ class Collection extends Component {
         cipcStatus: record.cipcStatus,
         collection: record,
         caseNotes: record.caseNotes,
-        outcomeStatuses: outcomeStatuses,
+        outcomeRecords: outcomeRecords,
         pendReasons: pends,
         resolutions: resolutions,
         transactionTypes: transactionTypes
@@ -106,7 +114,7 @@ class Collection extends Component {
         currentStatus: 'Locked',
         lockedDatetime: dateTime
       };
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, update);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, update);
       //console.log('collection: ', this.state.collection);
     } else {
       this.notify('error', 'The record was not found. Returning to the dashboard.', false);
@@ -195,16 +203,16 @@ class Collection extends Component {
  };
 
  async handleChange(e) {
-    const value = e.target.value;
-    console.log('value: ', value);
-    const name = [e.target.name];
-    console.log('[e.target.name]: ', name);
-    await this.setState({
-      [e.target.name]: e.target.value,
-      changesMade: true
-    });
-    //console.log('this.state after change: ', this.state);
-  }
+   const value = e.target.value;
+  console.log('value: ', value);
+  const name = [e.target.name];
+  console.log('[e.target.name]: ', name);
+  await this.setState({
+    [e.target.name]: e.target.value,
+    changesMade: true
+  });
+  //console.log('this.state after change: ', this.state);
+}
 
   async cancel() {
     let timer = 0;
@@ -249,7 +257,6 @@ class Collection extends Component {
       numberCalled,
       outcome,
       outcomeNotes,
-      outcomeStatus,
       pendReason,
       ptpDate,
       ptpAmount,
@@ -267,7 +274,6 @@ class Collection extends Component {
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (numberCalled === null && transactionType === 'call') problems.push('Please provide a telephone number');
     if (outcome === null) problems.push('Please provide the outcome');
-    if (outcomeStatus === null) problems.push('Please select an outcome status');
     if (pendReason === '---') problems.push('Please select a pend reason');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
@@ -280,6 +286,8 @@ class Collection extends Component {
       let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
       let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nPend reason: ${pendReason}\nNotes: ${outcomeNotes}`;
+      let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      let closedBy = user;
 
       /*let customerUpdate = {
         cipcStatus: this.state.cipcStatus
@@ -300,7 +308,7 @@ class Collection extends Component {
       if (!ptpDate && !debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: outcomeStatus,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
@@ -309,12 +317,14 @@ class Collection extends Component {
           outcomeNotes: newNote,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: outcomeStatus,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
@@ -325,12 +335,14 @@ class Collection extends Component {
           ptpAmount: ptpAmount,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: outcomeStatus,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
@@ -339,6 +351,8 @@ class Collection extends Component {
           outcomeNotes: newNote,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
@@ -346,7 +360,7 @@ class Collection extends Component {
       } else if (!ptpDate && !debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: outcomeStatus,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
@@ -355,6 +369,8 @@ class Collection extends Component {
           outcomeNotes: newNote,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
           f_caseNumber: this.state.collection[0].caseNumber
         };
       }
@@ -377,54 +393,127 @@ class Collection extends Component {
   }
 
   async updateRecord() {
-    const notes = this.state.caseNotes;
-    console.log('Updating...');
+    const {
+      contactPerson,
+      debitResubmissionAmount,
+      debitResubmissionDate,
+      emailUsed,
+      nextSteps,
+      nextVisitDateTime,
+      numberCalled,
+      outcome,
+      outcomeNotes,
+      ptpDate,
+      ptpAmount,
+      transactionType,
+      user
+    } = this.state;
+    const notes = this.state.outcomeNotes;
 
     // checking all the mandatory fields are populated
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
-    if (this.state.ptpDate && this.state.ptpAmount === 0) problems.push('Please provide a PTP Amount');
-    if (!this.state.ptpDate && this.state.ptpAmount !== 0) problems.push('Please provide a PTP Date');
-    //if (this.state.ptpAmount === 0) problems.push('Please select a PTP Amount');
+    if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
+    if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
+    if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
+    if (!debitResubmissionDate && debitResubmissionAmount) problems.push('Please provide a debit resubmission date');
 
-    if (notes && notes.length > 10) {
+    if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
+      let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nPTP Date: ${this.state.ptpDate}  PTP Amount: ${this.state.ptpAmount}\nNotes: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nNotes: ${outcomeNotes}`;
+      let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      let closedBy = user;
+
+      /*let customerUpdate = {
+        cipcStatus: this.state.cipcStatus
+      };*/
+
+      /*let accountUpdate = {
+        accountStatus: this.state.accountStatus
+      };*/
+
       let caseUpdate = {
-        caseNotes: newNote,
         currentStatus: 'Open',
-        updatedBy: this.state.user, // must add actual username
+        updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let outcomeUpdate = null;
-      if (!this.state.ptpDate && this.state.nextVisitDate) {
-        outcomeUpdate = {
-          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+      let outcomeInsert = '';
+      if (!ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else if (this.state.ptpDate && this.state.nextVisitDate) {
-        outcomeUpdate = {
-          ptpDate: this.state.ptpDate,
-          ptpAmount: this.state.ptpAmount,
-          nextVisitDate: moment(this.state.nextVisitDate).format('YYYY-MM-DD')
+      } else if (ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          ptpDate: ptpDate,
+          ptpAmount: ptpAmount,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else if (this.state.ptpDate && !this.state.nextVisitDate) {
-        outcomeUpdate = {
-          ptpDate: this.state.ptpDate,
-          ptpAmount: this.state.ptpAmount
+      } else if (!ptpDate && debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
+          f_caseNumber: this.state.collection[0].caseNumber
+        };
+      } else if (!ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
       }
 
-      let casePut = await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
-      let outcomePut = null;
-      if (outcomeUpdate) outcomePut = await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
-
-      console.log('casePut: ', casePut);
-      console.log('outcomePut: ', outcomePut);
-
+      await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
         pathname: '/workzone/collections',
         state: {
@@ -440,47 +529,131 @@ class Collection extends Component {
   }
 
   async closeRecord() {
-    const notes = this.state.caseNotes;
+    const {
+      contactPerson,
+      debitResubmissionAmount,
+      debitResubmissionDate,
+      emailUsed,
+      nextSteps,
+      nextVisitDateTime,
+      numberCalled,
+      outcome,
+      outcomeNotes,
+      ptpDate,
+      ptpAmount,
+      resolution,
+      transactionType,
+      user
+    } = this.state;
+    const notes = this.state.outcomeNotes;
 
     // checking all the mandatory fields are populated
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
-    if (this.state.resolution === '---') problems.push('Please provide a resolution');
-    if (this.state.ptpDate && this.state.ptpAmount === 0) problems.push('Please provide a PTP Amount');
-    if (!this.state.ptpDate && this.state.ptpAmount !== 0) problems.push('Please provide a PTP Date');
+    if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
+    if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
+    if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
+    if (!debitResubmissionDate && debitResubmissionAmount) problems.push('Please provide a debit resubmission date');
+    if (resolution === '---') problems.push('Please select a resolution');
 
-    if (notes && notes.length > 10 && this.state.resolution !== "---") {
+    if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].caseNotes ? this.state.collection[0].caseNotes + `\n\r` : '';
+      let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${this.state.user}\nResolution: ${this.state.resolution}\nNotes: ${this.state.caseNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nResolution: ${resolution}\nNotes: ${outcomeNotes}`;
+      let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      let closedBy = user;
+
+      /*let customerUpdate = {
+        closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        closedBy: user
+      };*/
+
+      /*let accountUpdate = {
+        accountStatus: this.state.accountStatus
+      };*/
+
       let caseUpdate = {
-        caseNotes: newNote,
         currentStatus: 'Closed',
-        updatedBy: this.state.user, // must add actual username
+        resolution: resolution,
+        updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let outcomeUpdate = '';
-      if (!this.state.ptpDate) {
-        outcomeUpdate = {
-          closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-          closedBy: this.state.user,
-          resolution: this.state.resolution
+      let outcomeInsert = '';
+      if (!ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else {
-        outcomeUpdate = {
-          ptpDate: this.state.ptpDate,
-          ptpAmount: this.state.ptpAmount,
-          closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-          closedBy: this.state.user,
-          resolution: this.state.resolution
+      } else if (ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          ptpDate: ptpDate,
+          ptpAmount: ptpAmount,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseNumber: this.state.collection[0].caseNumber
+        };
+      } else if (!ptpDate && debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
+          f_caseNumber: this.state.collection[0].caseNumber
+        };
+      } else if (!ptpDate && !debitResubmissionDate) {
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: 'Closed',
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextVisitDateTime: nextVisitDateTime,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseNumber: this.state.collection[0].caseNumber
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
 
-      await this.mysqlLayer.Put(`/${this.state.type}/outcomes/update_item/${this.state.clientId}/${this.state.collection[0].id}`, outcomeUpdate);
+      await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
         pathname: '/workzone/collections',
         state: {
@@ -497,12 +670,18 @@ class Collection extends Component {
 
   render() {
     const collection = this.state.collection;
+
     if (collection === null && this.props.location.state !== undefined) return <p>Loading...</p>;
     if (this.props.location.state === undefined) return <p>Record not found. Please return to the <Link to={"/dashboard"}>dashboard</Link></p>;
 
-    const paymentDueDate = this.state.collection[0].paymentDueDate ?
-      moment(collection[0].paymentDueDate).format('YYYY-MM-DD') :
-      '';
+    const index = collection.length - 1; // to get the most recent data for whatever field
+
+    let paymentDueDate = '';
+    if (this.state.collection[0].paymentDueDate !== undefined) {
+      paymentDueDate = this.state.collection[0].paymentDueDate ?
+        moment(collection[0].paymentDueDate).format('YYYY-MM-DD') :
+        '';
+    }
 
     const debitOrderDate = this.state.collection[0].debitOrderDate ?
       moment(collection[0].debitOrderDate).format('YYYY-MM-DD') :
@@ -516,8 +695,8 @@ class Collection extends Component {
       moment(collection[0].lastPTPDate).format('YYYY-MM-DD') :
       '';
 
-    const nextVisitDateTime = this.state.collection[2].nextVisitDateTime ?
-      moment(collection[2].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
+    const nextVisitDateTime = this.state.collection[index].nextVisitDateTime ?
+      moment(collection[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
       '';
 
     /*const nextVisitDate = this.state.collection[0].nextVisitDate ?
@@ -528,17 +707,27 @@ class Collection extends Component {
       moment(collection[0].nextVisitTime).format('HH:mm:ss') :
       '';*/
 
-    const outcomesNotes = this.state.collection.map(collection => {
-      return (
-        collection.outcomeNotes + '\n\r'
-      );
-    });
+    let outcomesNotes = '';
+    if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
+      outcomesNotes = this.state.outcomeRecords.map(outcomeRecord => {
+        return (
+          outcomeRecord.outcomeNotes + '\n\r'
+        );
+      });
+    } else {
+      outcomesNotes = 'No notes to display';
+    }
 
-    const outcomes = this.state.collection.map(collection => {
-      return (
-        collection.outcome + '\n\r'
-      );
-    });
+    let outcomes = '';
+    if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcome !== undefined) {
+      outcomes = this.state.outcomeRecords.map(outcomeRecord => {
+        return (
+          outcomeRecord.outcome + '\n\r'
+        );
+      });
+    } else {
+      outcomes = 'No outcomes to display';
+    }
 
     const resolutionList = [<option key="0" value="---">Resolution</option>];
     //console.log('resolutionList before: ', resolutionList);
@@ -558,12 +747,6 @@ class Collection extends Component {
       <option key={type.id} value={type.shortCode}>{type.transactiontype}</option>
     ));
 
-    const outcomeStatusList = [<option key="0" value="---">Outcome Status</option>];
-    //console.log('pendList before: ', pendList);
-    outcomeStatusList.push(this.state.outcomeStatuses.map(outcomeStatus =>
-      <option key={outcomeStatus.id} value={outcomeStatus.shortCode}>{outcomeStatus.outcomestatus}</option>
-    ));
-
     const accountStatusList = [<option key="0" value="---">Account Status</option>];
     //console.log('pendList before: ', pendList);
     accountStatusList.push(this.state.accountStatuses.map(accountStatus =>
@@ -581,8 +764,6 @@ class Collection extends Component {
     const valid = function( current ){
       return current.isAfter( yesterday );
     };
-
-    //const index = this.state.collections.length - 1;
 
     return (
 
@@ -1176,14 +1357,7 @@ class Collection extends Component {
 
                   <div className="col-4">
                     <div className="form-group">
-                      <label htmlFor="outcomeStatus">Outcome Status</label>
-                      <select className="custom-select"
-                        required
-                        name="outcomeStatus"
-                        onChange={this.handleChange}
-                      >
-                        {outcomeStatusList}
-                      </select>
+                      {/* This space left intentionally blank */}
                     </div>
                   </div>
                 </div>

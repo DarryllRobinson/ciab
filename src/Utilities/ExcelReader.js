@@ -42,9 +42,17 @@ class ExcelReader extends Component {
 
   async componentDidMount() {
     //console.log('ExcelReader props: ', this.props);
+    //this.randmonGenerator();
     await this.setState({
       type: sessionStorage.getItem('cwsType')
     });
+  }
+
+  randmonGenerator() {
+    const min = 1;
+    const max = 100;
+    const rand = Math.floor(min + Math.random() * (max - min));
+    return rand;
   }
 
   async handleChange(e) {
@@ -161,7 +169,14 @@ class ExcelReader extends Component {
           break;
       }
       count++;
-      let message = `${count} files have been successfully uploaded to the ${workspace} table. You should feel good about yourself.`;
+
+      let chance = this.randmonGenerator();
+      let message = ``;
+      if (chance > 90) {
+        message = `${count} files have been successfully uploaded to the ${workspace} table. You should feel good about yourself.`;
+      } else {
+        message = `${count} files have been successfully uploaded to the ${workspace} table.`;
+      }
       await this.setState({ compliance: message });
     });
   }
