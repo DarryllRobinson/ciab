@@ -3,6 +3,41 @@ import MysqlLayer from '../Utilities/MysqlLayer';
 import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
+import moment from 'moment';
+
+/*const workspacesConst = [
+  {
+    workspace: 'collections',
+    worklists: [
+      {
+        worklist: 'Queues',
+        items: [
+          {
+            item: 'Closed',
+            count: 3
+          },
+          {
+            item: 'Open',
+            count: 5,
+          },
+          {
+            item: 'Pended',
+            count: 7
+          }
+        ]
+      },
+      {
+        worklist: 'Today',
+        items: [
+          {
+            item: 'Pended',
+            count: 11
+          }
+        ]
+      }
+    ]
+  }
+];*/
 
 class Dashboard extends Component {
   constructor(props) {
@@ -11,12 +46,14 @@ class Dashboard extends Component {
     this.state = {
       user: null,
       client: null,
+      items: null,
       loading: true,
       role: null,
       records: null,
       service: null,
       worklists: [],
-      workspaces: []
+      workspaces: [],
+      workzones: []
     }
 
     this.mysqlLayer = new MysqlLayer();
@@ -24,6 +61,131 @@ class Dashboard extends Component {
   }
 
   async componentDidMount() {
+    let data = {
+      firstName: sessionStorage.getItem('cwsFirstName'),
+      surname: sessionStorage.getItem('cwsSurname'),
+      email: sessionStorage.getItem('cwsUser'),
+      role: sessionStorage.getItem('cwsRole'),
+      type: sessionStorage.getItem('cwsType'),
+      storeId: sessionStorage.getItem('cwsStoreId'),
+      clientId: sessionStorage.getItem('cwsClient')
+    };
+
+    let user = [];
+    user.push(data);
+    await this.setState({ user: user });
+    const client = data.clientId;
+
+    // start with extracting the services from the db
+    const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${client}`);
+    //console.log('clientservices: ', clientservices);
+
+    let workzones = [
+      {
+        worklist: 'Queues',
+        task: 'list_all'
+      },
+      {
+        worklist: 'Today',
+        task: 'list_today'
+      }
+    ];
+
+    // loop through services to populate worklists
+    clientservices.forEach(async service => {
+      let workspace = service.service;
+      let type = service.type;
+
+      let workspaces = [];
+
+      // loop through the workzones
+      workzones.forEach(async workzone => {
+        //console.log('workzone: ', workzone);
+        let worklists = [];
+        let task = workzone.task;
+        let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
+        //console.log('records: ', records);
+
+        let statusArr = [];
+        records.forEach(async record => {
+          //console.log('currentStatus: ', record.currentStatus);
+          statusArr.push(record.currentStatus);
+        });
+
+        let completeWorklist = statusArr.filter(this.onlyUnique);
+
+        let statusList = [];
+        if (completeWorklist.length > 0) statusList = this.filterWorklists(workspace, completeWorklist);
+
+        let items = [];
+        statusList.forEach(async element => {
+          //console.log('element: ', element);
+          let count = 0;
+          records.forEach(async record => {
+            if (record.currentStatus === element) {
+              ++count;
+            }
+          });
+          items.push({
+            item: element,
+            count: count
+          });
+          //console.log('items: ', items);
+        }); // end of worklist loop *******************************
+
+        worklists.push({
+          worklist: workzone.worklist,
+          items: items
+        });
+        //console.log('worklists: ', workzone, worklists, moment(new Date()).format('HH:mm:sss'));
+        console.log('worklists: ', workzone, worklists, moment(new Date()).milliseconds());
+
+        await this.setState({
+          records: records,
+          type: type,
+          worklists: [...this.state.worklists, ...worklists]
+        });
+
+        console.log('this.state.worklists: ', this.state.worklists, moment(new Date()).milliseconds());
+        let tempWorklists = this.state.worklists;
+        console.log('tempWorklists: ', tempWorklists, moment(new Date()).milliseconds());
+
+        workspaces.push({
+          workspace: workspace,
+          worklists: tempWorklists
+        });
+
+      }); // end of workzone loop *******************************
+
+
+      //console.log('2 workspaces: ', workspaces);
+
+      await this.setState({
+        //loading: false,
+        //workspaces: [...this.state.workspaces, ...workspaces]
+        workspaces: workspaces
+        //workspaces: workspacesConst
+      });
+      console.log('this.state.workspaces: ', this.state.workspaces, moment(new Date()).milliseconds());
+
+      await this.setState({
+        //loading: false,
+        //workspaces: [...this.state.workspaces, ...workspaces]
+        workspaces: workspaces
+        //workspaces: workspacesConst
+      });
+      console.log('this.state.workspaces: ', this.state.workspaces, moment(new Date()).milliseconds());
+      
+
+    }); // end of workspace loop *******************************
+
+    // Should be good to render now
+    //if (this.state.worklists.length > 1)
+    await this.setState({ loading: false });
+
+  }
+
+  async xxxcomponentDidMount() {
     //console.log('Dashboard props: ', this.props);
 
     //this.props.checkLoginStatus();
@@ -111,7 +273,7 @@ class Dashboard extends Component {
           worklists.push({
             worklist: 'Queues',
             items: items
-          }/*,
+          },
           {
             worklist: 'Today',
             items: [
@@ -145,7 +307,7 @@ class Dashboard extends Component {
                 count: 2
               }
             ]
-          }*/);
+          });
 
           //console.log('worklists: ', worklists);
           //await this.setState({ worklists: [...this.state.worklists, ...worklists ] }); //another array
@@ -286,8 +448,9 @@ class Dashboard extends Component {
     } else {
 
       const workspace = this.state.workspaces.map((workspace, idx) =>
+      //const workspace = workspaces.map((workspace, idx) =>
         <div key={idx} className="card border-light mb-3" style={{padding: "20px"}}>
-          {/*console.log('workspace: ', workspace)*/}
+          {console.log('render workspace: ', workspace.worklists, moment(new Date()).milliseconds())}
           <Workspace
             key={idx}
             records={this.state.records}

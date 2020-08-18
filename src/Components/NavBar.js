@@ -1,6 +1,6 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
 import Login from './Auth/Login';
+import { Button, Container, Nav, Navbar } from 'react-bootstrap';
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -11,79 +11,62 @@ class NavBar extends React.Component {
 
   menuToDisplay() {
     //console.log('NavBar props: ', this.props);
+    //console.log('NavBar loggedInStatus: ', this.props.loggedInStatus);
+    const role = sessionStorage.getItem('cwsRole');
     const loggedInStatus = this.props.loggedInStatus;
-    if (loggedInStatus === "LOGGED_IN" && this.props.role !== "god") {
+    if (loggedInStatus === "LOGGED_IN" && role !== "god") {
       let firstName = sessionStorage.getItem('cwsFirstName');
 
       return (
         <>
-          <div className="collapse navbar-collapse" id="navbarColor01">
-            <ul className="navbar-nav mr-auto">
-              {/*<li className="nav-item active">
-                <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
-              </li>*/}
-              <li className="nav-item active">
-                <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
-              </li>
-              {/*<li className="nav-item active">
-                <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
-              </li>
-              <li className="nav-item active">
-                <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
-              </li>*/}
-            </ul>
-          </div>
-          <div className="navbar-brand">{firstName}</div>
-          <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
+          <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+
+          <Container expand="lg" className="justify-content-end">
+            <Navbar.Text>
+              {firstName}
+            </Navbar.Text>
+          </Container>
+          <Button onClick={() => this.props.handleLogoutClick()}>Logout</Button>
         </>
       );
-    } else if (loggedInStatus === "LOGGED_IN" && this.props.role === "god") {
+    } else if (loggedInStatus === "LOGGED_IN" && role === "god") {
       let firstName = sessionStorage.getItem('cwsFirstName');
 
       return (
         <>
-          <div className="collapse navbar-collapse" id="thesystemNavBar">
-            <ul className="navbar-nav mr-auto">
-              {/*<li className="nav-item active">
-                <Link className="nav-link" to="/community/blogs">Blogs <span className="sr-only">(current)</span></Link>
-              </li>*/}
-            <li className="nav-item active">
-              <Link className="nav-link" to="/dashboard/">Dashboard <span className="sr-only"></span></Link>
-            </li>
-            {/*<li className="nav-item active">
-              <Link className="nav-link" to="/maintenance/policies">Maintenance <span className="sr-only"></span></Link>
-            </li>*/}
-            <li className="nav-item active">
-              <Link className="nav-link" to="/collections/upload">Upload <span className="sr-only"></span></Link>
-            </li>
-            <li className="nav-item active">
-              <Link className="nav-link" to="/reports">Reports <span className="sr-only"></span></Link>
-            </li>
-            <li className="nav-item active">
-              <Link className="nav-link" to="/auth/registration">Registration <span className="sr-only"></span></Link>
-            </li>
-            </ul>
-          </div>
-          <div className="navbar-brand">{firstName}</div>
-          <button type="button" className="btn btn-secondary" onClick={() => this.props.handleLogoutClick()}>Logout</button>
+          <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+          <Nav.Link href="/collections/upload">Upload</Nav.Link>
+          <Nav.Link href="/reports">Reports</Nav.Link>
+          <Nav.Link href="/auth/registration">Registration</Nav.Link>
+
+          <Container>
+            <Navbar.Text>
+              {firstName}
+            </Navbar.Text>
+          </Container>
+          <Button onClick={() => this.props.handleLogoutClick()}>Logout</Button>
         </>
       );
     } else if (loggedInStatus === 'NOT_LOGGED_IN') {
       return (
-        <div className="collapse navbar-collapse" id="navbarColor01">
+        <>
           <Login
             loggedInStatus={this.props.loggedInStatus}
             handleSuccessfulAuth={this.props.handleSuccessfulAuth}
             handleLogin={this.props.handleLogin}
             handleLogoutClick={this.props.handleLogoutClick}
           />
-        </div>
+        </>
+      );
+    } else {
+      return (
+        <div>I cannot find a menu to display {loggedInStatus} {role}</div>
       );
     }
   }
 
   nametoDisplay() {
-    console.log('process.env.REACT_APP_STAGE: ', process.env.REACT_APP_STAGE);
+    //console.log('process.env.REACT_APP_STAGE: ', process.env.REACT_APP_STAGE);
     switch (process.env.REACT_APP_STAGE) {
       case 'development':
         return ('The System - Dev');
@@ -101,13 +84,13 @@ class NavBar extends React.Component {
   colourToUse() {
     switch (process.env.REACT_APP_STAGE) {
       case 'development':
-        return ("navbar navbar-expand-lg navbar-dark bg-dark fixed-top");
+        return ("dark");
       case 'production':
-        return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
+        return ("light");
       case 'sit':
-        return ("navbar navbar-expand-lg navbar-dark bg-dark fixed-top");
+        return ("dark");
       case 'uat':
-        return ("navbar navbar-expand-lg navbar-dark bg-primary fixed-top");
+        return ("dark");
       default:
         return ('The System - ???');
     }
@@ -115,15 +98,16 @@ class NavBar extends React.Component {
 
   render() {
     return (
-      <nav className={this.colourToUse()}>
-        <Link className="navbar-brand" to="/">
-          {this.nametoDisplay()}
-          <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#thesystemNavBar" aria-controls="thesystemNavBar" aria-expanded="false" aria-label="Toggle navigation">
-            <span className="navbar-toggler-icon"></span>
-          </button>
-        </Link>
-        {this.menuToDisplay()}
-      </nav>
+      <Navbar bg={this.colourToUse()} expand="lg" fixed="top">
+        <Navbar.Brand href="/">{this.nametoDisplay()}</Navbar.Brand>
+
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="ml-auto">
+            {this.menuToDisplay()}
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
     );
   }
 }

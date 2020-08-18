@@ -1,17 +1,16 @@
 import React from 'react';
-import {Route} from 'react-router-dom';
-import Security from './Security';
+import { Route } from 'react-router-dom';
 
 function SecuredRoute(props) {
-  const {component: Component, path, checkingSession} = props;
+  console.log('SecuredRoute props: ', props);
+  const {component: Component, path, loggedInStatus} = props;
   return (
     <Route path={path} render={() => {
-      if (checkingSession) return <h3 className="text-center">Validating session...</h3>;
-      if (!this.Security.validateSession()) {
+      if (loggedInStatus !== 'LOGGED_IN') {
         //auth0Client.signIn();
-        return <div></div>;
+        return <div>You have been logged out</div>;
       }
-      return <Component />
+      return <Component {...props}/>
     }} />
   );
 }

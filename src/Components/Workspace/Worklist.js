@@ -32,7 +32,7 @@ function Worklist(props) {
       </div>
     );
   } else {
-    return <div>Loading worklist...</div>
+    return <div>Worklist loading...</div>
   }
 }
 

@@ -38,7 +38,7 @@ export default class Reports extends Component {
     const clientId = this.state.clientId;
 
     this.reportData = await this.mysqlLayer.Get(`/${type}/${workspace}/list_all/${clientId}`);
-    //console.log('this.reportData: ', this.reportData);
+    console.log('this.reportData: ', this.reportData);
     this.processReportData();
     this.setState({ staticContext: this.state.staticContext });
   }
@@ -48,6 +48,7 @@ export default class Reports extends Component {
     if (!this.reportData) this.reportData = [];
 
     _.forEach(this.reportData, function(obj) {
+      //console.log('obj: ', obj);
       if (obj.accountNotes) {
         _.set(obj, 'Account Notes', obj.accountNotes);
       }
@@ -97,7 +98,7 @@ export default class Reports extends Component {
       }
 
       if (obj.caseDate) {
-        _.set(obj, 'Account Notes', obj.caseDate);
+        _.set(obj, 'Case Date', obj.caseDate);
       }
 
       if (obj.caseNotes) {

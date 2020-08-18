@@ -39,7 +39,7 @@ function Workspace(props) {
       </>
     );
   } else {
-    return <div>Loading...</div>
+    return <div>Workspace loading...</div>
   }
 }
 

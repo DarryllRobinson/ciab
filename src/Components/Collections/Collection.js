@@ -225,7 +225,7 @@ class Collection extends Component {
     const update = {
       currentStatus: 'Open'
     };
-    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, update);
+    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, update);
 
     setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
@@ -289,13 +289,17 @@ class Collection extends Component {
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
-      /*let customerUpdate = {
-        cipcStatus: this.state.cipcStatus
-      };*/
+      let customerUpdate = {
+        cipcStatus: this.state.cipcStatus,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
 
-      /*let accountUpdate = {
-        accountStatus: this.state.accountStatus
-      };*/
+      let accountUpdate = {
+        accountStatus: this.state.accountStatus,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
 
       let caseUpdate = {
         currentStatus: 'Pended',
@@ -375,7 +379,9 @@ class Collection extends Component {
         };
       }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].id}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -426,13 +432,17 @@ class Collection extends Component {
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
-      /*let customerUpdate = {
-        cipcStatus: this.state.cipcStatus
-      };*/
+      let customerUpdate = {
+        cipcStatus: this.state.cipcStatus,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
 
-      /*let accountUpdate = {
-        accountStatus: this.state.accountStatus
-      };*/
+      let accountUpdate = {
+        accountStatus: this.state.accountStatus,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
 
       let caseUpdate = {
         currentStatus: 'Open',
@@ -511,7 +521,9 @@ class Collection extends Component {
         };
       }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].id}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -564,14 +576,18 @@ class Collection extends Component {
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
-      /*let customerUpdate = {
+      let customerUpdate = {
         closedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-        closedBy: user
-      };*/
+        closedBy: user,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
 
-      /*let accountUpdate = {
-        accountStatus: this.state.accountStatus
-      };*/
+      let accountUpdate = {
+        accountStatus: this.state.accountStatus,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
 
       let caseUpdate = {
         currentStatus: 'Closed',
@@ -651,7 +667,9 @@ class Collection extends Component {
         };
       }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].f_caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].id}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -709,22 +727,33 @@ class Collection extends Component {
 
     let outcomesNotes = '';
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
-      outcomesNotes = this.state.outcomeRecords.map(outcomeRecord => {
-        return (
-          outcomeRecord.outcomeNotes + '\n\r'
-        );
+      let outcomesNotesArray = [];
+      this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
+        outcomesNotesArray[idx] = outcomeRecord.outcomeNotes + '\n\r'
       });
+      outcomesNotes = outcomesNotesArray.join('\n');
     } else {
       outcomesNotes = 'No notes to display';
     }
 
     let outcomes = '';
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcome !== undefined) {
-      outcomes = this.state.outcomeRecords.map(outcomeRecord => {
-        return (
-          outcomeRecord.outcome + '\n\r'
-        );
+      let outcomeArray = [];
+      this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
+        outcomeArray[idx] = moment(outcomeRecord.updatedDate).format('YYYY-MM-DD HH:mm:ss') + '\n' +
+        'Transaction type: ' + outcomeRecord.transactionType + '\n' +
+        'Contacted person: ' + outcomeRecord.contactPerson + '\n' +
+        'Number called: ' + outcomeRecord.numberCalled + '\n' +
+        'Email used: ' + outcomeRecord.emailUsed + '\n' +
+        'PTP date: ' + outcomeRecord.ptpDate + '\n' +
+        'PTP amount: ' + outcomeRecord.ptpAmount + '\n' +
+        'Pend reason: ' + outcomeRecord.pendReason + '\n' +
+        'Resolution: ' + outcomeRecord.resolution + '\n' +
+        'Debit order resubmission date: ' + outcomeRecord.debitResubmissionDate + '\n' +
+        'Debit order resubmission amount: ' + outcomeRecord.debitResubmissionAmount + '\n' +
+        'Outcome: ' + outcomeRecord.outcome + '\n\r'
       });
+      outcomes = outcomeArray.join('\n');
     } else {
       outcomes = 'No outcomes to display';
     }
@@ -732,32 +761,32 @@ class Collection extends Component {
     const resolutionList = [<option key="0" value="---">Resolution</option>];
     //console.log('resolutionList before: ', resolutionList);
     resolutionList.push(this.state.resolutions.map(resolution =>
-      <option key={resolution.id} value={resolution.shortCode}>{resolution.resolution}</option>
+      <option key={resolution.id} value={resolution.resolution}>{resolution.resolution}</option>
     ));
 
     const pendList = [<option key="0" value="---">Pend Reason</option>];
     //console.log('pendList before: ', pendList);
     pendList.push(this.state.pendReasons.map(pend =>
-      <option key={pend.id} value={pend.shortCode}>{pend.pendreason}</option>
+      <option key={pend.id} value={pend.pendreason}>{pend.pendreason}</option>
     ));
 
     const transactionTypeList = [<option key="0" value="---">Transaction Type</option>];
     //console.log('pendList before: ', pendList);
     transactionTypeList.push(this.state.transactionTypes.map(type =>
-      <option key={type.id} value={type.shortCode}>{type.transactiontype}</option>
+      <option key={type.id} value={type.transactiontype}>{type.transactiontype}</option>
     ));
 
-    const accountStatusList = [<option key="0" value="---">Account Status</option>];
-    //console.log('pendList before: ', pendList);
+    const accountStatusList = [<option key="0" value={this.state.collection[0].accountStatus}>{this.state.collection[0].accountStatus}</option>];
     accountStatusList.push(this.state.accountStatuses.map(accountStatus =>
-      <option key={accountStatus.id} value={accountStatus.shortCode}>{accountStatus.accountStatus}</option>
+      <option key={accountStatus.id} value={accountStatus.accountStatus}>{accountStatus.accountStatus}</option>
     ));
 
-    const cipcStatusList = [<option key="0" value="---">{this.state.cipcStatus}</option>];
-    //console.log('pendList before: ', pendList);
+    const cipcStatusList = [<option key="0" value={this.state.collection[0].cipcStatus}>{this.state.collection[0].cipcStatus}</option>];
     cipcStatusList.push(this.state.cipcStatuses.map(cipcStatus =>
-      <option key={cipcStatus.id} value={cipcStatus.shortCode}>{cipcStatus.cipcStatus}</option>
+      <option key={cipcStatus.id} value={cipcStatus.cipcStatus}>{cipcStatus.cipcStatus}</option>
     ));
+
+    const repNumber = `tel:${collection[0].representativeNumber}`;
 
     // Setting dates earlier than today as disabled for Next Date and Time
     const yesterday = DateTime.moment().subtract( 1, 'day' );
@@ -1205,13 +1234,26 @@ class Collection extends Component {
                 <div className="col-4">
                   <div className="form-group">
                     <label htmlFor="representativeNumber">Representative Number</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="representativeNumber"
-                      className="form-control"
-                      value={collection[0].representativeNumber || ''}
-                    />
+                    <a
+                      href={repNumber}
+                      style={{
+                        background: "#ECF0F1",
+                        border: "1px solid #CED4DA",
+                        borderRadius: "0.25rem",
+                        color: "#7B8A8B",
+                        display: "block",
+                        fontSize: "0.9375rem",
+                        fontWeight: "400",
+                        lineHeight: "1.5",
+                        margin: "0",
+                        padding: "0.375rem 0.75rem",
+                        textDecoration: "underline",
+                        width: "100%"
+                      }}
+                    >
+                      {repNumber.substring(4)}
+                    </a>
+
                   </div>
                 </div>
               </div>
@@ -1365,15 +1407,15 @@ class Collection extends Component {
                 <div className="row">
                   <div className="col-12">
                     <div className="form-group">
-                      <label htmlFor="nextSteps">Next Steps</label>
+                      <label htmlFor="outcome">Outcome</label>
                       <textarea
                         disabled={this.state.disabled}
                         type="text"
                         rows="3"
-                        name="nextSteps"
+                        name="outcome"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
-                        value={this.state.nextSteps || ''}
+                        value={this.state.outcome || ''}
                       />
                     </div>
                   </div>
@@ -1484,15 +1526,15 @@ class Collection extends Component {
 
                   <div className="col-8">
                     <div className="form-group">
-                      <label htmlFor="outcome">Outcome</label>
+                      <label htmlFor="nextSteps">Next Steps</label>
                       <textarea
                         disabled={this.state.disabled}
                         type="text"
                         rows="8"
-                        name="outcome"
+                        name="nextSteps"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
-                        value={this.state.outcome || ''}
+                        value={this.state.nextSteps || ''}
                       />
                     </div>
                   </div>

@@ -10,7 +10,7 @@ class Home extends Component {
   }
 
   async handleLogoutClick() {
-    console.log('Home props: ', this.props);
+    //console.log('Home props: ', this.props);
     let cwsUser = '';
     cwsUser = sessionStorage.getItem('cwsUser');
     await this.mysqlLayer.Delete(`/admin/sessions/${cwsUser}`, { withCredentials: true })
@@ -37,13 +37,25 @@ class Home extends Component {
                   <div className="col-8">
                     <ul>
                     <li>
-                      All outcomes now automatically close on update
+                      2020-08-19 CIPC and Account status fields saved in database
                     </li>
                     <li>
-                      Cases without associated outcomes no longer crash the display
+                      2020-08-18 Outcome history updated to show more fields
                     </li>
                     <li>
-                      All Save & Pend functionality for Collections cases and outcomes
+                      2020-08-18 Removed the spurious comma from the text boxes
+                    </li>
+                    <li>
+                      2020-08-13 NavBar is responsive for mobiles
+                    </li>
+                    <li>
+                      2020-08-13 Representative phone number now clickable
+                    </li>
+                    <li>
+                      2020-08-13 Account Notes and Case Date labels corrected in Reports
+                    </li>
+                    <li>
+                      2020-08-13 Outcome and Next Steps swapped in Collection workzone
                     </li>
                     </ul>
                   </div>
