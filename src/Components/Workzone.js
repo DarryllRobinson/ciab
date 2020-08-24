@@ -100,7 +100,7 @@ class Workzone extends Component {
 
     let records = [];
     let clientId = sessionStorage.getItem('cwsClient');
-    const type = this.props.location.state.type;
+    const type = this.props.location.state.type ? this.props.location.state.type : sessionStorage.getItem('cwsType');
     //if (workspace === 'cases') workspace = 'collections';
     //const workspace = this.props.location.state.workspace;
     //console.log('typeof: ', typeof workspace);
@@ -191,7 +191,7 @@ class Workzone extends Component {
           //console.log('recordStatus: ', recordStatus);
           //console.log('records: ', record);
           let row = {
-            recordId: record.id,
+            recordId: record.caseNumber,
             accountNumber: record.accountNumber,
             caseNumber: record.caseNumber,
             caseNotes: record.caseNotes,

@@ -2,9 +2,13 @@ import React, { Component } from 'react';
 import {Route, Switch, withRouter} from 'react-router-dom';
 import MysqlLayer from './Utilities/MysqlLayer';
 import Security from './Utilities/Security';
+import { Container } from 'react-bootstrap';
+import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './Components/NavBar';
 import Home from './Components/Home';
+import NewHome from './Components/newHome';
 
 import Dashboard from './Components/Dashboard';
 import Workzone from './Components/Workzone';
@@ -23,6 +27,8 @@ import NewBlog from './Components/Community/NewBlog';
 import Registration from './Components/Auth/Registration';
 import ExcelReader from './Utilities/ExcelReader';
 import Reports from './Components/Reports';
+
+//import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends Component {
   constructor(props) {
@@ -107,7 +113,7 @@ class App extends Component {
     // Return profile aligned to cwsRole
     switch (role) {
       case 'god': return (
-        <div>
+        <Container fluid>
           <NavBar {...this.props}
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
@@ -158,11 +164,13 @@ class App extends Component {
             <Route exact path='/auth/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/reports' render={props => (<Reports {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
+            <Route exact path='/newhome' render={props => (<NewHome {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
           </Switch>
-        </div>
+        </Container>
       );
       case 'store': return (
-        <div>
+        <Container fluid>
           <NavBar {...this.props}
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
@@ -199,10 +207,10 @@ class App extends Component {
             <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
-        </div>
+        </Container>
       );
       case 'agent': return (
-        <div>
+        <Container fluid>
           <NavBar {...this.props}
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
@@ -241,10 +249,10 @@ class App extends Component {
             <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
-        </div>
+        </Container>
       );
       default: return (
-        <div>
+        <Container fluid>
           <NavBar {...this.props}
             handleLogin={this.handleLogin}
             handleLogout={this.handleLogout}
@@ -261,7 +269,7 @@ class App extends Component {
               loggedInStatus={this.state.loggedInStatus}
             />)}
           />
-        </div>
+        </Container>
       )
 
     }

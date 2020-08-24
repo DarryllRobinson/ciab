@@ -1,6 +1,7 @@
-import React, {Component} from 'react';
-import {Link} from 'react-router-dom';
+import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import Contacts from './Contacts';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
@@ -20,6 +21,7 @@ class Collection extends Component {
       clientId: sessionStorage.getItem('cwsClient'),
       collection: null,
       contactPerson: null,
+      contactRecords: null,
       debitResubmissionAmount: null,
       debitResubmissionDate: null,
       disabled: false,
@@ -63,7 +65,8 @@ class Collection extends Component {
       const type = this.props.location.state.type;
       const workspace = this.props.location.state.workspace;
       const recordId = this.props.location.state.caseId;
-      await this.setState({
+
+      this.setState({
         recordId: recordId,
         type: type,
         workspace: workspace
@@ -88,6 +91,15 @@ class Collection extends Component {
         }
       );
 
+      // Check if there are any extra contact details to load
+      let contactRecords = null;
+      await this.mysqlLayer.Get(`/${type}/${workspace}/read_contacts/${clientId}/${recordId}`)
+        .then(contactResponse => {
+          console.log('contactRecords records response: ', contactResponse);
+          if (contactResponse) contactRecords = contactResponse;
+        }
+      );
+
       // Getting all the config for dropdown lists, etc
       let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
       let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
@@ -95,13 +107,14 @@ class Collection extends Component {
       let accountStatuses = await this.mysqlLayer.Get(`/admin/accountstatuses/list_all`);
       let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
 
-      await this.setState({
+      this.setState({
         accountStatuses: accountStatuses,
         accountStatus: record.accountStatus,
+        caseNotes: record.caseNotes,
         cipcStatuses: cipcStatuses,
         cipcStatus: record.cipcStatus,
+        contactRecords: contactRecords,
         collection: record,
-        caseNotes: record.caseNotes,
         outcomeRecords: outcomeRecords,
         pendReasons: pends,
         resolutions: resolutions,
@@ -200,19 +213,19 @@ class Collection extends Component {
       console.log('nextVisitDateTime: ', nextVisitDateTime);
       this.setState({ nextVisitDateTime: nextVisitDateTime });
     }
- };
+  };
 
- async handleChange(e) {
-   const value = e.target.value;
-  console.log('value: ', value);
-  const name = [e.target.name];
-  console.log('[e.target.name]: ', name);
-  await this.setState({
-    [e.target.name]: e.target.value,
-    changesMade: true
-  });
-  //console.log('this.state after change: ', this.state);
-}
+  async handleChange(e) {
+    const value = e.target.value;
+    console.log('value: ', value);
+    const name = [e.target.name];
+    console.log('[e.target.name]: ', name);
+    await this.setState({
+      [e.target.name]: e.target.value,
+      changesMade: true
+    });
+    //console.log('this.state after change: ', this.state);
+  }
 
   async cancel() {
     let timer = 0;
@@ -268,11 +281,11 @@ class Collection extends Component {
     // checking all the mandatory fields are populated
     let problems = [];
     if (contactPerson === null) problems.push('Please enter a contact person');
-    if (emailUsed === null && transactionType === 'email') problems.push('Please provide an email address');
+    if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
     if (nextSteps === null) problems.push('Please provide the next steps');
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
-    if (numberCalled === null && transactionType === 'call') problems.push('Please provide a telephone number');
+    if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
     if (outcome === null) problems.push('Please provide the outcome');
     if (pendReason === '---') problems.push('Please select a pend reason');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
@@ -335,7 +348,7 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          ptpDate: ptpDate,
+          ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
           ptpAmount: ptpAmount,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
@@ -361,7 +374,7 @@ class Collection extends Component {
           debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else if (!ptpDate && !debitResubmissionDate) {
+      } else if (ptpDate && debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -371,17 +384,21 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
+          ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
+          ptpAmount: ptpAmount,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
       await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].id}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -419,6 +436,8 @@ class Collection extends Component {
     // checking all the mandatory fields are populated
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
+    if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
     if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
@@ -503,7 +522,7 @@ class Collection extends Component {
           debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else if (!ptpDate && !debitResubmissionDate) {
+      } else if (ptpDate && debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -513,17 +532,21 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
+          ptpDate: ptpDate,
+          ptpAmount: ptpAmount,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
       await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].id}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -562,6 +585,8 @@ class Collection extends Component {
     // checking all the mandatory fields are populated
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
+    if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
     if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
@@ -649,7 +674,7 @@ class Collection extends Component {
           debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
         };
-      } else if (!ptpDate && !debitResubmissionDate) {
+      } else if (ptpDate && debitResubmissionDate) {
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -659,17 +684,21 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
+          ptpDate: ptpDate,
+          ptpAmount: ptpAmount,
           nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
           f_caseNumber: this.state.collection[0].caseNumber
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
       await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].id}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -740,18 +769,23 @@ class Collection extends Component {
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcome !== undefined) {
       let outcomeArray = [];
       this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
-        outcomeArray[idx] = moment(outcomeRecord.updatedDate).format('YYYY-MM-DD HH:mm:ss') + '\n' +
+        let ptpDate = outcomeRecord.ptpDate ? moment(outcomeRecord.ptpDate).format('YYYY-MM-DD') : '--';
+        let debitResubmissionDate = outcomeRecord.debitResubmissionDate ? moment(outcomeRecord.debitResubmissionDate).format('YYYY-MM-DD') : '--';
+
+        outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') + '\n' +
         'Transaction type: ' + outcomeRecord.transactionType + '\n' +
         'Contacted person: ' + outcomeRecord.contactPerson + '\n' +
         'Number called: ' + outcomeRecord.numberCalled + '\n' +
         'Email used: ' + outcomeRecord.emailUsed + '\n' +
-        'PTP date: ' + outcomeRecord.ptpDate + '\n' +
-        'PTP amount: ' + outcomeRecord.ptpAmount + '\n' +
+        'PTP date: ' + ptpDate + '\n' +
+        'PTP amount: R' + outcomeRecord.ptpAmount + '\n' +
         'Pend reason: ' + outcomeRecord.pendReason + '\n' +
-        'Resolution: ' + outcomeRecord.resolution + '\n' +
-        'Debit order resubmission date: ' + outcomeRecord.debitResubmissionDate + '\n' +
-        'Debit order resubmission amount: ' + outcomeRecord.debitResubmissionAmount + '\n' +
-        'Outcome: ' + outcomeRecord.outcome + '\n\r'
+        'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
+        'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
+        'Outcome: ' + outcomeRecord.outcome + '\n' +
+        'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
+        'Next steps: ' + outcomeRecord.nextSteps + '\n' +
+        '-----------------------------------------\n\r'
       });
       outcomes = outcomeArray.join('\n');
     } else {
@@ -1258,6 +1292,7 @@ class Collection extends Component {
                 </div>
               </div>
 
+              <Contacts contacts={this.state.contactRecords} />
               </div>
             </div>
           </div>

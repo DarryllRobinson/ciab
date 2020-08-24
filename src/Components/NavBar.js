@@ -44,7 +44,15 @@ class NavBar extends React.Component {
               {firstName}
             </Navbar.Text>
           </Container>
-          <Button onClick={() => this.props.handleLogoutClick()}>Logout</Button>
+          <Button
+            onClick={() => this.props.handleLogoutClick()}
+            style={{
+              background: "#48B711",
+              borderColor: "#48B711"
+            }}
+          >
+            Logout
+          </Button>
         </>
       );
     } else if (loggedInStatus === 'NOT_LOGGED_IN') {
@@ -98,7 +106,7 @@ class NavBar extends React.Component {
 
   render() {
     return (
-      <Navbar bg={this.colourToUse()} expand="lg" fixed="top">
+      <Navbar collapseOnSelect bg={this.colourToUse()} expand="lg" variant={this.colourToUse()} fixed="top">
         <Navbar.Brand href="/">{this.nametoDisplay()}</Navbar.Brand>
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

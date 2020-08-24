@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import Security from '../../Utilities/Security';
 import moment from 'moment';
+import { Button } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 
 export default class Login extends Component {
@@ -116,7 +117,16 @@ export default class Login extends Component {
                 required
               />
 
-              <button className="btn btn-secondary my-2 my-sm-0" type="submit">Login</button>
+              <Button
+                onClick={() => this.props.handleLogoutClick()}
+                style={{
+                  background: "#48B711",
+                  borderColor: "#48B711"
+                }}
+                type="submit"
+              >
+                Login
+              </Button>
               </form>
 
           <ToastContainer />
