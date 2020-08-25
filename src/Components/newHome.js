@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
-import { Container, Image } from 'react-bootstrap';
-import banner from '../Assets/Images/Debt-Recovery.jpg';
+import { Button, Card, CardDeck, Container } from 'react-bootstrap';
+//import banner from '../Assets/Images/Debt-Recovery.jpg';
 
 class newHome extends Component {
   constructor(props) {
@@ -25,25 +25,85 @@ class newHome extends Component {
   }
 
   render() {
-    const background = {backgroundSize : 'cover'};
-    const textStyle = {
-      position: 'absolute',
-      top: '50%',
-      left: '50%'
-    };
     return (
+      <Container>
+        <h1 className="jumbotron">
+          The System
+        </h1>
 
-        <Container>
+        <p className="intro">
+          We know how much your customers mean to you, even the ones that struggle to pay on time.
+          Let us take of the stress of collecting what is owed to you so you can focus on your business.
+        </p>
 
-            <Image src={banner} fluid style={background} />
-            <h1 style={textStyle}>The System</h1>
-            <p>
-              Let us take care of your debt collection process for you. We know how important your customers are to you, even
-              the ones who are struggling to pay right now.
-            </p>
+        <CardDeck>
+          <Card style={{ width: "18rem" }}>
+            <Card.Body style={{ padding: "0" }}>
+              <Card.Header
+                style={{
+                  backgroundColor: "#48B711",
+                  border: "1px solid #48B711",
+                  textAlign: "center",
+                  color: "#FFFFFF"
+                }}
+              >
+                Our Collections process
+              </Card.Header>
+              <Card.Text
+                style={{
+                  padding: "25px",
+                  minHeight: "250px",
+                  color: "#717370"
+                }}
+              >
+                The process we follow to ensure you get what is yours whilst protecting your relationship
+              </Card.Text>
+              <Button
+                style={{
+                  background: "#3D3735",
+                  borderColor: "#3D3735",
+                  margin: "10% 20%"
+                }}
+              >
+                Find out more
+              </Button>
+            </Card.Body>
+          </Card>
 
-        </Container>
-
+          <Card style={{ width: '18rem' }}>
+            <Card.Body style={{ padding: '0' }}>
+              <Card.Header
+                style={{
+                  backgroundColor: "#48B711",
+                  border: "1px solid #48B711",
+                  textAlign: "center",
+                  color: "#FFFFFF"
+                }}
+              >
+                Our Collections policies
+              </Card.Header>
+              <Card.Text
+                style={{
+                  padding: "25px",
+                  minHeight: "250px",
+                  color: "#717370"
+                }}
+              >
+                The policies we follow to ensure you get what is yours whilst protecting your relationship
+              </Card.Text>
+              <Button
+                style={{
+                  background: "#3D3735",
+                  borderColor: "#3D3735",
+                  margin: "10% 20%"
+                }}
+              >
+                Find out more
+              </Button>
+            </Card.Body>
+          </Card>
+        </CardDeck>
+      </Container>
     )
   }
 }

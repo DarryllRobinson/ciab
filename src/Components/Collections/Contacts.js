@@ -1,7 +1,17 @@
 import React from 'react';
-import { Accordion, Card, Col, Row } from 'react-bootstrap';
+import { Accordion, Card, Col, Form, Row } from 'react-bootstrap';
+
+function clickableNumber(tel) {
+  if (tel) {
+    let clickableTel = `tel:${tel}`;
+    return clickableTel;
+  } else {
+    return '';
+  }
+}
 
 function Contacts(props) {
+
   return (
     <Accordion>
       <Card>
@@ -10,46 +20,153 @@ function Contacts(props) {
         </Accordion.Toggle>
         <Accordion.Collapse eventKey="0">
           <Card.Body>
-            <Row>
-              <Col>primaryContactName: {props.contacts[0].primaryContactName}</Col>
-              <Col>primaryContactNumber: {props.contacts[0].primaryContactNumber}</Col>
-              <Col>primaryContactEmail: {props.contacts[0].primaryContactEmail}</Col>
-            </Row>
-            <Row>
-              <Col>representativeName: {props.contacts[0].representativeName}</Col>
-              <Col>representativeNumber: {props.contacts[0].representativeNumber}</Col>
-              <Col>representativeEmail: {props.contacts[0].representativeEmail}</Col>
-            </Row>
-            <Row>
-              <Col>alternativeRepName: {props.contacts[0].alternativeRepName}</Col>
-              <Col>alternativeRepNumber: {props.contacts[0].alternativeRepNumber}</Col>
-              <Col>alternativeRepEmail: {props.contacts[0].alternativeRepEmail}</Col>
-            </Row>
-            <Row>
-              <Col>otherNumber1: {props.contacts[0].otherNumber1}</Col>
-              <Col>otherNumber2: {props.contacts[0].otherNumber2}</Col>
-              <Col>otherNumber3: {props.contacts[0].otherNumber3}</Col>
-            </Row>
-            <Row>
-              <Col>otherNumber4: {props.contacts[0].otherNumber4}</Col>
-              <Col>otherNumber5: {props.contacts[0].otherNumber5}</Col>
-              <Col>otherEmail1: {props.contacts[0].otherEmail1}</Col>
-            </Row>
-            <Row>
-              <Col>otherEmail2: {props.contacts[0].otherEmail2}</Col>
-              <Col>otherEmail3: {props.contacts[0].otherEmail3}</Col>
-              <Col>otherEmail4: {props.contacts[0].otherEmail4}</Col>
-            </Row>
-            <Row>
-              <Col>otherEmail5: {props.contacts[0].otherEmail5}</Col>
-              <Col>dnc1: {props.contacts[0].dnc1}</Col>
-              <Col>dnc2: {props.contacts[0].dnc2}</Col>
-            </Row>
-            <Row>
-              <Col>dnc3: {props.contacts[0].dnc3}</Col>
-              <Col>dnc4: {props.contacts[0].dnc4}</Col>
-              <Col>dnc5: {props.contacts[0].dnc5}</Col>
-            </Row>
+            <Form>
+              <Row>
+                <Col>
+                  <Form.Label>Primary contact name</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].primaryContactName} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Primary contact number</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].primaryContactNumber)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].primaryContactNumber).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col>
+                  <Form.Label>Primary contact email</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].primaryContactEmail} readOnly />
+                </Col>
+              </Row>
+              <br />
+
+              <Row>
+                <Col>
+                  <Form.Label>Representative name</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].representativeName} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Representative number</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].representativeNumber)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].representativeNumber).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col>
+                  <Form.Label>Representative email</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].representativeEmail} readOnly />
+                </Col>
+              </Row>
+              <br />
+
+              <Row>
+                <Col>
+                  <Form.Label>Alternative representative name</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].alternativeRepName} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Alternative representative number</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].alternativeRepNumber)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].alternativeRepNumber).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col>
+                  <Form.Label>Alternative representative email</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].alternativeRepEmail} readOnly />
+                </Col>
+              </Row>
+              <br />
+
+              <Row>
+                <Col>
+                  <Form.Label>Other number 1</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].otherNumber1)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].otherNumber1).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col>
+                  <Form.Label>Other number 2</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].otherNumber2)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].otherNumber2).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col>
+                  <Form.Label>Other number 3</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].otherNumber3)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].otherNumber3).substring(4)} readOnly />
+                  </a>
+                </Col>
+              </Row>
+              <br />
+
+              <Row>
+                <Col>
+                  <Form.Label>Other number 4</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].otherNumber4)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].otherNumber4).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col>
+                  <Form.Label>Other number 5</Form.Label>
+                  <a href={clickableNumber(props.contacts[0].otherNumber5)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={clickableNumber(props.contacts[0].otherNumber5).substring(4)} readOnly />
+                  </a>
+                </Col>
+                <Col></Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Form.Label>Other email 1</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].otherEmail1} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Other email 2</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].otherEmail2} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Other email 3</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].otherEmail3} readOnly />
+                </Col>
+              </Row>
+              <br />
+
+              <Row>
+                <Col>
+                  <Form.Label>Other email 4</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].otherEmail4} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Other email 5</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].otherEmail5} readOnly />
+                </Col>
+                <Col></Col>
+              </Row>
+              <Row>
+                <Col>
+                  <Form.Label>Do not contact 1</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].dnc1} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Do not contact 2</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].dnc2} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Do not contact 3</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].dnc3} readOnly />
+                </Col>
+              </Row>
+              <br />
+
+              <Row>
+                <Col>
+                  <Form.Label>Do not contact 4</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].dnc4} readOnly />
+                </Col>
+                <Col>
+                  <Form.Label>Do not contact 5</Form.Label>
+                  <Form.Control placeholder={props.contacts[0].dnc5} readOnly />
+                </Col>
+                <Col></Col>
+              </Row>
+            </Form>
           </Card.Body>
         </Accordion.Collapse>
       </Card>

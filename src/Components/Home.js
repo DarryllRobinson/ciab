@@ -37,6 +37,9 @@ class Home extends Component {
                   <div className="col-8">
                     <ul>
                       <li>
+                        2020-08-25 Formatting of extra contact details - including cliackable phone numbers
+                      </li>
+                      <li>
                         2020-08-24 Next visit date and time and next steps displayed in outcome history
                       </li>
                       <li>

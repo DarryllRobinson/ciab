@@ -118,7 +118,6 @@ export default class Login extends Component {
               />
 
               <Button
-                onClick={() => this.props.handleLogoutClick()}
                 style={{
                   background: "#48B711",
                   borderColor: "#48B711"
