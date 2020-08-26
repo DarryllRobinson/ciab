@@ -37,6 +37,9 @@ class Home extends Component {
                   <div className="col-8">
                     <ul>
                       <li>
+                        2020-08-26 Last PTP date and amount and Next visit date and time are displayed now too
+                      </li>
+                      <li>
                         2020-08-26 Resolution changed to Outcome result instead
                       </li>
                       <li>

@@ -54,8 +54,8 @@ class Collection extends Component {
 
   async componentDidMount() {
     //let record = [];
-    console.log('this.props.location: ', this.props.location);
-    console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
+    //console.log('this.props.location: ', this.props.location);
+    //console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
     // check if there are any props or send to the dashboard again
     if (this.props.location.state === undefined) {
       this.notify('error', 'The record was not found. Returning to the dashboard.', false);
@@ -77,7 +77,7 @@ class Collection extends Component {
       let record = null;
       await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`)
         .then(response => {
-          console.log('Collection response: ', response);
+          //console.log('Collection response: ', response);
           if (response) record = response;
         }
       );
@@ -86,7 +86,7 @@ class Collection extends Component {
       let outcomeRecords = null;
       await this.mysqlLayer.Get(`/${type}/${workspace}/read_outcomes/${clientId}/${recordId}`)
         .then(outcomeResponse => {
-          console.log('Outcome records response: ', outcomeResponse);
+          //console.log('Outcome records response: ', outcomeResponse);
           if (outcomeResponse) outcomeRecords = outcomeResponse;
         }
       );
@@ -95,7 +95,7 @@ class Collection extends Component {
       let contactRecords = null;
       await this.mysqlLayer.Get(`/${type}/${workspace}/read_contacts/${clientId}/${recordId}`)
         .then(contactResponse => {
-          console.log('contactRecords records response: ', contactResponse);
+          //console.log('contactRecords records response: ', contactResponse);
           if (contactResponse) contactRecords = contactResponse;
         }
       );
@@ -308,12 +308,6 @@ class Collection extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let accountUpdate = {
-        accountStatus: this.state.accountStatus,
-        updatedBy: user,
-        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
-      };
-
       let caseUpdate = {
         currentStatus: 'Pended',
         pendReason: pendReason,
@@ -322,7 +316,15 @@ class Collection extends Component {
       };
 
       let outcomeInsert = '';
+      let accountUpdate = '';
       if (!ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -339,6 +341,15 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -357,6 +368,13 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -375,6 +393,15 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -458,12 +485,6 @@ class Collection extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let accountUpdate = {
-        accountStatus: this.state.accountStatus,
-        updatedBy: user,
-        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
-      };
-
       let caseUpdate = {
         currentStatus: 'Open',
         updatedBy: user,
@@ -471,7 +492,15 @@ class Collection extends Component {
       };
 
       let outcomeInsert = '';
+      let accountUpdate = '';
       if (!ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -488,6 +517,15 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -506,6 +544,13 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -524,6 +569,15 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -608,12 +662,6 @@ class Collection extends Component {
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let accountUpdate = {
-        accountStatus: this.state.accountStatus,
-        updatedBy: user,
-        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
-      };
-
       let caseUpdate = {
         currentStatus: 'Closed',
         outcome: outcome,
@@ -622,7 +670,15 @@ class Collection extends Component {
       };
 
       let outcomeInsert = '';
+      let accountUpdate = '';
       if (!ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -639,6 +695,15 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -657,6 +722,13 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -675,6 +747,15 @@ class Collection extends Component {
           f_caseNumber: this.state.collection[0].caseNumber
         };
       } else if (ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
         outcomeInsert = {
           createdBy: user,
           outcomeStatus: 'Closed',
@@ -742,17 +823,10 @@ class Collection extends Component {
       moment(collection[0].lastPTPDate).format('YYYY-MM-DD') :
       '';
 
-    const nextVisitDateTime = this.state.collection[index].nextVisitDateTime ?
-      moment(collection[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
-      '';
 
-    /*const nextVisitDate = this.state.collection[0].nextVisitDate ?
-      moment(collection[0].nextVisitDate).format('YYYY-MM-DD') :
+    const nextVisitDateTime = this.state.outcomeRecords[index].nextVisitDateTime ?
+      moment(this.state.outcomeRecords[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
       '';
-
-    const nextVisitTime = this.state.collection[0].nextVisitTime ?
-      moment(collection[0].nextVisitTime).format('HH:mm:ss') :
-      '';*/
 
     let outcomesNotes = '';
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
