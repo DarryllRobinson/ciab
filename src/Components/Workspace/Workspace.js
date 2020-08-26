@@ -4,8 +4,8 @@ import AppButton from '../Applications/AppButton';
 
 function Workspace(props) {
   //console.log('Workspace props: ', props);
-  if (props.workspaces) {
-    //console.log('Workspace props loaded: ', props);
+  if (props.workspaces.workspace) {
+    //console.log('Workspace props loaded: ', props, moment(new Date()).milliseconds());
     const workspace = props.workspaces.workspace;
     const records = props.records;
     const type = props.type;

@@ -286,7 +286,7 @@ class Collection extends Component {
     if (nextSteps === null) problems.push('Please provide the next steps');
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
-    if (outcome === null) problems.push('Please provide the outcome');
+    if (!outcome) problems.push('Please select an outcome resolution');
     if (pendReason === '---') problems.push('Please select a pend reason');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
@@ -442,6 +442,7 @@ class Collection extends Component {
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
     if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
     if (!debitResubmissionDate && debitResubmissionAmount) problems.push('Please provide a debit resubmission date');
+    if (!outcome) problems.push('Please select an outcome resolution');
 
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
@@ -576,7 +577,6 @@ class Collection extends Component {
       outcomeNotes,
       ptpDate,
       ptpAmount,
-      resolution,
       transactionType,
       user
     } = this.state;
@@ -591,13 +591,13 @@ class Collection extends Component {
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
     if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
     if (!debitResubmissionDate && debitResubmissionAmount) problems.push('Please provide a debit resubmission date');
-    if (resolution === '---') problems.push('Please select a resolution');
+    if (!outcome) problems.push('Please select an outcome resolution');
 
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nResolution: ${resolution}\nNotes: ${outcomeNotes}`;
+      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nOutcome resolution: ${outcome}\nNotes: ${outcomeNotes}`;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -616,7 +616,7 @@ class Collection extends Component {
 
       let caseUpdate = {
         currentStatus: 'Closed',
-        resolution: resolution,
+        outcome: outcome,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
@@ -782,7 +782,7 @@ class Collection extends Component {
         'Pend reason: ' + outcomeRecord.pendReason + '\n' +
         'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
         'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
-        'Outcome: ' + outcomeRecord.outcome + '\n' +
+        'Outcome resolution: ' + outcomeRecord.outcome + '\n' +
         'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
         'Next steps: ' + outcomeRecord.nextSteps + '\n' +
         '-----------------------------------------\n\r'
@@ -792,7 +792,7 @@ class Collection extends Component {
       outcomes = 'No outcomes to display';
     }
 
-    const resolutionList = [<option key="0" value="---">Resolution</option>];
+    const resolutionList = [<option key="0" value="---">Outcome Resolution</option>];
     //console.log('resolutionList before: ', resolutionList);
     resolutionList.push(this.state.resolutions.map(resolution =>
       <option key={resolution.id} value={resolution.resolution}>{resolution.resolution}</option>
@@ -1440,23 +1440,6 @@ class Collection extends Component {
                 </div>
 
                 <div className="row">
-                  <div className="col-12">
-                    <div className="form-group">
-                      <label htmlFor="outcome">Outcome</label>
-                      <textarea
-                        disabled={this.state.disabled}
-                        type="text"
-                        rows="3"
-                        name="outcome"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.outcome || ''}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="row">
                   <div className="col-4">
                     <div className="form-group">
                       <label htmlFor="ptpDate">PTP Date</label>
@@ -1490,10 +1473,10 @@ class Collection extends Component {
 
                   <div className="col-4">
                     <div className="form-group">
-                      <label htmlFor="exampleResolution">Resolution</label>
+                      <label htmlFor="resolution">Outcome Resolution</label>
                       <select className="custom-select"
                         required
-                        name="resolution"
+                        name="outcome"
                         onChange={this.handleChange}
                       >
                       {resolutionList}

@@ -3,9 +3,8 @@ import MysqlLayer from '../Utilities/MysqlLayer';
 import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
-import moment from 'moment';
 
-const workspaces = [
+/*const workspaces = [
   {
     workspace: 'collections',
     worklists: [
@@ -37,7 +36,7 @@ const workspaces = [
       }
     ]
   }
-];
+];*/
 
 class Dashboard extends Component {
   constructor(props) {
@@ -52,7 +51,7 @@ class Dashboard extends Component {
       records: null,
       service: null,
       worklists: [],
-      workspaces: [],
+      workspaces: null,
       workzones: []
     }
 
@@ -203,9 +202,53 @@ class Dashboard extends Component {
 
     // start with extracting the services from the db
     const clientservices = await this.mysqlLayer.Get(`/admin/clientservices/${client}`);
-    //console.log('clientservices: ', clientservices);
+    let services = this.getWorkspaces(clientservices);
+    //console.log('workspaces: ', workspaces);
 
-    let workzones = [
+    services.forEach(async service => {
+      let type = this.getType(clientservices, service);
+      let workzones = this.getWorkzones();
+
+      let worklists = await this.getWorklists(workzones, service, type, client);
+      //console.log('worklists: ', worklists);
+      let workspaces = [];
+      workspaces.push({
+        workspace: service.workspace,
+        worklists: worklists
+      });
+      //console.log('updating with: ', workspaces);
+      this.setState({
+        type: type,
+        //records: records,
+        workspaces: workspaces
+      });
+      //console.log('state workspaces: ', this.state.workspaces, moment(new Date()).milliseconds());
+
+    });
+
+    //this.setState({ loading: false });
+  }
+
+  getWorkspaces(clientservices) {
+    let workspaces = [];
+    clientservices.forEach(service => {
+      workspaces.push({
+        workspace: service.service
+      });
+    });
+    return workspaces;
+  }
+
+  getType(clientservices, workspace) {
+    let type = '';
+    clientservices.forEach(service => {
+      if (service.service === workspace.workspace) type = service.type;
+    });
+    return type;
+  }
+
+  getWorkzones() {
+    return [
       {
         worklist: 'Queues',
         task: 'list_all'
@@ -215,108 +258,67 @@ class Dashboard extends Component {
         task: 'list_today'
       }
     ];
+  }
 
-    // loop through services to populate worklists
-    let loopCount = 0;
-    clientservices.forEach( service => {
-      let workspace = service.service;
-      let type = service.type;
+  getWorklists(workzones, workspace, type, client) {
+    let worklists = [];
+    workzones.forEach(async workzone => {
+      //console.log('workzone: ', workzone);
+      let items = null;
+      items = await this.getItems(workzone.task, workspace, type, client);
+      if (items) {
+        //console.log('items: ', items);
+        worklists.push({
+          worklist: workzone.worklist,
+          items: items
+        });
+      } else {
+        console.log('Problem in getWorklists');
+      }
+      this.setState({ worklists: worklists });
+    });
+    //console.log('worklists: ', worklists);
+    return worklists;
+  }
 
-      let workspaces = [];
-      let worklists = [];
+  async getItems(task, workspace, type, client) {
+    //console.log('getItems task: ', task);
+    let items = [];
+    await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`
+    ).then(records => {
+      if (records) {
+        let statuses = this.getStatusLists(records);
 
-      // loop through the workzones
-      workzones.forEach(async workzone => {
-        //console.log('workzone: ', workzone);
-        let task = workzone.task;
-        //let records = await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`);
-        console.log('about to fetch records', moment(new Date()).milliseconds())
-        await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`)
-          .then(records => {
-            console.log('records: ', records, moment(new Date()).milliseconds())
-            if (records) {
-              //console.log('records: ', records);
-
-              let statusArr = [];
-              records.forEach( record => {
-                //console.log('currentStatus: ', record.currentStatus);
-                statusArr.push(record.currentStatus);
-              });
-
-              let completeWorklist = statusArr.filter(this.onlyUnique);
-
-              let statusList = [];
-              if (completeWorklist.length > 0) statusList = this.filterWorklists(workspace, completeWorklist);
-
-              let items = [];
-              statusList.forEach( element => {
-                //console.log('element: ', element);
-                let count = 0;
-                records.forEach( record => {
-                  if (record.currentStatus === element) {
-                    ++count;
-                  }
-                });
-                items.push({
-                  item: element,
-                  count: count
-                });
-                //console.log('items: ', items);
-              }); // end of worklist loop *******************************
-
-              worklists.push({
-                worklist: workzone.worklist,
-                items: items
-              });
-              //console.log('worklists: ', workzone, worklists, moment(new Date()).format('HH:mm:sss'));
-              console.log('worklists: ', workzone, worklists, moment(new Date()).milliseconds());
-
-              /*this.setState({
-                records: records,
-                type: type,
-                worklists: [...this.state.worklists, ...worklists]
-              });*/
-
-              ++loopCount;
-              console.log('loopCount: ', loopCount);
-
-              //console.log('this.state.worklists: ', this.state.worklists, moment(new Date()).milliseconds());
-              //let tempWorklists = this.state.worklists;
-              //console.log('tempWorklists: ', tempWorklists, moment(new Date()).milliseconds());
-
-              workspaces.push({
-                workspace: workspace,
-                worklists: worklists //tempWorklists
-              });
-              console.log('workspaces: ', workspaces);
-            } else {
-              console.log('Problem extracting records');
-            }
+        // prepare [items]
+        statuses.forEach(status => {
+          let count = 0;
+          records.forEach(record => {
+            if (record.currentStatus === status) ++count;
           });
 
+          items.push({
+            item: status,
+            count: count
+          });
+          this.setState({ records: records });
+        });
+      } else {
+        console.log('Problem with getItems');
+      }
+    });
+    return items;
+  }
 
+  getStatusLists(records) {
+    let list = [];
+    records.forEach(record => {
+      list.push(record.currentStatus);
+    });
 
-      }); // end of workzone loop *******************************
+    // filter list for distinct statuseses
+    let completeWorklist = list.filter(this.onlyUnique);
 
-
-      //console.log('2 workspaces: ', workspaces);
-      //console.log('this.state.workspaces: ', this.state.workspaces, moment(new Date()).milliseconds());
-
-      this.setState({
-        //loading: false,
-        //workspaces: [...this.state.workspaces, ...workspaces]
-        workspaces: workspaces
-        //workspaces: workspacesConst
-      });
-      //console.log('this.state.workspaces: ', this.state.workspaces, moment(new Date()).milliseconds());
-
-    }); // end of workspace loop *******************************
-
-    // Should be good to render now
-    //if (this.state.worklists.length > 1)
-    this.setState({ loading: false });
-    //this.forceUpate();
-
+    return completeWorklist;
   }
 
   async xxxcomponentDidMount() {
@@ -575,16 +577,18 @@ class Dashboard extends Component {
 
   render() {
 
-    if (this.state.loading) {
+    //if (this.state.loading) {
+    if (!this.state.workspaces) {
       return (
         <div>Loading...</div>
       );
     } else {
-
-      //const workspace = this.state.workspaces.map((workspace, idx) =>
-      const workspace = workspaces.map((workspace, idx) =>
+      //console.log('const workspaces: ', this.state.workspaces);
+      //console.log('const workspaces: ', workspaces);
+      const workspace = this.state.workspaces.map((workspace, idx) =>
+      //const workspace = workspaces.map((workspace, idx) =>
         <div key={idx} className="card border-light mb-3" style={{padding: "20px"}}>
-          {console.log('render workspace: ', workspace.worklists, moment(new Date()).milliseconds())}
+          {/*console.log('render workspace: ', workspace, moment(new Date()).milliseconds())*/}
           <Workspace
             key={idx}
             records={this.state.records}
