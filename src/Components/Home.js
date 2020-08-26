@@ -37,7 +37,10 @@ class Home extends Component {
                   <div className="col-8">
                     <ul>
                       <li>
-                        2020-08-26 Finally got the worklists to work dynamically!!
+                        2020-08-26 Resolution changed to Outcome result instead
+                      </li>
+                      <li>
+                        2020-08-26 Finally got the worklists to work dynamically!! Still need to make them make sense but one step at a time...
                       </li>
                       <li>
                         2020-08-25 Formatting of extra contact details - including cliackable phone numbers
