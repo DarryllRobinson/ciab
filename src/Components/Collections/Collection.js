@@ -251,14 +251,6 @@ class Collection extends Component {
     }), timer);
   }
 
-  xxxpendRecord() {
-    const collection = this.state.collection;
-    console.log('collection value: ', collection);
-    console.log('debitResubmissionAmount in state: ', this.state.debitResubmissionAmount);
-    console.log('debitResubmissionAmount in state typeof: ', typeof this.state.debitResubmissionAmount);
-    //console.log('debitResubmissionAmount in state typeof: ', typeof this.state.debitResubmissionAmount.toNumber());
-  }
-
   async pendRecord() {
     const {
       contactPerson,
@@ -856,9 +848,11 @@ class Collection extends Component {
         'Pend reason: ' + outcomeRecord.pendReason + '\n' +
         'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
         'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
+        'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
         'Outcome resolution: ' + outcomeRecord.outcome + '\n' +
         'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
         'Next steps: ' + outcomeRecord.nextSteps + '\n' +
+        'Outcome notes: \n' + outcomesNotes + '\n' +
         '-----------------------------------------\n\r'
       });
       outcomes = outcomeArray.join('\n');
@@ -1394,7 +1388,7 @@ class Collection extends Component {
               <div className="card-body text-left">
 
                 <div className="row">
-                  <div className="col-6">
+                  <div className="col-12">
                     <div className="form-group">
                       <label htmlFor="outcomes">Outcomes</label>
                       <textarea
@@ -1407,18 +1401,6 @@ class Collection extends Component {
                     </div>
                   </div>
 
-                  <div className="col-6">
-                    <div className="form-group">
-                      <label htmlFor="outcomesNotes">Outcome Notes</label>
-                      <textarea
-                        disabled={true}
-                        rows="10"
-                        name="outcomesNotes"
-                        className="form-control"
-                        value={outcomesNotes}
-                      />
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1593,7 +1575,7 @@ class Collection extends Component {
 
                   <div className="col-4">
                     <div className="form-group">
-                      <label htmlFor="examplePendReason">Pend Reason</label>
+                      <label htmlFor="pendReason">Pend Reason</label>
                       <select className="custom-select"
                         required
                         name="pendReason"
@@ -1601,6 +1583,23 @@ class Collection extends Component {
                       >
                       {pendList}
                       </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="outcomeNotes">Outcome Notes</label>
+                      <textarea
+                        disabled={this.state.disabled}
+                        type="text"
+                        rows="3"
+                        name="outcomeNotes"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Remember to provide clear notes"
+                      />
                     </div>
                   </div>
                 </div>
@@ -1630,7 +1629,6 @@ class Collection extends Component {
                       />
                     </div>
                   </div>
-
                 </div>
 
               </div>
@@ -1640,40 +1638,11 @@ class Collection extends Component {
 
         <div className="row">
           <div className="col-12">
-            <div className="form-group">
-              {/* This space left blank intentionally */}
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-12">
-            <div className="form-group">
-              {/* This space left blank intentionally */}
-            </div>
-          </div>
-        </div>
 
-        <div className="row">
-          <div className="col-12">
-            <div className="card border-primary">
-              <div className="card-header">New Notes</div>
-              <div className="card-body text-left">
+              <div className="card-body text-center">
 
                 <div className="row">
                   <div className="col-12">
-                    <div className="form-group">
-                      <label htmlFor="outcomeNotes">Outcome Notes</label>
-                      <textarea
-                        disabled={this.state.disabled}
-                        type="text"
-                        rows="3"
-                        name="outcomeNotes"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        placeholder="Remember to provide clear notes"
-                      />
-                    </div>
-
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
@@ -1712,7 +1681,7 @@ class Collection extends Component {
                   </div>
                 </div>
               </div>
-            </div>
+
           </div>
         </div>
         <ToastContainer />
