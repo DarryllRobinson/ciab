@@ -33,6 +33,7 @@ class Collection extends Component {
       outcomeNotes: null,
       outcomeRecords: null,
       pendReason: '---',
+      prevStatus: 'Open',
       ptpAmount: null,
       ptpDate: null,
       recordId: null,
@@ -107,6 +108,9 @@ class Collection extends Component {
       let accountStatuses = await this.mysqlLayer.Get(`/admin/accountstatuses/list_all`);
       let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
 
+      // saving the previous status so we can unlock it properly after releasing the record
+      const prevStatus = record[0].currentStatus;
+
       this.setState({
         accountStatuses: accountStatuses,
         accountStatus: record.accountStatus,
@@ -117,6 +121,7 @@ class Collection extends Component {
         collection: record,
         outcomeRecords: outcomeRecords,
         pendReasons: pends,
+        prevStatus: prevStatus,
         resolutions: resolutions,
         transactionTypes: transactionTypes
       });
@@ -236,14 +241,14 @@ class Collection extends Component {
 
     // unlock the record and release it to the pool
     const update = {
-      currentStatus: 'Open'
+      currentStatus: this.state.prevStatus
     };
     await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, update);
 
     setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
       state: {
-        recordStatus: 'Open',
+        recordStatus: this.state.prevStatus,
         clientId: this.state.clientId,
         type: this.state.type,
         workspace: this.state.workspace
@@ -656,7 +661,7 @@ class Collection extends Component {
 
       let caseUpdate = {
         currentStatus: 'Closed',
-        outcome: outcome,
+        resolution: outcome,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
@@ -815,7 +820,7 @@ class Collection extends Component {
       moment(collection[0].lastPTPDate).format('YYYY-MM-DD') :
       '';
 
-
+    this.state.outcomeRecords.forEach(record => console.log('nvdt: ', record.id, record.nextVisitDateTime));
     const nextVisitDateTime = this.state.outcomeRecords[index].nextVisitDateTime ?
       moment(this.state.outcomeRecords[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
       '';
@@ -838,8 +843,7 @@ class Collection extends Component {
         let ptpDate = outcomeRecord.ptpDate ? moment(outcomeRecord.ptpDate).format('YYYY-MM-DD') : '--';
         let debitResubmissionDate = outcomeRecord.debitResubmissionDate ? moment(outcomeRecord.debitResubmissionDate).format('YYYY-MM-DD') : '--';
 
-        outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') +
-          ' by user ' + outcomeRecord.createdBy + '\n' +
+        outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') + ' by user ' + outcomeRecord.createdBy + '\n' +
         'Transaction type: ' + outcomeRecord.transactionType + '\n' +
         'Contacted person: ' + outcomeRecord.contactPerson + '\n' +
         'Number called: ' + outcomeRecord.numberCalled + '\n' +
