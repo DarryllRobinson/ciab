@@ -37,6 +37,9 @@ class Home extends Component {
                   <div className="col-8">
                     <ul>
                       <li>
+                        2020-08-27 Case remains Open, Closed or Pended if the user clicks Cancel - the previous status is restored
+                      </li>
+                      <li>
                         2020-08-27 Outcome Notes removed from display and added to Outcomes section
                       </li>
                       <li>
