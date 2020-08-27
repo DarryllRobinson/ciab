@@ -6,6 +6,7 @@ function Worklist(props) {
   if (props.worklist.worklist) {
     const workspace = props.workspace;
     const records = props.records;
+    const task = props.task;
     const type = props.type;
     const worklist = props.worklist.worklist;
     const items = props.worklist.items;
@@ -15,6 +16,7 @@ function Worklist(props) {
         key={idx}
         records={records}
         workspace={workspace}
+        task={task}
         type={type}
         item={item.item}
         count={item.count} />

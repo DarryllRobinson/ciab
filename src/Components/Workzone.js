@@ -92,6 +92,7 @@ class Workzone extends Component {
 
   //async loadRecords(currentStatus, workspace) {
   async loadRecords(currentStatus, workspace) {
+    //console.log('this.props.history.location.state: ', this.props.history.location.state);
     //console.log('loading records: ', this.props.location.state.records.length === 0);
     //console.log('currentStatus: ', currentStatus);
     //console.log('workspace: ', workspace);
@@ -106,7 +107,14 @@ class Workzone extends Component {
     //console.log('typeof: ', typeof workspace);
     const workrecord = workspace.substring(0, workspace.length - 1);
     //console.log('workrecord: ', workrecord);
-    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */records = await this.mysqlLayer.Get(`/${type}/${workspace}/list_all/${clientId}`); //}
+
+    // check if any records were sent as props
+    if (this.props.history.location.state.records) { //console.log('props records: ', this.props.history.location.state.records);
+      records = this.props.history.location.state.records;
+    } else {
+      records = await this.mysqlLayer.Get(`/${type}/${workspace}/list_all/${clientId}`);
+    }
+    /*if (!this.props.location.state.records || this.props.location.state.records.length === 0) { */ //}
     //else { records = this.props.location.state.records; }
     //console.log('records: ', records);
     let recordStatus = currentStatus;
@@ -131,6 +139,7 @@ class Workzone extends Component {
                 pathname: `/workzone/${workspace}/${workrecord}/${record.id}`,
                 state: {
                   recordId: record.id,
+                  record: record,
                   type: type,
                   workrecord: workrecord,
                   workspace: workspace
@@ -216,7 +225,7 @@ class Workzone extends Component {
             lastPTPAmount: record.lastPTPAmount,
             accountNotes: record.accountNotes,
             nextVisitDate: moment(record.nextVisitDate).format('YYYY-MM-DD'),
-            currentStatus: record.currentStatus,
+            currentAssignment: record.currentAssignment,
             updatedBy: record.updatedBy,
             updatedDate: moment(record.updatedDate).format('YYYY-MM-DD HH:mm:ss'),
             createdBy: record.createdBy,
@@ -225,6 +234,7 @@ class Workzone extends Component {
                 pathname: `/workzone/${workspace}/${workrecord}/${record.caseNumber}`,
                 state: {
                   caseId: record.caseNumber,
+                  record: record,
                   type: type,
                   workspace: workspace
                 }
@@ -359,8 +369,8 @@ class Workzone extends Component {
               sort: 'asc'
             },
             {
-              label: 'Current Status',
-              field: 'currentStatus',
+              label: 'Current Assignment',
+              field: 'currentAssignment',
               sort: 'asc'
             },
             {

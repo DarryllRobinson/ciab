@@ -55,7 +55,7 @@ class Collection extends Component {
 
   async componentDidMount() {
     //let record = [];
-    //console.log('this.props.location: ', this.props.location);
+    //console.log('Collection this.props.location.state.record: ', this.props.location.state.record);
     //console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
     // check if there are any props or send to the dashboard again
     if (this.props.location.state === undefined) {
@@ -66,22 +66,17 @@ class Collection extends Component {
       const type = this.props.location.state.type;
       const workspace = this.props.location.state.workspace;
       const recordId = this.props.location.state.caseId;
+      const record = this.props.location.state.record;
+      const clientId = this.state.clientId;
+
+      //console.log('consts: ', type, workspace, recordId, clientId, record);
 
       this.setState({
+        record: record,
         recordId: recordId,
         type: type,
         workspace: workspace
       });
-
-      const clientId = this.state.clientId;
-
-      let record = null;
-      await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`)
-        .then(response => {
-          //console.log('Collection response: ', response);
-          if (response) record = response;
-        }
-      );
 
       // Check if there are any associated outcomes to load
       let outcomeRecords = null;
@@ -109,7 +104,7 @@ class Collection extends Component {
       let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
 
       // saving the previous status so we can unlock it properly after releasing the record
-      const prevStatus = record[0].currentStatus;
+      const prevStatus = record.currentStatus;
 
       this.setState({
         accountStatuses: accountStatuses,
@@ -132,7 +127,8 @@ class Collection extends Component {
         currentStatus: 'Locked',
         lockedDatetime: dateTime
       };
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, update);
+      //console.log('collection: ', this.state.collection);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, update);
       //console.log('collection: ', this.state.collection);
     } else {
       this.notify('error', 'The record was not found. Returning to the dashboard.', false);
@@ -220,6 +216,22 @@ class Collection extends Component {
     }
   };
 
+  handlePTPDate(e){
+    if (typeof e !== 'string') {
+      const ptpDate = moment(e.toDate()).format("YYYY-MM-DD HH:mm:ss");
+      console.log('ptpDate: ', ptpDate);
+      this.setState({ ptpDate: ptpDate });
+    }
+  };
+
+  handleDebitDate(e){
+    if (typeof e !== 'string') {
+      const debitResubmissionDate = moment(e.toDate()).format("YYYY-MM-DD HH:mm:ss");
+      console.log('debitResubmissionDate: ', debitResubmissionDate);
+      this.setState({ debitResubmissionDate: debitResubmissionDate });
+    }
+  };
+
   async handleChange(e) {
     const value = e.target.value;
     console.log('value: ', value);
@@ -243,7 +255,7 @@ class Collection extends Component {
     const update = {
       currentStatus: this.state.prevStatus
     };
-    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, update);
+    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, update);
 
     setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
@@ -293,7 +305,7 @@ class Collection extends Component {
 
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
+      let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
 
       let newNote = oldNotes + outcomeNotes;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -335,7 +347,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
 
@@ -362,7 +374,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
 
@@ -387,7 +399,7 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (ptpDate && debitResubmissionDate) {
 
@@ -416,13 +428,13 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection.accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -470,7 +482,7 @@ class Collection extends Component {
 
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
+      let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
 
       let newNote = oldNotes + outcomeNotes;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -511,7 +523,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
 
@@ -538,7 +550,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
 
@@ -563,7 +575,7 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (ptpDate && debitResubmissionDate) {
 
@@ -592,13 +604,13 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection.accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -646,7 +658,7 @@ class Collection extends Component {
 
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
+      let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
 
       let newNote = oldNotes + outcomeNotes;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -689,7 +701,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (ptpDate && !debitResubmissionDate) {
 
@@ -716,7 +728,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (!ptpDate && debitResubmissionDate) {
 
@@ -741,7 +753,7 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       } else if (ptpDate && debitResubmissionDate) {
 
@@ -770,13 +782,13 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection[0].caseNumber
+          f_caseNumber: this.state.collection.caseNumber
         };
       }
 
-      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection[0].customerRefNo}`, customerUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection[0].accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection[0].caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection.accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -795,35 +807,40 @@ class Collection extends Component {
 
   render() {
     const collection = this.state.collection;
+    //console.log('collection: ', collection);
 
     if (collection === null && this.props.location.state !== undefined) return <p>Loading...</p>;
     if (this.props.location.state === undefined) return <p>Record not found. Please return to the <Link to={"/dashboard"}>dashboard</Link></p>;
 
-    const index = collection.length - 1; // to get the most recent data for whatever field
+    const index = this.state.outcomeRecords.length - 1; // to get the most recent data for whatever field
+    //console.log('index: ', index);
 
     let paymentDueDate = '';
-    if (this.state.collection[0].paymentDueDate !== undefined) {
-      paymentDueDate = this.state.collection[0].paymentDueDate ?
-        moment(collection[0].paymentDueDate).format('YYYY-MM-DD') :
+    if (this.state.collection.paymentDueDate !== undefined) {
+      paymentDueDate = this.state.collection.paymentDueDate ?
+        moment(collection.paymentDueDate).format('YYYY-MM-DD') :
         '';
     }
 
-    const debitOrderDate = this.state.collection[0].debitOrderDate ?
-      moment(collection[0].debitOrderDate).format('YYYY-MM-DD') :
+    const debitOrderDate = this.state.collection.debitOrderDate ?
+      moment(collection.debitOrderDate).format('YYYY-MM-DD') :
       '';
 
-    const lastPaymentDate = this.state.collection[0].lastPaymentDate ?
-      moment(collection[0].lastPaymentDate).format('YYYY-MM-DD') :
+    const lastPaymentDate = this.state.collection.lastPaymentDate ?
+      moment(collection.lastPaymentDate).format('YYYY-MM-DD') :
       '';
 
-    const lastPTPDate = this.state.collection[0].lastPTPDate ?
-      moment(collection[0].lastPTPDate).format('YYYY-MM-DD') :
+    const lastPTPDate = this.state.collection.lastPTPDate ?
+      moment(collection.lastPTPDate).format('YYYY-MM-DD') :
       '';
 
-    this.state.outcomeRecords.forEach(record => console.log('nvdt: ', record.id, record.nextVisitDateTime));
-    const nextVisitDateTime = this.state.outcomeRecords[index].nextVisitDateTime ?
-      moment(this.state.outcomeRecords[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
-      '';
+    //this.state.outcomeRecords.forEach(record => console.log('nvdt: ', record.id, record.nextVisitDateTime));
+    let nextVisitDateTime = '';
+    if (this.state.outcomeRecords[index].nextVisitDateTime !== undefined) {
+      nextVisitDateTime = this.state.outcomeRecords[index].nextVisitDateTime ?
+        moment(this.state.outcomeRecords[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
+        '';
+    }
 
     let outcomesNotes = '';
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
@@ -852,7 +869,6 @@ class Collection extends Component {
         'PTP amount: R' + outcomeRecord.ptpAmount + '\n' +
         'Pend reason: ' + outcomeRecord.pendReason + '\n' +
         'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
-        'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
         'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
         'Outcome resolution: ' + outcomeRecord.outcome + '\n' +
         'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
@@ -883,17 +899,17 @@ class Collection extends Component {
       <option key={type.id} value={type.transactiontype}>{type.transactiontype}</option>
     ));
 
-    const accountStatusList = [<option key="0" value={this.state.collection[0].accountStatus}>{this.state.collection[0].accountStatus}</option>];
+    const accountStatusList = [<option key="0" value={this.state.collection.accountStatus}>{this.state.collection.accountStatus}</option>];
     accountStatusList.push(this.state.accountStatuses.map(accountStatus =>
       <option key={accountStatus.id} value={accountStatus.accountStatus}>{accountStatus.accountStatus}</option>
     ));
 
-    const cipcStatusList = [<option key="0" value={this.state.collection[0].cipcStatus}>{this.state.collection[0].cipcStatus}</option>];
+    const cipcStatusList = [<option key="0" value={this.state.collection.cipcStatus}>{this.state.collection.cipcStatus}</option>];
     cipcStatusList.push(this.state.cipcStatuses.map(cipcStatus =>
       <option key={cipcStatus.id} value={cipcStatus.cipcStatus}>{cipcStatus.cipcStatus}</option>
     ));
 
-    const repNumber = `tel:${collection[0].representativeNumber}`;
+    let repNumber = (this.state.contactRecords[0].representativeNumber) ? `tel:${this.state.contactRecords[0].representativeNumber}` : '00000';
 
     // Setting dates earlier than today as disabled for Next Date and Time
     const yesterday = DateTime.moment().subtract( 1, 'day' );
@@ -907,19 +923,19 @@ class Collection extends Component {
         <div className="row">
           <div className="col-12">
             <div className="card border-primary">
-              <div className="card-header">Case Number {collection[0].caseNumber}</div>
+              <div className="card-header">Case Number {collection.caseNumber}</div>
               <div className="card-body text-left">
 
               <div className="row">
                 <div className="col-12">
                   <div className="form-group">
-                    <label htmlFor="accountNotes">Account Number {collection[0].accountNumber} - Notes</label>
+                    <label htmlFor="accountNotes">Account Number {collection.accountNumber} - Notes</label>
                     <textarea
                       disabled={true}
                       rows="3"
                       name="accountNotes"
                       className="form-control"
-                      value={this.state.collection[0].accountNotes || ''}
+                      value={this.state.collection.accountNotes || ''}
                     />
                   </div>
                 </div>
@@ -936,7 +952,7 @@ class Collection extends Component {
                       rows="3"
                       name="caseNotes"
                       className="form-control"
-                      value={this.state.collection[0].caseNotes || ''}
+                      value={this.state.collection.caseNotes || ''}
                     />
                   </div>
                 </div>
@@ -953,7 +969,7 @@ class Collection extends Component {
                       type="text"
                       name="companyName"
                       className="form-control"
-                      value={collection[0].companyName || ''}
+                      value={collection.companyName || ''}
                     />
                   </div>
                 </div>
@@ -968,7 +984,7 @@ class Collection extends Component {
                       type="text"
                       name="regNumber"
                       className="form-control"
-                      value={collection[0].regNumber || ''}
+                      value={collection.regNumber || ''}
                     />
                   </div>
                 </div>
@@ -1005,7 +1021,7 @@ class Collection extends Component {
                       type="number"
                       name="debtorAge"
                       className="form-control"
-                      value={collection[0].debtorAge || 0}
+                      value={collection.debtorAge || 0}
                     />
                   </div>
                 </div>
@@ -1020,7 +1036,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].creditLimit.toFixed(2) || 0}
+                      value={collection.creditLimit.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1035,7 +1051,7 @@ class Collection extends Component {
                       disabled={true}
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].totalBalance.toFixed(2) || 0}
+                      value={collection.totalBalance.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1052,7 +1068,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].amountDue.toFixed(2) || 0}
+                      value={collection.amountDue.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1067,7 +1083,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].currentBalance.toFixed(2) || 0}
+                      value={collection.currentBalance.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1099,7 +1115,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days30.toFixed(2) || 0}
+                      value={collection.days30.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1114,7 +1130,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days60.toFixed(2) || 0}
+                      value={collection.days60.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1129,7 +1145,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days90.toFixed(2) || 0}
+                      value={collection.days90.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1146,7 +1162,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days120.toFixed(2) || 0}
+                      value={collection.days120.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1161,7 +1177,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days150.toFixed(2) || 0}
+                      value={collection.days150.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1176,7 +1192,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days180.toFixed(2) || 0}
+                      value={collection.days180.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1191,7 +1207,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].days180Over.toFixed(2) || 0}
+                      value={collection.days180Over.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1259,7 +1275,7 @@ class Collection extends Component {
                       thousandSeparator={true}
                       prefix={'R '}
                       name="lastPaymentAmount"
-                      value={collection[0].lastPaymentAmount.toFixed(2) || 0}
+                      value={collection.lastPaymentAmount.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1297,7 +1313,7 @@ class Collection extends Component {
                       className="form-control"
                       thousandSeparator={true}
                       prefix={'R '}
-                      value={collection[0].lastPTPAmount.toFixed(2) || 0}
+                      value={collection.lastPTPAmount.toFixed(2) || 0}
                     />
                   </div>
                 </div>
@@ -1333,7 +1349,7 @@ class Collection extends Component {
                       type="text"
                       name="representativeName"
                       className="form-control"
-                      value={collection[0].representativeName || ''}
+                      value={this.state.contactRecords[0].representativeName || ''}
                     />
                   </div>
                 </div>
@@ -1504,13 +1520,9 @@ class Collection extends Component {
                   <div className="col-4">
                     <div className="form-group">
                       <label htmlFor="ptpDate">PTP Date</label>
-                      <input
-                        disabled={false}
-                        type="date"
-                        name="ptpDate"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.ptpDate || ''}
+                      <DateTime
+                        isValidDate={ valid }
+                        onBlur={this.handlePTPDate}
                       />
                     </div>
                   </div>
@@ -1550,13 +1562,9 @@ class Collection extends Component {
                   <div className="col-4">
                     <div className="form-group">
                       <label htmlFor="debitResubmissionDate">Debit Resubmission Date</label>
-                      <input
-                        disabled={false}
-                        type="date"
-                        name="debitResubmissionDate"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.debitResubmissionDate || ''}
+                      <DateTime
+                        isValidDate={ valid }
+                        onBlur={this.handleDebitDate}
                       />
                     </div>
                   </div>
