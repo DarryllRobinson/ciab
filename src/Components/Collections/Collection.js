@@ -290,7 +290,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nPend reason: ${pendReason}\nNotes: ${outcomeNotes}`;
+      let newNote = oldNotes + outcomeNotes;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -467,7 +467,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nNotes: ${outcomeNotes}`;
+      let newNote = oldNotes + outcomeNotes;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -643,7 +643,7 @@ class Collection extends Component {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection[0].outcomeNotes ? this.state.collection[0].outcomeNotes + `\n\r` : '';
 
-      let newNote = oldNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} - ${user}\nOutcome resolution: ${outcome}\nNotes: ${outcomeNotes}`;
+      let newNote = oldNotes + outcomeNotes;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -838,7 +838,8 @@ class Collection extends Component {
         let ptpDate = outcomeRecord.ptpDate ? moment(outcomeRecord.ptpDate).format('YYYY-MM-DD') : '--';
         let debitResubmissionDate = outcomeRecord.debitResubmissionDate ? moment(outcomeRecord.debitResubmissionDate).format('YYYY-MM-DD') : '--';
 
-        outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') + '\n' +
+        outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') +
+          ' by user ' + outcomeRecord.createdBy + '\n' +
         'Transaction type: ' + outcomeRecord.transactionType + '\n' +
         'Contacted person: ' + outcomeRecord.contactPerson + '\n' +
         'Number called: ' + outcomeRecord.numberCalled + '\n' +
