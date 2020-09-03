@@ -11,7 +11,6 @@ body .bg-dark {
 
 .container-fluid {
   margin-top: 80px;
-
 }
 
 .jumbotron {
@@ -31,7 +30,10 @@ body .bg-dark {
 .intro {
   padding: 10px !important;
   width: 80%;
+}
 
+.card mb-3 {
+  background-color: red !important;
 }
 
 /*

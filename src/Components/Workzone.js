@@ -49,13 +49,21 @@ class Workzone extends Component {
     }
     //console.log('mounting recordStatus: ', recordStatus);
 
-    await this.setState({
+    let task = '';
+    if (this.props.location.state.task === undefined) {
+      task = 'list_all';
+    } else {
+      task = this.props.location.state.task;
+    }
+
+    this.setState({
       recordStatus: recordStatus,
+      task: task,
       workspace: workspace
     });
 
-    //console.log('recordStatus: ', this.state.recordStatus);
-    this.loadRecords(this.state.recordStatus, workspace);
+    //console.log('this.state.recordStatus: ', this.state.recordStatus);
+    this.loadRecords(recordStatus, task, workspace);
     //this.loadRecords(this.state.recordStatus);
   }
 
@@ -91,10 +99,11 @@ class Workzone extends Component {
   }
 
   //async loadRecords(currentStatus, workspace) {
-  async loadRecords(currentStatus, workspace) {
-    //console.log('this.props.history.location.state: ', this.props.history.location.state);
+  async loadRecords(currentStatus, task, workspace) {
+    console.log('this.props.history.location.state: ', this.props.history.location.state);
     //console.log('loading records: ', this.props.location.state.records.length === 0);
     //console.log('currentStatus: ', currentStatus);
+    workspace = 'collections';
     //console.log('workspace: ', workspace);
     //const currentStatus = this.state.recordStatus;
     //const workspace = this.state.workspace ? this.state.workspace : this.props.workspace;
@@ -106,7 +115,7 @@ class Workzone extends Component {
     //const workspace = this.props.location.state.workspace;
     //console.log('typeof: ', typeof workspace);
     const workrecord = workspace.substring(0, workspace.length - 1);
-    //console.log('workrecord: ', workrecord);
+    console.log('workrecord: ', workrecord);
 
     // check if any records were sent as props
     if (this.props.history.location.state.records) { //console.log('props records: ', this.props.history.location.state.records);
@@ -118,11 +127,13 @@ class Workzone extends Component {
     //else { records = this.props.location.state.records; }
     //console.log('records: ', records);
     let recordStatus = currentStatus;
+    console.log('recordStatus: ', recordStatus);
     let rows = [];
     let columns = [];
 
     if (records) {
       records.forEach(record => {
+        //console.log('record: ', record);
         if (record.currentStatus === recordStatus && workspace === 'applications') {
           //console.log('records: applications');
           let row = {
@@ -199,192 +210,202 @@ class Workzone extends Component {
         } else if (record.currentStatus === recordStatus && workspace === 'collections') {
           //console.log('recordStatus: ', recordStatus);
           //console.log('records: ', record);
-          let row = {
-            recordId: record.caseNumber,
-            accountNumber: record.accountNumber,
-            caseNumber: record.caseNumber,
-            caseNotes: record.caseNotes,
-            name: record.companyName,
-            regNumber: record.regNumber,
-            debtorAge: record.debtorAge,
-            resolution: record.resolution,
-            totalBalance: record.totalBalance,
-            amountDue: record.amountDue,
-            currentBalance: record.currentBalance,
-            days30: record.days30,
-            days60: record.days60,
-            days90: record.days90,
-            days120: record.days120,
-            days150: record.days150,
-            days180: record.days180,
-            paymentDueDate: record.paymentDueDate,
-            debitOrderDate: record.debitOrderDate,
-            lastPaymentDate: record.lastPaymentDate,
-            lastPaymentAmount: record.lastPaymentAmount,
-            lastPTPDate: record.lastPTPDate,
-            lastPTPAmount: record.lastPTPAmount,
-            accountNotes: record.accountNotes,
-            nextVisitDate: moment(record.nextVisitDate).format('YYYY-MM-DD'),
-            currentAssignment: record.currentAssignment,
-            updatedBy: record.updatedBy,
-            updatedDate: moment(record.updatedDate).format('YYYY-MM-DD HH:mm:ss'),
-            createdBy: record.createdBy,
-            createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
-            id: <Link className="nav-link" to={{
-                pathname: `/workzone/${workspace}/${workrecord}/${record.caseNumber}`,
-                state: {
-                  caseId: record.caseNumber,
-                  record: record,
-                  type: type,
-                  workspace: workspace
+
+          //record.tags.forEach(tag => {
+            //if (tag === task) {
+              let row = {
+                recordId: record.caseNumber,
+                accountNumber: record.accountNumber,
+                caseNumber: record.caseNumber,
+                caseNotes: record.caseNotes,
+                name: record.companyName,
+                regNumber: record.regNumber,
+                debtorAge: record.debtorAge,
+                resolution: record.resolution,
+                totalBalance: record.totalBalance,
+                amountDue: record.amountDue,
+                currentBalance: record.currentBalance,
+                days30: record.days30,
+                days60: record.days60,
+                days90: record.days90,
+                days120: record.days120,
+                days150: record.days150,
+                days180: record.days180,
+                paymentDueDate: record.paymentDueDate,
+                debitOrderDate: record.debitOrderDate,
+                lastPaymentDate: record.lastPaymentDate,
+                lastPaymentAmount: record.lastPaymentAmount,
+                lastPTPDate: record.lastPTPDate,
+                lastPTPAmount: record.lastPTPAmount,
+                accountNotes: record.accountNotes,
+                nextVisitDate: moment(record.nextVisitDate).format('YYYY-MM-DD'),
+                currentAssignment: record.currentAssignment,
+                updatedBy: record.updatedBy,
+                updatedDate: moment(record.updatedDate).format('YYYY-MM-DD HH:mm:ss'),
+                createdBy: record.createdBy,
+                createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
+                id: <Link className="nav-link" to={{
+                    pathname: `/workzone/${workspace}/${workrecord}/${record.caseNumber}`,
+                    state: {
+                      caseId: record.caseNumber,
+                      record: record,
+                      type: type,
+                      workspace: workspace
+                    }
+                  }}
+                  style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>
+              }
+
+              rows.push(row);
+              columns = [
+                {
+                  label: 'Open',
+                  field: 'id',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Case Number',
+                  field: 'caseNumber',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Account Number',
+                  field: 'accountNumber',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Company Name',
+                  field: 'name',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Reg Number',
+                  field: 'regNumber',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Debtor Age',
+                  field: 'debtorAge',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Case Notes',
+                  field: 'caseNotes',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Total Balance',
+                  field: 'totalBalance',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Amount Due',
+                  field: 'amountDue',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Current Balance',
+                  field: 'currentBalance',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Resolution',
+                  field: 'resolution',
+                  sort: 'asc'
+                },
+                /*{
+                  label: 'Days 30',
+                  field: 'days30',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Days 60',
+                  field: 'days60',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Days 90',
+                  field: 'days90',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Days 120',
+                  field: 'days120',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Days 150',
+                  field: 'days150',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Days 180',
+                  field: 'days180',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Payment Due Date',
+                  field: 'paymentDueDate',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Debit Order Date',
+                  field: 'debitOrderDate',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Last Payment Date',
+                  field: 'lastPaymentDate',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Last Payment Amount',
+                  field: 'lastPaymentAmount',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Last PTP Date',
+                  field: 'lastPTPDate',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Last PTP Amount',
+                  field: 'lastPTPAmount',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Account Notes',
+                  field: 'accountNotes',
+                  sort: 'asc'
+                },*/
+                {
+                  label: 'Next Visit Date',
+                  field: 'nextVisitDate',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Current Assignment',
+                  field: 'currentAssignment',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Updated By',
+                  field: 'updatedBy',
+                  sort: 'asc'
+                },
+                {
+                  label: 'Date Updated',
+                  field: 'updatedDate',
+                  sort: 'asc'
                 }
-              }}
-              style={{padding: 0}}><button type="button" className="btn btn-secondary" size="sm">Open</button></Link>
-          }
-          rows.push(row);
-          columns = [
-            {
-              label: 'Open',
-              field: 'id',
-              sort: 'asc'
-            },
-            {
-              label: 'Case Number',
-              field: 'caseNumber',
-              sort: 'asc'
-            },
-            {
-              label: 'Account Number',
-              field: 'accountNumber',
-              sort: 'asc'
-            },
-            {
-              label: 'Company Name',
-              field: 'name',
-              sort: 'asc'
-            },
-            {
-              label: 'Reg Number',
-              field: 'regNumber',
-              sort: 'asc'
-            },
-            {
-              label: 'Debtor Age',
-              field: 'debtorAge',
-              sort: 'asc'
-            },
-            {
-              label: 'Case Notes',
-              field: 'caseNotes',
-              sort: 'asc'
-            },
-            {
-              label: 'Total Balance',
-              field: 'totalBalance',
-              sort: 'asc'
-            },
-            {
-              label: 'Amount Due',
-              field: 'amountDue',
-              sort: 'asc'
-            },
-            {
-              label: 'Current Balance',
-              field: 'currentBalance',
-              sort: 'asc'
-            },
-            {
-              label: 'Resolution',
-              field: 'resolution',
-              sort: 'asc'
-            },
-            /*{
-              label: 'Days 30',
-              field: 'days30',
-              sort: 'asc'
-            },
-            {
-              label: 'Days 60',
-              field: 'days60',
-              sort: 'asc'
-            },
-            {
-              label: 'Days 90',
-              field: 'days90',
-              sort: 'asc'
-            },
-            {
-              label: 'Days 120',
-              field: 'days120',
-              sort: 'asc'
-            },
-            {
-              label: 'Days 150',
-              field: 'days150',
-              sort: 'asc'
-            },
-            {
-              label: 'Days 180',
-              field: 'days180',
-              sort: 'asc'
-            },
-            {
-              label: 'Payment Due Date',
-              field: 'paymentDueDate',
-              sort: 'asc'
-            },
-            {
-              label: 'Debit Order Date',
-              field: 'debitOrderDate',
-              sort: 'asc'
-            },
-            {
-              label: 'Last Payment Date',
-              field: 'lastPaymentDate',
-              sort: 'asc'
-            },
-            {
-              label: 'Last Payment Amount',
-              field: 'lastPaymentAmount',
-              sort: 'asc'
-            },
-            {
-              label: 'Last PTP Date',
-              field: 'lastPTPDate',
-              sort: 'asc'
-            },
-            {
-              label: 'Last PTP Amount',
-              field: 'lastPTPAmount',
-              sort: 'asc'
-            },
-            {
-              label: 'Account Notes',
-              field: 'accountNotes',
-              sort: 'asc'
-            },*/
-            {
-              label: 'Next Visit Date',
-              field: 'nextVisitDate',
-              sort: 'asc'
-            },
-            {
-              label: 'Current Assignment',
-              field: 'currentAssignment',
-              sort: 'asc'
-            },
-            {
-              label: 'Updated By',
-              field: 'updatedBy',
-              sort: 'asc'
-            },
-            {
-              label: 'Date Updated',
-              field: 'updatedDate',
-              sort: 'asc'
-            }
-          ];
-        }
+              ];
+            //}
+          //});
+        } /*else {
+          console.log('record.currentStatus: ', record.currentStatus);
+          console.log('recordStatus: ', recordStatus);
+          console.log('problem with record: ', record.currentStatus, recordStatus);
+        }*/
       });
     }
 
@@ -402,7 +423,8 @@ class Workzone extends Component {
 
   componentToLoad() {
     const currentStatus = this.state.recordStatus;
-    const workspace = this.state.workspace;
+    const workspace = 'collections'; //this.state.workspace;
+    //console.log('componentToLoad workspace: ', workspace);
     let workspaceCapitalised = '';
     if (this.state.workspace) workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1);
 

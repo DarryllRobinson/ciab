@@ -1,14 +1,41 @@
 import React from 'react';
 import Item from './Item';
 
+function filterRecords(worklist, records) {
+  //console.log(worklist, records);
+  let worklistRecords = [];
+
+  switch (worklist) {
+    case 'Queues':
+      records.forEach(record => {
+        record.tags.forEach(tag => {
+          if (tag === 'list_all') worklistRecords.push(record);
+        });
+      });
+      break;
+    case 'Today':
+      records.forEach(record => {
+        record.tags.forEach(tag => {
+          if (tag === 'list_today') worklistRecords.push(record);
+        });
+      });
+      break;
+    default:
+      console.log('Eish, is problem');
+  }
+  //console.log('worklistRecords: ', worklist, worklistRecords);
+  return worklistRecords;
+}
+
 function Worklist(props) {
   //console.log('Worklist props: ', props);
   if (props.worklist.worklist) {
     const workspace = props.workspace;
-    const records = props.records;
-    const task = props.task;
-    const type = props.type;
     const worklist = props.worklist.worklist;
+    //const records = props.records;
+    let records = filterRecords(worklist, props.records);
+    const tasks = props.tasks;
+    const type = props.type;
     const items = props.worklist.items;
 
     const item = items.map((item, idx) =>
@@ -16,7 +43,8 @@ function Worklist(props) {
         key={idx}
         records={records}
         workspace={workspace}
-        task={task}
+        worklist={worklist}
+        tasks={tasks}
         type={type}
         item={item.item}
         count={item.count} />

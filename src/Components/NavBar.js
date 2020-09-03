@@ -1,6 +1,6 @@
 import React from 'react';
-import Login from './Auth/Login';
-import { Button, Container, Nav, Navbar } from 'react-bootstrap';
+import Login from './User/Login';
+import { Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -14,7 +14,7 @@ class NavBar extends React.Component {
     //console.log('NavBar loggedInStatus: ', this.props.loggedInStatus);
     const role = sessionStorage.getItem('cwsRole');
     const loggedInStatus = this.props.loggedInStatus;
-    if (loggedInStatus === "LOGGED_IN" && role !== "god") {
+    if (loggedInStatus === "LOGGED_IN" && role !== "superuser") {
       let firstName = sessionStorage.getItem('cwsFirstName');
 
       return (
@@ -29,7 +29,7 @@ class NavBar extends React.Component {
           <Button onClick={() => this.props.handleLogoutClick()}>Logout</Button>
         </>
       );
-    } else if (loggedInStatus === "LOGGED_IN" && role === "god") {
+    } else if (loggedInStatus === "LOGGED_IN" && role === "superuser") {
       let firstName = sessionStorage.getItem('cwsFirstName');
 
       return (
@@ -37,7 +37,11 @@ class NavBar extends React.Component {
           <Nav.Link href="/dashboard">Dashboard</Nav.Link>
           <Nav.Link href="/collections/upload">Upload</Nav.Link>
           <Nav.Link href="/reports">Reports</Nav.Link>
-          <Nav.Link href="/auth/registration">Registration</Nav.Link>
+
+          <NavDropdown title="User Admin" id="user-dropdown">
+            <NavDropdown.Item href="/user/registration">Registration</NavDropdown.Item>
+            <NavDropdown.Item href="/user/admin">Administration</NavDropdown.Item>
+          </NavDropdown>
 
           <Container>
             <Navbar.Text>

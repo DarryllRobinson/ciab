@@ -66,10 +66,17 @@ class Collection extends Component {
       const type = this.props.location.state.type;
       const workspace = this.props.location.state.workspace;
       const recordId = this.props.location.state.caseId;
-      const record = this.props.location.state.record;
+      // can't use the props record as we need to extract the outcomes which can't be extracted at the Workzone level as it messes up the Today count
+      //const record = this.props.location.state.record;
       const clientId = this.state.clientId;
 
-      //console.log('consts: ', type, workspace, recordId, clientId, record);
+      let record = null;
+      await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`)
+        .then(response => {
+          //console.log('Collection response: ', response);
+          if (response) record = response[0];
+        }
+      );
 
       this.setState({
         record: record,
@@ -319,6 +326,7 @@ class Collection extends Component {
 
       let caseUpdate = {
         currentStatus: 'Pended',
+        nextVisitDateTime: nextVisitDateTime,
         pendReason: pendReason,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
@@ -343,7 +351,6 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -370,7 +377,6 @@ class Collection extends Component {
           outcomeNotes: newNote,
           ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
           ptpAmount: ptpAmount,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -393,7 +399,6 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -422,7 +427,6 @@ class Collection extends Component {
           outcomeNotes: newNote,
           ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
           ptpAmount: ptpAmount,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -474,6 +478,7 @@ class Collection extends Component {
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
+    if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
     if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
@@ -496,6 +501,7 @@ class Collection extends Component {
 
       let caseUpdate = {
         currentStatus: 'Open',
+        nextVisitDateTime: nextVisitDateTime,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
@@ -519,7 +525,6 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -546,7 +551,6 @@ class Collection extends Component {
           outcomeNotes: newNote,
           ptpDate: ptpDate,
           ptpAmount: ptpAmount,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -569,7 +573,6 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -598,7 +601,6 @@ class Collection extends Component {
           outcomeNotes: newNote,
           ptpDate: ptpDate,
           ptpAmount: ptpAmount,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -634,7 +636,7 @@ class Collection extends Component {
       debitResubmissionDate,
       emailUsed,
       nextSteps,
-      nextVisitDateTime,
+      //nextVisitDateTime,
       numberCalled,
       outcome,
       outcomeNotes,
@@ -673,6 +675,7 @@ class Collection extends Component {
 
       let caseUpdate = {
         currentStatus: 'Closed',
+        //nextVisitDateTime: nextVisitDateTime,
         resolution: outcome,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
@@ -697,7 +700,6 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -724,7 +726,6 @@ class Collection extends Component {
           outcomeNotes: newNote,
           ptpDate: ptpDate,
           ptpAmount: ptpAmount,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -747,7 +748,6 @@ class Collection extends Component {
           contactPerson: contactPerson,
           outcome: outcome,
           outcomeNotes: newNote,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -776,7 +776,6 @@ class Collection extends Component {
           outcomeNotes: newNote,
           ptpDate: ptpDate,
           ptpAmount: ptpAmount,
-          nextVisitDateTime: nextVisitDateTime,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -836,9 +835,9 @@ class Collection extends Component {
 
     //this.state.outcomeRecords.forEach(record => console.log('nvdt: ', record.id, record.nextVisitDateTime));
     let nextVisitDateTime = '';
-    if (this.state.outcomeRecords[index].nextVisitDateTime !== undefined) {
-      nextVisitDateTime = this.state.outcomeRecords[index].nextVisitDateTime ?
-        moment(this.state.outcomeRecords[index].nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
+    if (collection.nextVisitDateTime !== undefined) {
+      nextVisitDateTime = collection.nextVisitDateTime ?
+        moment(collection.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
         '';
     }
 

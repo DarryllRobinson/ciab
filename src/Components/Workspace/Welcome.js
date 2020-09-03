@@ -11,7 +11,7 @@ function Welcome(props) {
 
     <div className="row" style={{ marginTop: "80px" }}>
       <div className="lead">
-        <h1 className="display-5">Welcome to your workspace, {user}</h1>
+        <h3 className="display-5">Welcome to your workspace, {user}</h3>
         <p className="lead">{`It will provide you with an overview of what's happening and is where you will start your day`}</p>
 
       </div>

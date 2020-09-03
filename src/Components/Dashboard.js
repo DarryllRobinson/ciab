@@ -3,6 +3,7 @@ import MysqlLayer from '../Utilities/MysqlLayer';
 import Security from '../Utilities/Security';
 import Welcome from './Workspace/Welcome';
 import Workspace from './Workspace/Workspace';
+import moment from 'moment';
 
 /*const workspaces = [
   {
@@ -207,23 +208,30 @@ class Dashboard extends Component {
     //console.log('workspaces: ', workspaces);
 
     services.forEach(async service => {
+      let workspace = service.workspace;
       let type = this.getType(clientservices, service);
       let workzones = this.getWorkzones();
+      let worklists = [];
+      await this.mysqlLayer.Get(`/${type}/${service}/list_all/${client}`
+      ).then(async records => {
+        worklists = await this.getWorklists(workzones, records);
+        let workspaces = [];
+        workspaces.push({
+          workspace: workspace,
+          worklists: worklists
+        });
 
-      let worklists = await this.getWorklists(workzones, service, type, client);
+        //console.log('workspaces: ', workspaces);
+
+        this.setState({
+          tasks: ['list_all', 'list_today'],
+          type: type,
+          //records: records,
+          workspaces: workspaces
+        });
+      });
       //console.log('worklists: ', worklists);
-      let workspaces = [];
-      workspaces.push({
-        workspace: service.workspace,
-        worklists: worklists
-      });
-      //console.log('updating with: ', workspaces);
-      this.setState({
-        type: type,
-        //records: records,
-        workspaces: workspaces
-      });
-      //console.log('state workspaces: ', this.state.workspaces, moment(new Date()).milliseconds());
+
 
     });
 
@@ -261,28 +269,78 @@ class Dashboard extends Component {
     ];
   }
 
-  getWorklists(workzones, workspace, type, client) {
+  getWorklists(workzones, records) {
     let worklists = [];
     workzones.forEach(async workzone => {
       //console.log('workzone: ', workzone);
-      let items = null;
-      items = await this.getItems(workzone.task, workspace, type, client);
+      let items = await this.getItems(workzone.task, records);
+
       if (items) {
-        //console.log('items: ', items);
         worklists.push({
           worklist: workzone.worklist,
           items: items
         });
-      } else {
-        console.log('Problem in getWorklists');
       }
-      this.setState({ worklists: worklists });
+
+      this.setState({
+        worklists: worklists
+      });
     });
-    //console.log('worklists: ', worklists);
     return worklists;
   }
 
-  async getItems(task, workspace, type, client) {
+  async getItems(task, records) {
+    //console.log('task, records: ', task, records);
+    let items = [];
+    let user = 'eugener@sabco.za.com';
+    let recordStatuses = this.getStatusLists(records);
+
+    recordStatuses.forEach(recordStatus => {
+      let count = 0;
+      records.forEach(record => {
+        let tags = [];
+        //if (record.tags === undefined) console.log('undefined');
+        if (record.tags !== undefined) tags = record.tags;
+
+        switch (task) {
+          case 'list_all':
+            if (record.currentStatus === recordStatus) {
+              ++count;
+              tags.push(task);
+            }
+            break;
+          case 'list_today':
+          //console.log('today: ', moment(new Date() - 86400000).format('YYYY-MM-DD'), moment(record.nextVisitDateTime).format('YYYY-MM-DD'));
+            if (record.currentStatus === recordStatus
+                && record.currentAssignment === user
+                && moment(record.nextVisitDateTime).format('YYYY-MM-DD') > (moment(new Date() - 86400000)).format('YYYY-MM-DD')) {
+              ++count;
+              tags.push(task);
+              //console.log('list_today id: ', record.id);
+            }
+            break;
+          default:
+            console.log('task switch default - there must be a problem');
+        }
+
+        record.tags = tags;
+
+      });
+      items.push({
+        item: recordStatus,
+        count: count
+      });
+
+      //console.log('about to setState: ', records);
+      this.setState({ records: records });
+      //console.log('items: ', task, items);
+    });
+
+
+    return items;
+  }
+
+  /*async oldishgetItems(task, workspace, type, client) {
     //console.log('getItems task: ', task);
     let items = [];
 
@@ -291,17 +349,30 @@ class Dashboard extends Component {
         await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`
         ).then(records => {
           if (records) {
-            let statuses = this.getStatusLists(records);
+            //console.log('pre-tagging: ', records.tags);
+            let recordStatuses = this.getStatusLists(records);
 
             // prepare [items]
-            statuses.forEach(status => {
+            recordStatuses.forEach(recordStatus => {
               let count = 0;
               records.forEach(record => {
-                if (record.currentStatus === status) ++count;
+                if (record.tags !== undefined) {
+                  //console.log('list_all true: ', record);
+                  let tags = record.tags;
+                  //console.log('tags: ', tags);
+                } else {
+                  let tags = [];
+                  record.tags = tags;
+                }
+                if (record.currentStatus === recordStatus) {
+                  ++count;
+                  record.tags.push(task);
+                  //console.log('list_all tagged record.tags: ', record.tags);
+                }
               });
 
               items.push({
-                item: status,
+                item: recordStatus,
                 count: count
               });
 
@@ -321,18 +392,32 @@ class Dashboard extends Component {
         await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}/workzone/${user}`
         ).then(records => {
           if (records) {
-            //console.log('records: ', records);
-            let statuses = this.getStatusLists(records);
+            console.log('records: ', records);
+            let recordStatuses = this.getStatusLists(records);
 
             // prepare [items]
-            statuses.forEach(status => {
+            recordStatuses.forEach(recordStatus => {
               let count = 0;
               records.forEach(record => {
-                if (record.currentStatus === status) ++count;
+                //console.log('record: ', record);
+                if (record.tags !== undefined) {
+                  console.log('list_today true: ', record.tags);
+                  let tags = record.tags;
+                } else {
+                  //console.log('list_today false: ', record.tags);
+                  let tags = [];
+                  record.tags = tags;
+                  //console.log('list_today false: ', record.tags);
+                }
+                if (record.currentStatus === recordStatus) {
+                  ++count;
+                  record.tags.push(task);
+                  //console.log('list_today tagged record.tags: ', record.tags);
+                }
               });
 
               items.push({
-                item: status,
+                item: recordStatus,
                 count: count
               });
 
@@ -376,6 +461,110 @@ class Dashboard extends Component {
     return items;
   }
 
+  async oldgetItems(task, workspace, type, client) {
+    //console.log('getItems task: ', task);
+    let items = [];
+
+    switch (task) {
+      case 'list_all':
+        await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`
+        ).then(records => {
+          if (records) {
+            let statuses = this.getStatusLists(records);
+
+            // prepare [items]
+            statuses.forEach(status => {
+              let count = 0;
+              records.forEach(record => {
+                if (record.currentStatus === status) {
+                  ++count;
+                  record.task = task;
+                  console.log('tasked record: ', record);
+                }
+              });
+
+              items.push({
+                item: status,
+                count: count
+              });
+
+              this.setState({
+                records: records,
+                task: task
+              });
+            });
+          } else {
+            console.log('Problem with getItems list_all');
+          }
+        });
+        break;
+      case 'list_today':
+        //console.log('list_today');
+        let user = 'eugener@sabco.za.com';//sessionStorage.getItem('cwsUser');
+        await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}/workzone/${user}`
+        ).then(records => {
+          if (records) {
+            console.log('records: ', records);
+            let statuses = this.getStatusLists(records);
+
+            // prepare [items]
+            statuses.forEach(status => {
+              let count = 0;
+              records.forEach(record => {
+                if (record.currentStatus === status) {
+                  ++count;
+                  //record.task
+                }
+              });
+
+              items.push({
+                item: status,
+                count: count
+              });
+
+              this.setState({
+                records: records,
+                task: task
+              });
+            });
+          } else {
+            console.log('Problem with getItems list_today');
+          }
+        });
+        break;
+      default:
+        await this.mysqlLayer.Get(`/${type}/${workspace}/${task}/${client}`
+        ).then(records => {
+          if (records) {
+            let statuses = this.getStatusLists(records);
+
+            // prepare [items]
+            statuses.forEach(status => {
+              let count = 0;
+              records.forEach(record => {
+                if (record.currentStatus === status) {
+                  ++count;
+                  //record.task
+                }
+              });
+
+              items.push({
+                item: status,
+                count: count
+              });
+              this.setState({ records: records });
+            });
+          } else {
+            console.log('Problem with getItems default');
+          }
+        });
+        break;
+    }
+
+
+    return items;
+  }
+*/
   getStatusLists(records) {
     let list = [];
     records.forEach(record => {
@@ -500,13 +689,22 @@ class Dashboard extends Component {
       //console.log('const workspaces: ', workspaces);
       const workspace = this.state.workspaces.map((workspace, idx) =>
       //const workspace = workspaces.map((workspace, idx) =>
-        <div key={idx} className="card border-light mb-3" style={{padding: "20px"}}>
-          {/*console.log('render workspace: ', workspace, moment(new Date()).milliseconds())*/}
+        <div
+          key={idx}
+          className="card border-light mb-3"
+          style={{
+            padding: "20px",
+            boxShadow: "0 10px 10px -5px",//"0px 0px 0px 0px #3D3735",
+            border: "2px solid #3D3735",
+            marginTop: "10px"
+          }}
+        >
+          {/*console.log('render workspace: ', workspace)*/}
           <Workspace
             key={idx}
             records={this.state.records}
             workspaces={workspace}
-            task={this.state.task}
+            tasks={this.state.tasks}
             type={this.state.type}
             user={this.state.user}
           />

@@ -8,7 +8,7 @@ function Workspace(props) {
     //console.log('Workspace props loaded: ', props, moment(new Date()).milliseconds());
     const workspace = props.workspaces.workspace;
     const records = props.records;
-    const task = props.task;
+    const tasks = props.tasks;
     const type = props.type;
     const workspaceCapitalised = workspace.charAt(0).toUpperCase() + workspace.slice(1);
     const worklists = props.workspaces.worklists;
@@ -22,7 +22,7 @@ function Workspace(props) {
           records={records}
           workspace={workspace}
           worklist={worklist}
-          task={task}
+          tasks={tasks}
           type={type}
           items={worklist.items}
         />

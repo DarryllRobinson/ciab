@@ -8,7 +8,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './Components/NavBar';
 import Home from './Components/Home';
-import NewHome from './Components/newHome';
+//import NewHome from './Components/newHome';
 
 import Dashboard from './Components/Dashboard';
 import Workzone from './Components/Workzone';
@@ -24,7 +24,8 @@ import Blogs from './Components/Community/Blogs';
 import Blog from './Components/Community/Blog';
 import NewBlog from './Components/Community/NewBlog';
 
-import Registration from './Components/Auth/Registration';
+import Registration from './Components/User/Registration';
+import Admin from './Components/User/Admin';
 import ExcelReader from './Utilities/ExcelReader';
 import Reports from './Components/Reports';
 
@@ -112,7 +113,7 @@ class App extends Component {
     let loggedInStatus = this.state.loggedInStatus;
     // Return profile aligned to cwsRole
     switch (role) {
-      case 'god': return (
+      case 'superuser': return (
         <Container fluid>
           <NavBar {...this.props}
             handleLogin={this.handleLogin}
@@ -161,10 +162,10 @@ class App extends Component {
             <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
             <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
-            <Route exact path='/auth/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/user/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/user/admin' render={props => (<Admin {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/reports' render={props => (<Reports {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
-            <Route exact path='/newhome' render={props => (<NewHome {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
         </Container>

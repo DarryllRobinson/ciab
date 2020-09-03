@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
+import { Button, Card, CardDeck, Container } from 'react-bootstrap';
+//import banner from '../Assets/Images/Debt-Recovery.jpg';
 
-class Home extends Component {
+class newHome extends Component {
   constructor(props) {
     super(props);
 
@@ -24,95 +26,119 @@ class Home extends Component {
 
   render() {
     return (
-      <div className="container">
-        <div className="row">
-          <div className="col-lg-12">
-            <div className="jumbotron">
-              <h1>The System</h1>
-                <p className="lead">Your one-stop-shop for a complete customer lifecycle workflow solution</p>
-                <hr className="my-4" />
+      <Container>
+        <h1 className="jumbotron">
+          The System
+        </h1>
 
-                <div className="row">
-                  <h4>Recent updates</h4>
-                  <div className="col-8">
-                    <ul>
-                      <li>
-                        2020-08-27 Today worklist works now - huzzah!
-                      </li>
-                      <li>
-                        2020-08-27 Case remains Open, Closed or Pended if the user clicks Cancel - the previous status is restored
-                      </li>
-                      <li>
-                        2020-08-27 Outcome Notes removed from display and added to Outcomes section
-                      </li>
-                      <li>
-                        2020-08-26 Last PTP date and amount and Next visit date and time are displayed now too
-                      </li>
-                      <li>
-                        2020-08-26 Resolution changed to Outcome result instead
-                      </li>
-                      <li>
-                        2020-08-26 Finally got the worklists to work dynamically!! Still need to make them make sense but one step at a time...
-                      </li>
-                      <li>
-                        2020-08-25 Formatting of extra contact details - including cliackable phone numbers
-                      </li>
-                      <li>
-                        2020-08-24 Next visit date and time and next steps displayed in outcome history
-                      </li>
-                      <li>
-                        2020-08-24 Transaction type checks for number or email used
-                      </li>
-                      <li>
-                        2020-08-24 Outcome history and notes hopefully displayed in descending order of date
-                      </li>
-                      <li>
-                        2020-08-23 Some format tinkering and correcting the checking for Transaction Type and Call/Email
-                      </li>
-                      <li>
-                        2020-08-21 Extra contact details in clickable component just above the Outomes history section
-                      </li>
-                      <li>
-                        2020-08-20 Outcomes sorted by descending order of outcome createdDate
-                      </li>
-                      <li>
-                        2020-08-20 Format of Outcomes ptpDate and debitResubmissionDate improved
-                      </li>
-                      <li>
-                        2020-08-20 Fixed Save & Pend functionality
-                      </li>
-                      <li>
-                        2020-08-19 CIPC and Account status fields saved in database
-                      </li>
-                      <li>
-                        2020-08-18 Outcome history updated to show more fields
-                      </li>
-                      <li>
-                        2020-08-18 Removed the spurious comma from the text boxes
-                      </li>
-                      <li>
-                        2020-08-13 NavBar is responsive for mobiles
-                      </li>
-                      <li>
-                        2020-08-13 Representative phone number now clickable
-                      </li>
-                      <li>
-                        2020-08-13 Account Notes and Case Date labels corrected in Reports
-                      </li>
-                      <li>
-                        2020-08-13 Outcome and Next Steps swapped in Collection workzone
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+        <p className="intro">
+          We know how much your customers mean to you, even the ones that struggle to pay on time.
+          Let us take of the stress of collecting what is owed to you so you can focus on your business.
+        </p>
 
-            </div>
+        <CardDeck>
+          <Card style={{ width: "18rem" }}>
+            <Card.Body style={{ padding: "0" }}>
+              <Card.Header
+                style={{
+                  backgroundColor: "#48B711",
+                  border: "1px solid #48B711",
+                  textAlign: "center",
+                  color: "#FFFFFF"
+                }}
+              >
+                Our Collections process
+              </Card.Header>
+              <Card.Text
+                style={{
+                  padding: "25px",
+                  minHeight: "200px",
+                  color: "#717370"
+                }}
+              >
+                The process we follow to ensure you get what is yours whilst protecting your relationship
+              </Card.Text>
+              <Button
+                style={{
+                  background: "#3D3735",
+                  borderColor: "#3D3735",
+                  margin: "0 25% 5% 25%"
+                }}
+              >
+                Find out more
+              </Button>
+            </Card.Body>
+          </Card>
 
-          </div>
-        </div>
-      </div>
+          <Card style={{ width: "18rem" }}>
+            <Card.Body style={{ padding: "0" }}>
+              <Card.Header
+                style={{
+                  backgroundColor: "#48B711",
+                  border: "1px solid #48B711",
+                  textAlign: "center",
+                  color: "#FFFFFF"
+                }}
+              >
+                Our Collections process
+              </Card.Header>
+              <Card.Text
+                style={{
+                  padding: "25px",
+                  minHeight: "200px",
+                  color: "#717370"
+                }}
+              >
+                The process we follow to ensure you get what is yours whilst protecting your relationship
+              </Card.Text>
+              <Button
+                style={{
+                  background: "#3D3735",
+                  borderColor: "#3D3735",
+                  margin: "0 25% 5% 25%"
+                }}
+              >
+                Find out more
+              </Button>
+            </Card.Body>
+          </Card>
+
+          <Card style={{ width: '18rem' }}>
+            <Card.Body style={{ padding: '0' }}>
+              <Card.Header
+                style={{
+                  backgroundColor: "#48B711",
+                  border: "1px solid #48B711",
+                  textAlign: "center",
+                  color: "#FFFFFF"
+                }}
+              >
+                Our Collections policies
+              </Card.Header>
+              <Card.Text
+                style={{
+                  padding: "25px",
+                  minHeight: "200px",
+                  color: "#717370"
+                }}
+              >
+                The policies we follow to ensure you get what is yours whilst protecting your relationship
+              </Card.Text>
+              <Button
+                style={{
+                  background: "#3D3735",
+                  borderColor: "#3D3735",
+                  margin: "0 25% 5% 25%"
+                }}
+              >
+                Find out more
+              </Button>
+            </Card.Body>
+          </Card>
+        </CardDeck>
+      </Container>
     )
   }
 }
 
-export default Home;
+export default newHome;

@@ -435,7 +435,7 @@ class ExcelReader extends Component {
         f_accountNumber: record.AccountNumber,
         primaryContactName: record.PrimaryContactName,
         primaryContactNumber: record.PrimaryContactNumber,
-        priimaryContactEmail: record.PriimaryContactEmail,
+        primaryContactEmail: record.PrimaryEmailAddress,
         representativeName: record.RepresentativeName,
         representativeNumber: record.RepresentativeContactNumber,
         representativeEmail: record.RepresentativeEmail,
