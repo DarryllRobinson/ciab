@@ -811,7 +811,7 @@ class Collection extends Component {
     if (collection === null && this.props.location.state !== undefined) return <p>Loading...</p>;
     if (this.props.location.state === undefined) return <p>Record not found. Please return to the <Link to={"/dashboard"}>dashboard</Link></p>;
 
-    const index = this.state.outcomeRecords.length - 1; // to get the most recent data for whatever field
+    //const index = this.state.outcomeRecords.length - 1; // to get the most recent data for whatever field
     //console.log('index: ', index);
 
     let paymentDueDate = '';
