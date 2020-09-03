@@ -4,6 +4,7 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Button, Col, Form, Row } from 'react-bootstrap';
 
 export default class Registration extends Component {
   constructor(props) {
@@ -16,8 +17,8 @@ export default class Registration extends Component {
       phone: '',
       password: '',
       role: '',
-      storeId: '',
-      type: '',
+      storeId: '1',
+      type: 'business',
       f_clientId: '',
       createdDate: '',
       registrationErrors: '',
@@ -149,6 +150,8 @@ export default class Registration extends Component {
       f_clientId: '',
       createdDate: ''
     });
+
+    this.props.loadUsers();
   }
 
   render() {
@@ -157,102 +160,101 @@ export default class Registration extends Component {
     );
 
     return (
-      <div className="col-lg-4">
-        <div className="form-group" style={{padding: "20px"}}>
-          <form onSubmit={this.handleSubmit}>
+      <>
+        <Form onSubmit={this.handleSubmit}>
+          <Row>
+            <Col>
+              <Form.Group controlId="firstNameInput">
+                <Form.Control
+                  type="text"
+                  name="firstName"
+                  placeholder="First name"
+                  value={this.state.firstName}
+                  onChange={this.handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
 
-            <input
-              type="text"
-              name="firstName"
-              className="form-control"
-              placeholder="First name"
-              value={this.state.firstName}
-              onChange={this.handleChange}
-              required
-            />
+            <Col>
+              <Form.Group controlId="surnameInput">
+                <Form.Control
+                  type="text"
+                  name="surname"
+                  placeholder="Surname"
+                  value={this.state.surname}
+                  onChange={this.handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
 
-            <input
-              type="text"
-              name="surname"
-              placeholder="Surname"
-              className="form-control"
-              value={this.state.surname}
-              onChange={this.handleChange}
-              required
-            />
+            <Col>
+              <Form.Group controlId="emailInput">
+                <Form.Control
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={this.state.email}
+                  onChange={this.handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              className="form-control"
-              value={this.state.email}
-              onChange={this.handleChange}
-              required
-            />
+            <Col>
+              <Form.Group controlId="phoneInput">
+                <Form.Control
+                  type="text"
+                  name="phone"
+                  placeholder="Cell phone"
+                  value={this.state.phone}
+                  onChange={this.handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
 
-            <input
-              type="text"
-              name="phone"
-              placeholder="Mobile"
-              className="form-control"
-              value={this.state.phone}
-              onChange={this.handleChange}
-              required
-            />
+            <Col>
+              <Form.Group controlId="passwordInput">
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={this.state.password}
+                  onChange={this.handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
 
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              className="form-control"
-              value={this.state.password}
-              onChange={this.handleChange}
-              required
-            />
+            <Col>
+              <Form.Group controlId="roleSelect">
+                <Form.Control as="select" onChange={this.handleChange} name="role" required>
+                  <option>Role</option>
+                  <option value="agent">Agent</option>
+                  <option value="store">Store agent</option>
+                  <option value="admin">Administrator</option>
+                  <option value="superuser">Super user</option>
+                </Form.Control>
+              </Form.Group>
+            </Col>
 
-            <div className="form-group">
-              <select className="custom-select" name="role" onChange={this.handleChange} required>
-                <option >Role</option>
-                <option value="agent">Agent</option>
-                <option value="store">Store agent</option>
-                <option value="admin">Administrator</option>
-              </select>
-            </div>
+            <Col>
+              <Form.Group controlId="clientSelect">
+                <Form.Control as="select" onChange={this.handleChange} name="f_clientId" required>
+                  <option>Client</option>
+                  {clientList}
+                </Form.Control>
+              </Form.Group>
+            </Col>
+          </Row>
 
-            <div className="form-group">
-              <select className="custom-select" name="storeId" onChange={this.handleChange} required>
-                <option >Store ID</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-              </select>
-            </div>
+          <Button type="submit">Register</Button>
+        </Form>
+        <ToastContainer />
+      </>
 
-            <div className="form-group">
-              <select className="custom-select" name="type" onChange={this.handleChange} required>
-                <option >Type</option>
-                <option value="business">Business</option>
-                <option value="consumer">Consumer</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <select className="custom-select"
-                name="f_clientId"
-                onChange={this.handleChange}
-                required
-              >
-                <option>Client</option>
-                {clientList}
-              </select>
-            </div>
-
-            <button className="btn btn-secondary" type="submit">Register</button>
-          </form>
-          <ToastContainer />
-        </div>
-      </div>
     );
   }
 }

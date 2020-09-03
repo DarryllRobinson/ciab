@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import Contacts from './Contacts';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
+import Toasts from '../../Utilities/Toasts';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import DateTime from 'react-datetime';
@@ -59,7 +60,7 @@ class Collection extends Component {
     //console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
     // check if there are any props or send to the dashboard again
     if (this.props.location.state === undefined) {
-      this.notify('error', 'The record was not found. Returning to the dashboard.', false);
+      Toasts('error', 'The record was not found. Returning to the dashboard.', false);
       //alert('Buggered');
     } else if (this.props.location.state !== undefined) {
       // initial setting of state - need this in case someone tries to pull a record not found in the db
@@ -138,81 +139,9 @@ class Collection extends Component {
       await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, update);
       //console.log('collection: ', this.state.collection);
     } else {
-      this.notify('error', 'The record was not found. Returning to the dashboard.', false);
+      Toasts('error', 'The record was not found. Returning to the dashboard.', false);
       setTimeout(() => this.props.history.push('/dashboard'), 3000);
     }
-  }
-
-  notify(type, message, autoClose) {
-    switch (type) {
-      case 'info':
-        toast.info(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-      case 'success':
-        toast.success(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: 1
-        });
-        break;
-      case 'warn':
-        toast.warn(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-      case 'error':
-        toast.error(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-      case 'default':
-        toast(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: 1
-        });
-        break;
-      default:
-        toast('No type selected', {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-    }
-
   }
 
   handleDate(e){
@@ -254,7 +183,7 @@ class Collection extends Component {
   async cancel() {
     let timer = 0;
     if (this.state.changesMade) {
-      this.notify('warn', 'All changes have been lost', false);
+      Toasts('warn', 'All changes have been lost', false);
       timer = 3000;
     }
 
@@ -451,7 +380,7 @@ class Collection extends Component {
         }
       });
     } else {
-      problems.forEach(problem => this.notify('error', problem, true));
+      problems.forEach(problem => Toasts('error', problem, true));
     }
   }
 
@@ -625,7 +554,7 @@ class Collection extends Component {
         }
       });
     } else {
-      problems.forEach(problem => this.notify('error', problem, true));
+      problems.forEach(problem => Toasts('error', problem, true));
     }
   }
 
@@ -800,7 +729,7 @@ class Collection extends Component {
         }
       });
     } else {
-      problems.forEach(problem => this.notify('error', problem, true));
+      problems.forEach(problem => Toasts('error', problem, true));
     }
   }
 

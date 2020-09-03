@@ -1,14 +1,17 @@
 import React, { Component } from 'react';
 import MysqlLayer from '../../Utilities/MysqlLayer';
-import { Button, Container, Table } from 'react-bootstrap';
-import { ToastContainer, toast } from 'react-toastify';
+import { Accordion, Button, Container, Table } from 'react-bootstrap';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Toasts from '../../Utilities/Toasts';
+import Registration from './Registration';
 
 class Admin extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      update: false,
       users: null
     }
 
@@ -16,97 +19,30 @@ class Admin extends Component {
   }
 
   componentDidMount() {
-    this.loadUsers();
+    this.loadUsers(true);
   }
 
-  async loadUsers() {
-    const clientId = sessionStorage.getItem('cwsClient');
-    let users = await this.mysqlLayer.Get(`/admin/users/${clientId}`);
-    this.setState({ users: users });
+  async loadUsers(update) {
+    if (update) {
+      console.log('loading users');
+      const clientId = sessionStorage.getItem('cwsClient');
+      let users = await this.mysqlLayer.Get(`/admin/users/${clientId}`);
+      this.setState({ users: users });
+    }
+
   }
 
   async deleteUser(user) {
-    await this.mysqlLayer.Delete(`/admin/user/${user}`
+    await this.mysqlLayer.Delete(`/admin/user/${user}1`
     ).then(response => {
-      console.log('response: ', response);
+      //console.log('response: ', response);
       if (response.affectedRows === 1) {
-        this.notify('success', 'The user was deleted', true);
+        Toasts('success', 'The user was deleted', true);
         this.loadUsers();
       } else {
-        this.notify('error', 'There was a problem deleting the user', false);
+        Toasts('error', 'There was a problem deleting the user', false);
       }
     });
-  }
-
-  notify(type, message, autoClose) {
-    switch (type) {
-      case 'info':
-        toast.info(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-      case 'success':
-        toast.success(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: 1
-        });
-        break;
-      case 'warn':
-        toast.warn(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-      case 'error':
-        toast.error(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-      case 'default':
-        toast(message, {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: 1
-        });
-        break;
-      default:
-        toast('No type selected', {
-          position: "top-center",
-          autoClose: autoClose,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined
-        });
-        break;
-    }
   }
 
   render() {
@@ -148,7 +84,23 @@ class Admin extends Component {
                 {users}
             </tbody>
           </Table>
+
+          <Accordion>
+            <Accordion.Toggle as={Button} eventKey="0">
+              Add user
+            </Accordion.Toggle>
+
+            <Accordion.Collapse eventKey="0">
+            <Registration loadUsers={this.loadUsers()}/>
+            </Accordion.Collapse>
+          </Accordion>
           <ToastContainer />
+
+
+
+
+
+
         </Container>
       )
     } else {
