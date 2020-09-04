@@ -16,24 +16,28 @@ class Admin extends Component {
     }
 
     this.mysqlLayer = new MysqlLayer();
+    this.loadUsers = this.loadUsers.bind(this);
   }
 
-  componentDidMount() {
-    this.loadUsers(true);
+  async componentDidMount() {
+    this.loadUsers();
   }
 
-  async loadUsers(update) {
-    if (update) {
-      console.log('loading users');
-      const clientId = sessionStorage.getItem('cwsClient');
-      let users = await this.mysqlLayer.Get(`/admin/users/${clientId}`);
-      this.setState({ users: users });
-    }
+  async loadUsers() {
+    //console.log('loading users');
+    const clientId = sessionStorage.getItem('cwsClient');
+    await this.mysqlLayer.Get(`/admin/users/${clientId}`
+    ).then(users => {
+      this.setState({
+        //update: true,
+        users: users
+      });
+    });
 
   }
 
   async deleteUser(user) {
-    await this.mysqlLayer.Delete(`/admin/user/${user}1`
+    await this.mysqlLayer.Delete(`/admin/user/${user}`
     ).then(response => {
       //console.log('response: ', response);
       if (response.affectedRows === 1) {
@@ -46,23 +50,31 @@ class Admin extends Component {
   }
 
   render() {
-    if (this.state.users) {
+    if (!this.state.users) {
+      return (
+        <div>Loading users...</div>
+      )
+    } else {
       const users = this.state.users.map((user, idx) => {
         const userId = user.id;
         return (
           <tr key={idx}>
+            <td key={idx+3}>{user.email}</td>
             <td key={idx+1}>{user.firstName}</td>
             <td key={idx+2}>{user.surname}</td>
-            <td key={idx+3}>{user.email}</td>
             <td key={idx+4}>{user.role}</td>
             <td>
-              <Button variant="primary" size="sm"
+              <Button
+                style={{
+                  background: "#48B711",
+                  borderColor: "#48B711"
+                }}
+                size="sm"
                 onClick={() => this.deleteUser(userId)}
               >
                 Delete
               </Button>
             </td>
-            <td>reset button</td>
           </tr>
         )}
       );
@@ -72,16 +84,15 @@ class Admin extends Component {
           <Table striped hover responsive>
             <thead>
               <tr>
+                <th>Email</th>
                 <th>First name</th>
                 <th>Surname</th>
-                <th>Email</th>
                 <th>Role</th>
                 <th>Delete user</th>
-                <th>Reset password</th>
               </tr>
             </thead>
             <tbody>
-                {users}
+              {users}
             </tbody>
           </Table>
 
@@ -91,21 +102,12 @@ class Admin extends Component {
             </Accordion.Toggle>
 
             <Accordion.Collapse eventKey="0">
-            <Registration loadUsers={this.loadUsers()}/>
+            <Registration loadUsers={this.loadUsers}/>
             </Accordion.Collapse>
           </Accordion>
+
           <ToastContainer />
-
-
-
-
-
-
         </Container>
-      )
-    } else {
-      return (
-        <div>Loading users...</div>
       )
     }
   }

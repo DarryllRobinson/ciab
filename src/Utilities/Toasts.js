@@ -21,7 +21,7 @@ function Toasts(type, message, autoClose) {
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        progress: 1
+        progress: undefined
       });
       break;
     case 'warn':

@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 
-export default class Registration extends Component {
+export default class Reset extends Component {
   constructor(props) {
     super(props);
 

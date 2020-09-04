@@ -48,6 +48,8 @@ class Collection extends Component {
     this.mysqlLayer = new MysqlLayer();
     this.handleChange = this.handleChange.bind(this);
     this.handleDate = this.handleDate.bind(this);
+    this.handlePTPDate = this.handlePTPDate.bind(this);
+    this.handleDebitDate = this.handleDebitDate.bind(this);
     this.pendRecord = this.pendRecord.bind(this);
     this.closeRecord = this.closeRecord.bind(this);
     this.updateRecord = this.updateRecord.bind(this);

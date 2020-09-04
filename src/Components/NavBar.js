@@ -1,6 +1,6 @@
 import React from 'react';
 import Login from './User/Login';
-import { Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { Button, Container, Nav, Navbar } from 'react-bootstrap';
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -37,11 +37,7 @@ class NavBar extends React.Component {
           <Nav.Link href="/dashboard">Dashboard</Nav.Link>
           <Nav.Link href="/collections/upload">Upload</Nav.Link>
           <Nav.Link href="/reports">Reports</Nav.Link>
-
-          <NavDropdown title="User Admin" id="user-dropdown">
-            <NavDropdown.Item href="/user/registration">Registration</NavDropdown.Item>
-            <NavDropdown.Item href="/user/admin">Administration</NavDropdown.Item>
-          </NavDropdown>
+          <Nav.Link href="/user/admin">Admin</Nav.Link>
 
           <Container>
             <Navbar.Text>

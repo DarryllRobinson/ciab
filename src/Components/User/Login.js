@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import Security from '../../Utilities/Security';
+import Toasts from '../../Utilities/Toasts';
 import moment from 'moment';
-import { Button } from 'react-bootstrap';
+import { Accordion, Button, Col, Form, Row } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 
 export default class Login extends Component {
@@ -17,9 +18,20 @@ export default class Login extends Component {
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.sendEmail = this.sendEmail.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
     this.security = new Security();
+  }
+
+  async sendEmail(event) {
+    event.preventDefault();
+    const email = this.state.email;
+    await this.mysqlLayer.Post('/admin/user/reset', {email: email}, { withCredentials: true }
+    ).then(response => {
+      console.log('reset response');
+    });
+    Toasts('success', 'A reset email was sent', 3000);
   }
 
   handleChange(event) {
@@ -95,38 +107,74 @@ export default class Login extends Component {
     if (this.props.loggedInStatus === "NOT_LOGGED_IN") {
       return (
         <>
-        <form className="form-inline my-2 my-lg-0" onSubmit={this.handleSubmit}>
-              <input
-                type="email"
-                name="email"
-                className="form-control mr-sm-2"
-                placeholder="Email"
-                value={this.state.email}
-                onChange={this.handleChange}
-                required
-              />
+          <Form onSubmit={this.handleSubmit}>
+            <Row>
+              <Col>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  onChange={this.handleChange}
+                  required
+                />
+              </Col>
+              <Col>
+                <Form.Control
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  onChange={this.handleChange}
+                  required
+                />
+              </Col>
+              <Col>
+                <Button
+                  style={{
+                    background: "#48B711",
+                    borderColor: "#48B711",
+                  }}
+                  type="submit"
+                >
+                  Login
+                </Button>
+              </Col>
+
+            </Row>
+          </Form>
 
 
-              <input
-                type="password"
-                name="password"
-                className="form-control mr-sm-2"
-                placeholder="Password"
-                value={this.state.password}
-                onChange={this.handleChange}
-                required
-              />
+          <Accordion>
+            <Accordion.Toggle as={Button} eventKey="0">
+              Forgot password
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey="0">
+              <Form onSubmit={this.sendEmail}>
+                <Row>
+                  <Col>
+                    <Form.Control
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      onChange={this.handleChange}
+                      required
+                    />
+                  </Col>
+                  <Col>
+                    <Button
+                      style={{
+                        background: "#48B711",
+                        borderColor: "#48B711",
+                      }}
+                      type="submit"
+                    >
+                      Reset
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+            </Accordion.Collapse>
+          </Accordion>
 
-              <Button
-                style={{
-                  background: "#48B711",
-                  borderColor: "#48B711"
-                }}
-                type="submit"
-              >
-                Login
-              </Button>
-              </form>
 
           <ToastContainer />
         </>
