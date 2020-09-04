@@ -26,6 +26,7 @@ import NewBlog from './Components/Community/NewBlog';
 
 import Registration from './Components/User/Registration';
 import Admin from './Components/User/Admin';
+import Reset from './Components/User/Reset';
 import ExcelReader from './Utilities/ExcelReader';
 import Reports from './Components/Reports';
 
@@ -267,6 +268,12 @@ class App extends Component {
             <Home {...props}
               handleLogin={this.handleLogin}
               handleLogout={this.handleLogout}
+              loggedInStatus={this.state.loggedInStatus}
+            />)}
+          />
+
+          <Route exact path='/reset' render={props => (
+            <Reset {...props}
               loggedInStatus={this.state.loggedInStatus}
             />)}
           />
