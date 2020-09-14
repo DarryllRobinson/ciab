@@ -218,8 +218,8 @@ class Workzone extends Component {
                 accountNumber: record.accountNumber,
                 caseNumber: record.caseNumber,
                 caseNotes: record.caseNotes,
-                name: record.companyName,
-                regNumber: record.regNumber,
+                name: record.customerName,
+                regIdNumber: record.regIdNumber,
                 debtorAge: record.debtorAge,
                 resolution: record.resolution,
                 totalBalance: record.totalBalance,
@@ -274,13 +274,13 @@ class Workzone extends Component {
                   sort: 'asc'
                 },
                 {
-                  label: 'Company Name',
+                  label: 'Customer Name',
                   field: 'name',
                   sort: 'asc'
                 },
                 {
-                  label: 'Reg Number',
-                  field: 'regNumber',
+                  label: 'Reg/ID Number',
+                  field: 'regIdNumber',
                   sort: 'asc'
                 },
                 {
@@ -313,71 +313,6 @@ class Workzone extends Component {
                   field: 'resolution',
                   sort: 'asc'
                 },
-                /*{
-                  label: 'Days 30',
-                  field: 'days30',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Days 60',
-                  field: 'days60',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Days 90',
-                  field: 'days90',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Days 120',
-                  field: 'days120',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Days 150',
-                  field: 'days150',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Days 180',
-                  field: 'days180',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Payment Due Date',
-                  field: 'paymentDueDate',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Debit Order Date',
-                  field: 'debitOrderDate',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Last Payment Date',
-                  field: 'lastPaymentDate',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Last Payment Amount',
-                  field: 'lastPaymentAmount',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Last PTP Date',
-                  field: 'lastPTPDate',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Last PTP Amount',
-                  field: 'lastPTPAmount',
-                  sort: 'asc'
-                },
-                {
-                  label: 'Account Notes',
-                  field: 'accountNotes',
-                  sort: 'asc'
-                },*/
                 {
                   label: 'Next Visit Date',
                   field: 'nextVisitDate',

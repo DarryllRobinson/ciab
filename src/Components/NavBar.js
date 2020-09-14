@@ -14,22 +14,7 @@ class NavBar extends React.Component {
     //console.log('NavBar loggedInStatus: ', this.props.loggedInStatus);
     const role = sessionStorage.getItem('cwsRole');
     const loggedInStatus = this.props.loggedInStatus;
-    if (loggedInStatus === "LOGGED_IN" && role !== "superuser") {
-      let firstName = sessionStorage.getItem('cwsFirstName');
-
-      return (
-        <>
-          <Nav.Link href="/dashboard">Dashboard</Nav.Link>
-
-          <Container expand="lg" className="justify-content-end">
-            <Navbar.Text>
-              {firstName}
-            </Navbar.Text>
-          </Container>
-          <Button onClick={() => this.props.handleLogoutClick()}>Logout</Button>
-        </>
-      );
-    } else if (loggedInStatus === "LOGGED_IN" && role === "superuser") {
+    if (loggedInStatus === "LOGGED_IN" && role === "superuser") {
       let firstName = sessionStorage.getItem('cwsFirstName');
 
       return (
@@ -38,6 +23,31 @@ class NavBar extends React.Component {
           <Nav.Link href="/collections/upload">Upload</Nav.Link>
           <Nav.Link href="/reports">Reports</Nav.Link>
           <Nav.Link href="/user/admin">Admin</Nav.Link>
+
+          <Container>
+            <Navbar.Text>
+              {firstName}
+            </Navbar.Text>
+          </Container>
+          <Button
+            onClick={() => this.props.handleLogoutClick()}
+            style={{
+              background: "#48B711",
+              borderColor: "#48B711"
+            }}
+          >
+            Logout
+          </Button>
+        </>
+      );
+    } else if (loggedInStatus === "LOGGED_IN" && role === "client") {
+      let firstName = sessionStorage.getItem('cwsFirstName');
+
+      return (
+        <>
+          <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+          {/*<Nav.Link href="/collections/upload">Upload</Nav.Link>
+          <Nav.Link href="/reports">Reports</Nav.Link>*/}
 
           <Container>
             <Navbar.Text>
@@ -67,8 +77,19 @@ class NavBar extends React.Component {
         </>
       );
     } else {
+      let firstName = sessionStorage.getItem('cwsFirstName');
+
       return (
-        <div>I cannot find a menu to display {loggedInStatus} {role}</div>
+        <>
+          <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+
+          <Container expand="lg" className="justify-content-end">
+            <Navbar.Text>
+              {firstName}
+            </Navbar.Text>
+          </Container>
+          <Button onClick={() => this.props.handleLogoutClick()}>Logout</Button>
+        </>
       );
     }
   }

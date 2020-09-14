@@ -182,65 +182,69 @@ class ExcelReader extends Component {
   }
 
   async saveCustomerRecordsToDatabase(record) {
+    let customer = null;
     if (record.CustomerEntity === 'Enterprise') {
-      let customer = [
+      customer = [
         {
           operatorShortCode: record.operatorShortCode,
           customerRefNo: record.CustomerNumber,
-          companyName: record.Customer,
-          regNumber: record.CompanyRegNo,
+          customerName: record.Customer,
+          customerEntity: record.CustomerEntity,
+          regIdNumber: record.CompanyRegNo,
           customerType: record.Customer_Type,
           productType: record.ProductType,
           createdBy: 'System',
-          cipcStatus: record.CIPCStatus,
+          regIdStatus: record.CIPCStatus,
           f_clientId: sessionStorage.getItem('cwsClient')
         }
       ];
-      /*let customers = [];
-      records.forEach(record => {
-        customers.push({
-          customerRefNo: record.customerRefNo,
-          name: record.name,
-          createdBy: record.createdBy,
-          type: record.type,
-          regNumber: record.regNumber,
-          representativeName: record.representativeName,
-          telephone: record.telephone,
+    } else if (record.CustomerEntity === 'Consumer') {
+      customer = [
+        {
+          operatorShortCode: record.operatorShortCode,
+          customerRefNo: record.CustomerNumber,
+          customerName: record.Customer,
+          customerEntity: record.CustomerEntity,
+          regIdNumber: record.ConsumerIDNumber,
+          customerType: record.Customer_Type,
+          productType: record.ProductType,
+          createdBy: 'System',
+          regIdStatus: record.IDVStatus,
           f_clientId: sessionStorage.getItem('cwsClient')
-        });
-      });*/
-
-      const response = await this.postToDb(customer, 'customers');
-      //console.log('saveCustomerRecordsToDatabase response: ', response);
-      if (response.data.errno) {
-        let error =[];
-        error = this.state.customerErrors;
-        error.push(response.data);
-        await this.setState({ customerErrors: error });
-      }
-      return response.data.insertId;
+        }
+      ];
     }
+
+    const response = await this.postToDb(customer, 'customers');
+    //console.log('saveCustomerRecordsToDatabase response: ', response);
+    if (response.data.errno) {
+      let error =[];
+      error = this.state.customerErrors;
+      error.push(response.data);
+      await this.setState({ customerErrors: error });
+    }
+    return response.data.insertId;
   }
 
   async saveAccountRecordsToDatabase(record) {
     const paymentDueDate = record.paymentDueDate ?
-      moment(record.paymentDueDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.paymentDueDate)).format('YYYY-MM-DD') :
       null;
 
     const debitOrderDate = record.debitOrderDate ?
-      moment(record.debitOrderDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.debitOrderDate)).format('YYYY-MM-DD') :
       null;
 
     const lastPaymentDate = record.lastPaymentDate ?
-      moment(record.lastPaymentDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.lastPaymentDate)).format('YYYY-MM-DD') :
       null;
 
     const lastPTPDate = record.lastPTPDate ?
-      moment(record.lastPTPDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.lastPTPDate)).format('YYYY-MM-DD') :
       null;
 
     const openDate = record.DateCreated ?
-      moment(record.openDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.openDate)).format('YYYY-MM-DD') :
       null;
 
     let account = [
@@ -312,16 +316,22 @@ class ExcelReader extends Component {
   async saveCaseRecordsToDatabase(record) {
 
     const createdDate = record.DateCreated ?
-      moment(record.DateCreated).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.DateCreated)).format('YYYY-MM-DD HH:mm:ss') :
+      null;
+
+    const nextVisitDateTime = record.nextVisitDateTime ?
+      moment(this.ExcelDateToJSDate(record.nextVisitDateTime)).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
     const updatedDate = record.DateLastUpdated ?
-      moment(record.DateLastUpdated).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.DateLastUpdated)).format('YYYY-MM-DD HH:mm:ss') :
       null;
+      //console.log('updatedDate: ', updatedDate);
 
     const reopenedDate = record.DateReopened ?
-      moment(record.DateReopened).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.DateReopened)).format('YYYY-MM-DD HH:mm:ss') :
       null;
+      //console.log('reopenedDate: ', reopenedDate);
 
     let caseUpdate = [
       {
@@ -330,6 +340,7 @@ class ExcelReader extends Component {
         createdDate: createdDate,
         createdBy: record.CreatedBy,
         currentAssignment: record.CurrentAssignment,
+        nextVisitDateTime: nextVisitDateTime,
         updatedDate: updatedDate,
         updatedBy: record.LastUpdatedBy,
         reopenedDate: reopenedDate,
@@ -358,7 +369,7 @@ class ExcelReader extends Component {
   async saveOutcomeRecordsToDatabase(record) {
 
     const createdDate = record.DateCreated ?
-      moment(record.DateCreated).format('YYYY-MM-DD HH:mm:ss') :
+      moment(this.ExcelDateToJSDate(record.DateCreated)).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
     /*const nextVisitDateTime = record.NextVisitDate ?
@@ -380,16 +391,12 @@ class ExcelReader extends Component {
       moment(record.NextVisitTime).format('YYYY-MM-DD HH:mm:ss') :
       null;*/
 
-    const nextVisitDateTime = record.nextVisitDateTime ?
-      moment(this.ExcelDateToJSDate(record.nextVisitDateTime)).format('YYYY-MM-DD HH:mm:ss') :
-      null;
-
     const ptpDate = record.PTPDate ?
-      moment(record.PTPDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.PTPDate)).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
     const debitResubmissionDate = record.DebtOrderDate ?
-      moment(record.DebtOrderDate).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.DebtOrderDate)).format('YYYY-MM-DD HH:mm:ss') :
       null;
 
 
@@ -404,7 +411,6 @@ class ExcelReader extends Component {
         EmailAddressUsed: record.emailUsed,
         contactPerson: record.ContactPerson,
         outcome: record.Resolution,
-        nextVisitDateTime: nextVisitDateTime,
         nextSteps: record.NextSteps,
         ptpDate: ptpDate,
         ptpAmount: record.PTPAmount,
@@ -438,7 +444,7 @@ class ExcelReader extends Component {
         primaryContactEmail: record.PrimaryEmailAddress,
         representativeName: record.RepresentativeName,
         representativeNumber: record.RepresentativeContactNumber,
-        representativeEmail: record.RepresentativeEmail,
+        representativeEmail: record.RepresentativeEmailAddress,
         alternativeRepName: record.AltRepName,
         alternativeRepNumber: record.AltRepContact,
         alternativeRepEmail: record.AltRepEmail,

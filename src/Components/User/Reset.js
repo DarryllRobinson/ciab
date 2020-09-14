@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import { ToastContainer, toast } from 'react-toastify';
+import Toasts from '../../Utilities/Toasts';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Button, Col, Container, Form, Row } from 'react-bootstrap';
 
@@ -13,6 +14,7 @@ export default class Reset extends Component {
     this.state = {
       email: '',
       password: '',
+      passwordConfirmation: '',
       updatedDate: '',
       updatedBy: '',
       resetErrors: '',
@@ -35,84 +37,54 @@ export default class Reset extends Component {
     });
   }
 
-  handleSubmit(event) {
+  async handleSubmit(event) {
     event.preventDefault();
 
     // Don't let the missing this.state.values confuse you below :)
     const {
-      email
+      email,
+      password,
+      passwordConfirmation
     } = this.state;
 
-    // bcrypt password
-    const salt = bcrypt.genSaltSync(10);
-    //const hash = bcrypt.hashSync("b0oBi35", salt);
+    if (password === passwordConfirmation) {
 
-    bcrypt.hash(this.state.password, salt, (err, hash) => {
-       this.setState({ password: hash });
-       //console.log('hashed password: ', this.state.password);
+      // bcrypt password
+      const salt = bcrypt.genSaltSync(10);
+      //const hash = bcrypt.hashSync("b0oBi35", salt);
 
-       const updatedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-       const updatedBy = email;
+      bcrypt.hash(password, salt, async (err, hash) => {
+        //this.setState({ password: hash });
 
-       const user = {
-         password: hash,
-         updatedDate: updatedDate,
-         updatedBy: updatedBy
-       }
+        const updatedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+        const updatedBy = email;
 
-       this.mysqlLayer.Post(`/admin/user/change/${email}`, user, { withCredentials: true }
-       ).then(response => {
-         console.log('response: ', response);
-         if (response.data === 'user exists') {
-           let message = 'User already exists. Please create a new username (email).';
-           this.handleFailedReg(message);
-         } else if (response.data.affectedRows === 1) {
-           this.handleSuccessfulAuth();
-         } else {
-           console.log('Log error to resetErrors');
-         }
-       }).catch(error => {
-         console.log('Registration error: ', error);
-       });
-    });
-  }
+        const user = {
+          email: email,
+          password: hash,
+          updatedDate: updatedDate,
+          updatedBy: updatedBy
+        };
 
-
-  handleFailedReg(message) {
-    toast(message, {
-      position: "top-center",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined
-    });
-  }
-
-  handleSuccessfulAuth() {
-    toast(`${this.state.firstName} has been added to the system`, {
-      position: "top-center",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined
-    });
-
-    this.setState({
-      firstName: '',
-      surname: '',
-      email: '',
-      phone: '',
-      password: '',
-      role: '',
-      storeId: '',
-      type: '',
-      f_clientId: '',
-      updatedDate: ''
-    });
+        await this.mysqlLayer.PostChange(`/admin/user/change`, user, { withCredentials: true }
+        ).then(response => {
+          console.log('response: ', response);
+          if (response.data === 'User not found') {
+            //let message = 'User already exists. Please create a new username (email).';
+            //this.handleFailedReg(message);
+            Toasts('error', 'User not found. Please contact your supervisor.', false);
+          } else if (response.data.affectedRows === 1) {
+            Toasts('success', 'Your password has been reset. Please login to continue.', true);
+          } else {
+            console.log('Log error to resetErrors');
+          }
+        }).catch(error => {
+          console.log('Reset error: ', error);
+        });
+      });
+    } else {
+      Toasts('error', 'The passwords do not match. Please try again.', true);
+    }
   }
 
   render() {
@@ -141,6 +113,19 @@ export default class Reset extends Component {
                   name="password"
                   placeholder="Password"
                   value={this.state.password}
+                  onChange={this.handleChange}
+                  required
+                />
+              </Form.Group>
+            </Col>
+
+            <Col>
+              <Form.Group controlId="passwordConfirmationInput">
+                <Form.Control
+                  type="password"
+                  name="passwordConfirmation"
+                  placeholder="Password confirmation"
+                  value={this.state.passwordConfirmation}
                   onChange={this.handleChange}
                   required
                 />

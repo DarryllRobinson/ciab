@@ -59,6 +59,30 @@ export default class MysqlLayer {
     try {
       //console.log(`Posting login to from ${AppSettings.serverEndpoint}${path}`);
       let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
+      //console.log('response: ', response);
+      return response;
+    } catch(e) {
+      console.log('e: ', e);
+      if (!e.response) {
+        //alert('Major Get request error: ', e);
+        return e;
+      }
+      if (e.response.status === 500) {
+        alert('Get request 500 error: ' + e.response.data.message);
+      } else {
+        alert('Get request error: ' + e);
+      }
+    }
+  }
+
+  // Post route for Change only as there is no validateSession
+  async PostChange(path, object) {
+    //this.security.validateSession();
+    //console.log('path: ', path);
+    //console.log('object: ', object);
+    try {
+      //console.log(`Posting login to from ${AppSettings.serverEndpoint}${path}`);
+      let response = await axios.post(`${AppSettings.serverEndpoint}${path}`, object, this.setHeaders());
       console.log('response: ', response);
       return response;
     } catch(e) {

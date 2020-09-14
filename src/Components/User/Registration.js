@@ -67,8 +67,8 @@ export default class Registration extends Component {
       const salt = bcrypt.genSaltSync(10);
       //const hash = bcrypt.hashSync("b0oBi35", salt);
 
-      bcrypt.hash(this.state.password, salt, async (err, hash) => {
-         await this.setState({ password: hash });
+      bcrypt.hash(this.state.password, salt, (err, hash) => {
+         this.setState({ password: hash });
          //console.log('hashed password: ', this.state.password);
 
          const createdDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
@@ -236,6 +236,8 @@ export default class Registration extends Component {
                   <option value="agent">Agent</option>
                   <option value="store">Store agent</option>
                   <option value="admin">Administrator</option>
+                  <option value="kam">KAM</option>
+                  <option value="client">Client</option>
                   <option value="superuser">Super user</option>
                 </Form.Control>
               </Form.Group>

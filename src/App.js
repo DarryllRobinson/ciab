@@ -19,6 +19,7 @@ import Application from './Components/Applications/Application';
 import NewApplication from './Components/Applications/NewApplication';
 
 import Collection from './Components/Collections/Collection';
+import Payment from './Components/Collections/Payment';
 
 import Blogs from './Components/Community/Blogs';
 import Blog from './Components/Community/Blog';
@@ -72,6 +73,7 @@ class App extends Component {
   }
 
   async checkLoginStatus() {
+    //console.log('checkLoginStatus ', this.props.history.location.pathname);
     let sessionUser = sessionStorage.getItem('cwsUser');
 
     if (sessionUser && this.state.loggedInStatus === "NOT_LOGGED_IN") {
@@ -87,7 +89,7 @@ class App extends Component {
       this.security.validateSession();
       //console.log('Logged back in');
     } else if (!sessionUser && (this.state.loggedInStatus === "LOGGED_IN")) {
-      await this.setState({
+      this.setState({
         loggedInStatus: "NOT_LOGGED_IN",
         user: {}
       });
@@ -104,8 +106,8 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.checkLoginStatus();
     //console.log('App mounted: ', this.state.loggedInStatus);
+    this.checkLoginStatus();
   }
 
   render() {
@@ -138,6 +140,7 @@ class App extends Component {
 
 
             <Route exact path='/dashboard' render={props => (<Dashboard {...props} user={user} loggedInStatus={loggedInStatus} />)} />
+            <Route exact path='/payment' render={props => (<Payment {...props} user={user} loggedInStatus={loggedInStatus} />)} />
             <Route exact path='/workzone/applications' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/workzone/collections' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
@@ -253,6 +256,38 @@ class App extends Component {
           </Switch>
         </Container>
       );
+      case 'client': return (
+        <Container fluid>
+          <NavBar {...this.props}
+            handleLogin={this.handleLogin}
+            handleLogout={this.handleLogout}
+            handleLogoutClick={this.handleLogoutClick}
+            loggedInStatus={this.state.loggedInStatus}
+            handleSuccessfulAuth={this.handleSuccessfulAuth}
+            role={this.state.user.role}
+          />
+          <Switch>
+
+            <Route exact path='/' render={props => (
+              <Home {...props}
+                handleLogin={this.handleLogin}
+                handleLogout={this.handleLogout}
+                loggedInStatus={this.state.loggedInStatus}
+              />)}
+            />
+
+            {/*<Route exact path='*' render={props => (<Dashboard {...props} user={user} loggedInStatus={loggedInStatus} />)} />*/}
+
+
+            <Route exact path='/dashboard' render={props => (<Dashboard {...props} user={user} loggedInStatus={loggedInStatus} />)} />
+            <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/reports' render={props => (<Reports {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/collections' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+
+          </Switch>
+        </Container>
+      );
       default: return (
         <Container fluid>
           <NavBar {...this.props}
@@ -264,19 +299,21 @@ class App extends Component {
             role={this.state.user.role}
           />
 
-          <Route exact path='/' render={props => (
-            <Home {...props}
-              handleLogin={this.handleLogin}
-              handleLogout={this.handleLogout}
-              loggedInStatus={this.state.loggedInStatus}
-            />)}
-          />
+          <Switch>
+            <Route exact path='/' render={props => (
+              <Home {...props}
+                handleLogin={this.handleLogin}
+                handleLogout={this.handleLogout}
+                loggedInStatus={this.state.loggedInStatus}
+              />)}
+            />
 
-          <Route exact path='/reset' render={props => (
-            <Reset {...props}
-              loggedInStatus={this.state.loggedInStatus}
-            />)}
-          />
+            <Route exact path='/reset' render={props => (
+              <Reset {...props}
+                loggedInStatus={this.state.loggedInStatus}
+              />)}
+            />
+          </Switch>
 
         </Container>
       )

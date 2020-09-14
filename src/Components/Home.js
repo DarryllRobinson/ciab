@@ -3,7 +3,7 @@ import MysqlLayer from '../Utilities/MysqlLayer';
 import { Button, Card, CardDeck, Container } from 'react-bootstrap';
 //import banner from '../Assets/Images/Debt-Recovery.jpg';
 
-class newHome extends Component {
+class Home extends Component {
   constructor(props) {
     super(props);
 
@@ -141,4 +141,4 @@ class newHome extends Component {
   }
 }
 
-export default newHome;
+export default Home;

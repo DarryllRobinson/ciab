@@ -77,32 +77,6 @@ export default class Login extends Component {
     });
   }
 
-  xxxhandleSubmit(event) {
-    const { email, password } = this.state;
-    const loginDatetime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-    const user = {
-      email: email,
-      password: password,
-      loginDate: loginDatetime
-    };
-
-    this.mysqlLayer.Post(`/admin/usersession`,
-        user,
-        { withCredentials: true }
-      )
-      .then(response => {
-        console.log('handleSubmit response: ', response);
-        if (response.data) {
-          this.security.writeLoginSession(response.data[0].email, loginDatetime);
-          this.props.handleSuccessfulAuth(response.data);
-        }
-      })
-      .catch(error => {
-        console.log("login error", error);
-      });
-    event.preventDefault();
-  }
-
   sectionToRender() {
     if (this.props.loggedInStatus === "NOT_LOGGED_IN") {
       return (

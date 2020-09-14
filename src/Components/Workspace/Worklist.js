@@ -20,6 +20,13 @@ function filterRecords(worklist, records) {
         });
       });
       break;
+    case 'Financial':
+      records.forEach(record => {
+        record.tags.forEach(tag => {
+          if (tag === 'financial') worklistRecords.push(record);
+        });
+      });
+      break;
     default:
       console.log('Eish, is problem');
   }

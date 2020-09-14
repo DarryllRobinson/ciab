@@ -121,7 +121,7 @@ class Collection extends Component {
         accountStatus: record.accountStatus,
         caseNotes: record.caseNotes,
         cipcStatuses: cipcStatuses,
-        cipcStatus: record.cipcStatus,
+        regIdStatus: record.regIdStatus,
         contactRecords: contactRecords,
         collection: record,
         outcomeRecords: outcomeRecords,
@@ -157,7 +157,7 @@ class Collection extends Component {
   handlePTPDate(e){
     if (typeof e !== 'string') {
       const ptpDate = moment(e.toDate()).format("YYYY-MM-DD HH:mm:ss");
-      console.log('ptpDate: ', ptpDate);
+      //console.log('ptpDate: ', ptpDate);
       this.setState({ ptpDate: ptpDate });
     }
   };
@@ -165,16 +165,12 @@ class Collection extends Component {
   handleDebitDate(e){
     if (typeof e !== 'string') {
       const debitResubmissionDate = moment(e.toDate()).format("YYYY-MM-DD HH:mm:ss");
-      console.log('debitResubmissionDate: ', debitResubmissionDate);
+      //console.log('debitResubmissionDate: ', debitResubmissionDate);
       this.setState({ debitResubmissionDate: debitResubmissionDate });
     }
   };
 
   async handleChange(e) {
-    const value = e.target.value;
-    console.log('value: ', value);
-    const name = [e.target.name];
-    console.log('[e.target.name]: ', name);
     await this.setState({
       [e.target.name]: e.target.value,
       changesMade: true
@@ -233,6 +229,7 @@ class Collection extends Component {
     if (nextSteps === null) problems.push('Please provide the next steps');
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
+    if (numberCalled !== null && numberCalled.length > 11) problems.push('The telephone number can only be up to 11 digits long');
     if (!outcome) problems.push('Please select an outcome resolution');
     if (pendReason === '---') problems.push('Please select a pend reason');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
@@ -404,11 +401,14 @@ class Collection extends Component {
     } = this.state;
     const notes = this.state.outcomeNotes;
 
+    console.log('nextVisitDateTime: ', nextVisitDateTime);
+
     // checking all the mandatory fields are populated
     let problems = [];
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
+    if (numberCalled !== null && numberCalled.length > 11) problems.push('The telephone number can only be up to 11 digits long');
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
@@ -583,6 +583,7 @@ class Collection extends Component {
     if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
+    if (numberCalled !== null && numberCalled.length > 11) problems.push('The telephone number can only be up to 11 digits long');
     if (ptpDate && !ptpAmount) problems.push('Please provide a PTP amount');
     if (!ptpDate && ptpAmount) problems.push('Please provide a PTP date');
     if (debitResubmissionDate && !debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
@@ -737,7 +738,7 @@ class Collection extends Component {
 
   render() {
     const collection = this.state.collection;
-    //console.log('collection: ', collection);
+    const role = sessionStorage.getItem('cwsRole');
 
     if (collection === null && this.props.location.state !== undefined) return <p>Loading...</p>;
     if (this.props.location.state === undefined) return <p>Record not found. Please return to the <Link to={"/dashboard"}>dashboard</Link></p>;
@@ -771,6 +772,7 @@ class Collection extends Component {
         moment(collection.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
         '';
     }
+    //console.log('render nextVisitDateTime: ', nextVisitDateTime);
 
     let outcomesNotes = '';
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
@@ -1532,7 +1534,33 @@ class Collection extends Component {
 
                 <div className="row">
                   <div className="col-12">
-                    <div className="form-group">
+                    {(role === 'kam') && (<div className="form-group">
+                      <label htmlFor="outcomeNotes">KAM Outcome Notes</label>
+                      <textarea
+                        disabled={this.state.disabled}
+                        type="text"
+                        rows="3"
+                        name="outcomeNotes"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Remember to provide clear notes"
+                      />
+                    </div>)}
+
+                    {(role === 'superuser') && (<div className="form-group">
+                      <label htmlFor="outcomeNotes">Superuser Outcome Notes</label>
+                      <textarea
+                        disabled={this.state.disabled}
+                        type="text"
+                        rows="3"
+                        name="outcomeNotes"
+                        onChange={(e) => {this.handleChange(e)}}
+                        className="form-control"
+                        placeholder="Remember to provide clear notes"
+                      />
+                    </div>)}
+
+                    {(role !== 'superuser') && (<div className="form-group">
                       <label htmlFor="outcomeNotes">Outcome Notes</label>
                       <textarea
                         disabled={this.state.disabled}
@@ -1543,7 +1571,7 @@ class Collection extends Component {
                         className="form-control"
                         placeholder="Remember to provide clear notes"
                       />
-                    </div>
+                    </div>)}
                   </div>
                 </div>
 
