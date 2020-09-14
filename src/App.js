@@ -25,9 +25,15 @@ import Blogs from './Components/Community/Blogs';
 import Blog from './Components/Community/Blog';
 import NewBlog from './Components/Community/NewBlog';
 
-import Registration from './Components/User/Registration';
-import Admin from './Components/User/Admin';
+// User admin
+import UserRegistration from './Components/User/Registration';
+import UserAdmin from './Components/User/Admin';
 import Reset from './Components/User/Reset';
+
+// Client admin
+import ClientRegistration from './Components/Client/Registration';
+import ClientAdmin from './Components/Client/Admin';
+
 import ExcelReader from './Utilities/ExcelReader';
 import Reports from './Components/Reports';
 
@@ -165,10 +171,15 @@ class App extends Component {
             <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/community/new-blog' render={props => (<NewBlog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
-            <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
-            <Route exact path='/user/registration' render={props => (<Registration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
-            <Route exact path='/user/admin' render={props => (<Admin {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/user/registration' render={props => (<UserRegistration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/user/admin' render={props => (<UserAdmin {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+            <Route exact path='/client/registration' render={props => (<ClientRegistration {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/client/admin' render={props => (<ClientAdmin {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+
             <Route exact path='/reports' render={props => (<Reports {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
 
           </Switch>

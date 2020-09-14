@@ -12,57 +12,56 @@ class Admin extends Component {
 
     this.state = {
       update: false,
-      users: null
+      clients: null
     }
 
     this.mysqlLayer = new MysqlLayer();
-    this.loadUsers = this.loadUsers.bind(this);
+    this.loadClients = this.loadClients.bind(this);
   }
 
   async componentDidMount() {
-    this.loadUsers();
+    this.loadClients();
   }
 
-  async loadUsers() {
-    //console.log('loading users');
-    const clientId = sessionStorage.getItem('cwsClient');
-    await this.mysqlLayer.Get(`/admin/users/${clientId}`
-    ).then(users => {
+  async loadClients() {
+    await this.mysqlLayer.Get(`/admin/clients`
+    ).then(clients => {
       this.setState({
         //update: true,
-        users: users
+        clients: clients
       });
     });
 
   }
 
-  async deleteUser(user) {
-    await this.mysqlLayer.Delete(`/admin/user/${user}`
+  async deleteUser(client) {
+    await this.mysqlLayer.Delete(`/admin/client/${client}`
     ).then(response => {
       //console.log('response: ', response);
       if (response.affectedRows === 1) {
-        Toasts('success', 'The user was deleted', true);
-        this.loadUsers();
+        Toasts('success', 'The client was deleted', true);
+        this.loadClients();
       } else {
-        Toasts('error', 'There was a problem deleting the user', false);
+        Toasts('error', 'There was a problem deleting the client', false);
       }
     });
   }
 
   render() {
-    if (!this.state.users) {
+    if (!this.state.clients) {
       return (
-        <div>Loading users...</div>
+        <div>Loading clients...</div>
       )
     } else {
-      const users = this.state.users.map((user, idx) => {
-        const userId = user.id;
+      const clients = this.state.clients.map((client, idx) => {
+        const clientId = client.id;
         return (
           <tr key={idx}>
-            <td key={idx+3}>{user.email}</td>
-            <td key={idx+1}>{user.firstName}</td>
-            <td key={idx+2}>{user.surname}</td>
-            <td key={idx+4}>{user.role}</td>
+            <td key={idx+1}>{client.name}</td>
+            <td key={idx+2}>{client.regNum}</td>
+            <td key={idx+3}>{client.mainContact}</td>
+            <td key={idx+4}>{client.email}</td>
+            <td key={idx+5}>{client.phone}</td>
             <td>
               <Button
                 style={{
@@ -70,7 +69,7 @@ class Admin extends Component {
                   borderColor: "#48B711"
                 }}
                 size="sm"
-                onClick={() => this.deleteUser(userId)}
+                onClick={() => this.deleteUser(clientId)}
               >
                 Delete
               </Button>
@@ -84,25 +83,26 @@ class Admin extends Component {
           <Table striped hover responsive>
             <thead>
               <tr>
+                <th>Name</th>
+                <th>Registration number</th>
+                <th>Main contact</th>
                 <th>Email</th>
-                <th>First name</th>
-                <th>Surname</th>
-                <th>Role</th>
-                <th>Delete user</th>
+                <th>Phone number</th>
+                <th>Delete client</th>
               </tr>
             </thead>
             <tbody>
-              {users}
+              {clients}
             </tbody>
           </Table>
 
           <Accordion>
             <Accordion.Toggle as={Button} eventKey="0">
-              Add user
+              Add client
             </Accordion.Toggle>
 
             <Accordion.Collapse eventKey="0">
-            <Registration loadUsers={this.loadUsers}/>
+            <Registration loadClients={this.loadClients}/>
             </Accordion.Collapse>
           </Accordion>
 
