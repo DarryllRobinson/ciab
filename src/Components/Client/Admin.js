@@ -35,7 +35,7 @@ class Admin extends Component {
   }
 
   async deleteUser(client) {
-    await this.mysqlLayer.Delete(`/admin/client/${client}`
+    await this.mysqlLayer.Delete(`/admin/clients/${client}`
     ).then(response => {
       //console.log('response: ', response);
       if (response.affectedRows === 1) {
