@@ -4,7 +4,7 @@ import Security from '../../Utilities/Security';
 import Toasts from '../../Utilities/Toasts';
 import moment from 'moment';
 import { Accordion, Button, Col, Form, Row } from 'react-bootstrap';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 export default class Login extends Component {
   constructor(props) {
@@ -56,20 +56,17 @@ export default class Login extends Component {
     await this.mysqlLayer.PostLogin(`/admin/sessions/`, user, { withCredentials: true }
     ).then(response => {
       //console.log('Login props: ', this.props);
-      //console.log('Login response: ', response);
+      console.log('Login response.data: ', response.data);
+      //console.log('response.data[0].active !== 1: ', response.data[0].active !== 1);
       if (response.data[1].logged_in) {
         this.security.writeLoginSession(response.data, loginDatetime);
         this.props.handleSuccessfulAuth(response.data);
+      } else if (response.data[0].active !== 1) {
+        //console.log('inactive');
+        Toasts('error', 'The user is not active', true);
+        this.setState({ email: '', password: '' });
       } else {
-        toast('Incorrect username or password', {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        Toasts('error', 'Incorrect username or password', true);
         this.setState({ email: '', password: '' });
       }
     }).catch(error => {

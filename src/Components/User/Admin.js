@@ -49,6 +49,32 @@ class Admin extends Component {
     });
   }
 
+  async deactivateUser(user) {
+    await this.mysqlLayer.Put(`/admin/users/deactivate/${user}`
+    ).then(response => {
+      //console.log('response: ', response);
+      if (response.affectedRows === 1) {
+        Toasts('success', 'The user was deactivated', true);
+        this.loadUsers();
+      } else {
+        Toasts('error', 'There was a problem deactivating the user', false);
+      }
+    });
+  }
+
+  async reactivateUser(user) {
+    await this.mysqlLayer.Put(`/admin/users/reactivate/${user}`
+    ).then(response => {
+      //console.log('response: ', response);
+      if (response.affectedRows === 1) {
+        Toasts('success', 'The user was reactivated', true);
+        this.loadUsers();
+      } else {
+        Toasts('error', 'There was a problem reactivating the user', false);
+      }
+    });
+  }
+
   render() {
     if (!this.state.users) {
       return (
@@ -63,18 +89,37 @@ class Admin extends Component {
             <td key={idx+1}>{user.firstName}</td>
             <td key={idx+2}>{user.surname}</td>
             <td key={idx+4}>{user.role}</td>
-            <td>
-              <Button
-                style={{
-                  background: "#48B711",
-                  borderColor: "#48B711"
-                }}
-                size="sm"
-                onClick={() => this.deleteUser(userId)}
-              >
-                Delete
-              </Button>
-            </td>
+            {
+              user.active === 1 &&
+              <td>
+                <Button
+                  style={{
+                    background: "#48B711",
+                    borderColor: "#48B711"
+                  }}
+                  size="sm"
+                  onClick={() => this.deactivateUser(userId)}
+                >
+                  Deactivate
+                </Button>
+              </td>
+            }
+
+            {
+              user.active === 0 &&
+              <td>
+                <Button
+                  style={{
+                    background: "#48B711",
+                    borderColor: "#48B711"
+                  }}
+                  size="sm"
+                  onClick={() => this.reactivateUser(userId)}
+                >
+                  Reactivate
+                </Button>
+              </td>
+            }
           </tr>
         )}
       );
@@ -88,7 +133,7 @@ class Admin extends Component {
                 <th>First name</th>
                 <th>Surname</th>
                 <th>Role</th>
-                <th>Delete user</th>
+                <th>Deactivate/Reactivate user</th>
               </tr>
             </thead>
             <tbody>

@@ -40,10 +40,10 @@ class ExcelReader extends Component {
     this.mysqlLayer = new MysqlLayer();
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     //console.log('ExcelReader props: ', this.props);
     //this.randmonGenerator();
-    await this.setState({
+    this.setState({
       type: sessionStorage.getItem('cwsType')
     });
   }
@@ -55,7 +55,8 @@ class ExcelReader extends Component {
     return rand;
   }
 
-  async handleChange(e) {
+  handleChange(e) {
+    this.setState({ errors: [] });
     const files = e.target.files;
     if (files && files[0]) this.setState({ file: files[0] });
   }
@@ -99,8 +100,8 @@ class ExcelReader extends Component {
     };
   }
 
-  async checkData(workspace, records) {
-    await this.setState({ compliance: `${records.length} ${workspace} records processed for compliance` });
+  checkData(workspace, records) {
+    this.setState({ compliance: `${records.length} ${workspace} records processed for compliance` });
     let errors = [];
 
     switch (workspace) {
@@ -115,6 +116,8 @@ class ExcelReader extends Component {
           if (record.AccountNumber === undefined) errors.push(`Record id: ${idx + 1} AccountNumber is missing`);
           if (record.AccountStatus === undefined) errors.push(`Record id: ${idx + 1} AccountStatus is missing`);
           if (record.CustomerRefNo === undefined) errors.push(`Record id: ${idx + 1} CustomerRefNo is missing`);
+          //if (record.DateCreated === undefined) errors.push(`Record id: ${idx + 1} DateCreated is missing`);
+          if (!moment(record.DateCreated).isValid()) errors.push(`Record id: ${idx + 1} DateCreated is incorrectly formatted`);
         });
         break;
       case 'contacts':
@@ -138,13 +141,13 @@ class ExcelReader extends Component {
       errors.push(`No workspace identified for ${workspace}`);
     }
 
-    await this.setState({ errors: errors });
+    this.setState({ errors: errors });
     if (errors.length > 0) return false;
     return true;
     //console.log('errors: ', errors);
   }
 
-  async uploadData(workspace, data) {
+  uploadData(workspace, data) {
     let count = 0;
     //console.log('data: ', data);
     data.forEach(async datum => {
@@ -172,21 +175,22 @@ class ExcelReader extends Component {
 
       let chance = this.randmonGenerator();
       let message = ``;
-      if (chance > 90) {
+      if (chance > 100) {
         message = `${count} files have been successfully uploaded to the ${workspace} table. You should feel good about yourself.`;
       } else {
         message = `${count} files have been successfully uploaded to the ${workspace} table.`;
       }
-      await this.setState({ compliance: message });
+      this.setState({ compliance: message });
     });
   }
 
   async saveCustomerRecordsToDatabase(record) {
+    //console.log('record: ', record);
     let customer = null;
     if (record.CustomerEntity === 'Enterprise') {
       customer = [
         {
-          operatorShortCode: record.operatorShortCode,
+          operatorShortCode: record.OperatorShortCode,
           customerRefNo: record.CustomerNumber,
           customerName: record.Customer,
           customerEntity: record.CustomerEntity,
@@ -201,7 +205,7 @@ class ExcelReader extends Component {
     } else if (record.CustomerEntity === 'Consumer') {
       customer = [
         {
-          operatorShortCode: record.operatorShortCode,
+          operatorShortCode: record.OperatorShortCode,
           customerRefNo: record.CustomerNumber,
           customerName: record.Customer,
           customerEntity: record.CustomerEntity,
@@ -221,7 +225,7 @@ class ExcelReader extends Component {
       let error =[];
       error = this.state.customerErrors;
       error.push(response.data);
-      await this.setState({ customerErrors: error });
+      this.setState({ customerErrors: error });
     }
     return response.data.insertId;
   }
@@ -244,7 +248,7 @@ class ExcelReader extends Component {
       null;
 
     const openDate = record.DateCreated ?
-      moment(this.ExcelDateToJSDate(record.openDate)).format('YYYY-MM-DD') :
+      moment(this.ExcelDateToJSDate(record.DateCreated)).format('YYYY-MM-DD') :
       null;
 
     let account = [
@@ -253,6 +257,7 @@ class ExcelReader extends Component {
         accountName: record.AccountName,
         createdBy: 'System',
         //createdDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+        openDate: openDate,
         debtorAge: record.DebtorAge,
         creditLimit: record.CreditLimit,
         currentBalance: record.CurrentBalance,
@@ -268,10 +273,9 @@ class ExcelReader extends Component {
         paymentDueDate: paymentDueDate,
         debitOrderDate: debitOrderDate,
         lastPaymentDate: lastPaymentDate,
-        paymentMethod: record.paymentMethod,
+        paymentMethod: record.PaymentMethod,
         paymentTermDays: record.PaymentTerms,
-        totalBalance: record.TotalBalance,
-        openDate: openDate
+        totalBalance: record.TotalBalance
       }
     ];
     /*let accounts = [];
@@ -304,7 +308,7 @@ class ExcelReader extends Component {
         let error =[];
         error = this.state.accountErrors;
         error.push(response.data);
-        await this.setState({ accountErrors: error });
+        this.setState({ accountErrors: error });
       }
     //});
 
@@ -357,7 +361,7 @@ class ExcelReader extends Component {
         let error =[];
         error = this.state.caseErrors;
         error.push(response.data);
-        await this.setState({ caseErrors: error });
+        this.setState({ caseErrors: error });
       }
     //});
 
@@ -368,9 +372,7 @@ class ExcelReader extends Component {
 
   async saveOutcomeRecordsToDatabase(record) {
 
-    const createdDate = record.DateCreated ?
-      moment(this.ExcelDateToJSDate(record.DateCreated)).format('YYYY-MM-DD HH:mm:ss') :
-      null;
+    const createdDate = record.DateCreated ? record.DateCreated : null;
 
     /*const nextVisitDateTime = record.NextVisitDate ?
       (record.NextVisitDate + ' ' + record.NextVisitTime) :
@@ -426,7 +428,7 @@ class ExcelReader extends Component {
         let error =[];
         error = this.state.outcomeErrors;
         error.push(response.data);
-        await this.setState({ outcomeErrors: error });
+        this.setState({ outcomeErrors: error });
       }
     //});
 
@@ -448,11 +450,11 @@ class ExcelReader extends Component {
         alternativeRepName: record.AltRepName,
         alternativeRepNumber: record.AltRepContact,
         alternativeRepEmail: record.AltRepEmail,
-        otherNumber1: record.OtherNumber1,
-        otherNumber2: record.OtherNumber2,
-        otherNumber3: record.OtherNumber3,
-        otherNumber4: record.OtherNumber4,
-        otherNumber5: record.OtherNumber5,
+        otherNumber1: record.OtherContact1,
+        otherNumber2: record.OtherContact2,
+        otherNumber3: record.OtherContact3,
+        otherNumber4: record.OtherContact4,
+        otherNumber5: record.OtherContact5,
         otherEmail1: record.OtherEmail1,
         otherEmail2: record.OtherEmail2,
         otherEmail3: record.OtherEmail3,
@@ -467,12 +469,12 @@ class ExcelReader extends Component {
     ];
 
     let response = await this.postToDb(contact, 'contacts');
-      console.log('saveContactRecordsToDatabase response: ', response);
+      //console.log('saveContactRecordsToDatabase response: ', response);
       if (response.data.errno) {
         let error =[];
         error = this.state.contactErrors;
         error.push(response.data);
-        await this.setState({ contactErrors: error });
+        this.setState({ contactErrors: error });
       }
     //});
 

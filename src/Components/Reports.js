@@ -38,7 +38,7 @@ export default class Reports extends Component {
     const clientId = this.state.clientId;
 
     this.reportData = await this.mysqlLayer.Get(`/${type}/${workspace}/list_all/${clientId}`);
-    console.log('this.reportData: ', this.reportData);
+    //console.log('this.reportData: ', this.reportData);
     this.processReportData();
     this.setState({ staticContext: this.state.staticContext });
   }

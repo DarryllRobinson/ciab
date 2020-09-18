@@ -34,7 +34,7 @@ class Admin extends Component {
 
   }
 
-  async deleteUser(client) {
+  async deleteClient(client) {
     await this.mysqlLayer.Delete(`/admin/clients/${client}`
     ).then(response => {
       //console.log('response: ', response);
@@ -43,6 +43,32 @@ class Admin extends Component {
         this.loadClients();
       } else {
         Toasts('error', 'There was a problem deleting the client', false);
+      }
+    });
+  }
+
+  async deactivateClient(client) {
+    await this.mysqlLayer.Put(`/admin/clients/deactivate/${client}`
+    ).then(response => {
+      //console.log('response: ', response);
+      if (response.affectedRows === 1) {
+        Toasts('success', 'The client was deactivated', true);
+        this.loadClients();
+      } else {
+        Toasts('error', 'There was a problem deactivating the client', false);
+      }
+    });
+  }
+
+  async reactivateClient(client) {
+    await this.mysqlLayer.Put(`/admin/clients/reactivate/${client}`
+    ).then(response => {
+      //console.log('response: ', response);
+      if (response.affectedRows === 1) {
+        Toasts('success', 'The client was reactivated', true);
+        this.loadClients();
+      } else {
+        Toasts('error', 'There was a problem reactivating the client', false);
       }
     });
   }
@@ -62,18 +88,37 @@ class Admin extends Component {
             <td key={idx+3}>{client.mainContact}</td>
             <td key={idx+4}>{client.email}</td>
             <td key={idx+5}>{client.phone}</td>
-            <td>
-              <Button
-                style={{
-                  background: "#48B711",
-                  borderColor: "#48B711"
-                }}
-                size="sm"
-                onClick={() => this.deleteUser(clientId)}
-              >
-                Delete
-              </Button>
-            </td>
+            {
+              client.active === 1 &&
+              <td>
+                <Button
+                  style={{
+                    background: "#48B711",
+                    borderColor: "#48B711"
+                  }}
+                  size="sm"
+                  onClick={() => this.deactivateClient(clientId)}
+                >
+                  Deactivate
+                </Button>
+              </td>
+            }
+
+            {
+              client.active === 0 &&
+              <td>
+                <Button
+                  style={{
+                    background: "#48B711",
+                    borderColor: "#48B711"
+                  }}
+                  size="sm"
+                  onClick={() => this.reactivateClient(clientId)}
+                >
+                  Reactivate
+                </Button>
+              </td>
+            }
           </tr>
         )}
       );
@@ -88,7 +133,7 @@ class Admin extends Component {
                 <th>Main contact</th>
                 <th>Email</th>
                 <th>Phone number</th>
-                <th>Delete client</th>
+                <th>Deactivate/Reactivate client</th>
               </tr>
             </thead>
             <tbody>

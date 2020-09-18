@@ -36,7 +36,7 @@ function filterRecords(worklist, records) {
 
 function Worklist(props) {
   //console.log('Worklist props: ', props);
-  if (props.worklist.worklist) {
+  if (props.worklist.worklist && props.records) {
     const workspace = props.workspace;
     const worklist = props.worklist.worklist;
     //const records = props.records;

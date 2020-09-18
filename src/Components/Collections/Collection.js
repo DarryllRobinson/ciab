@@ -27,6 +27,7 @@ class Collection extends Component {
       debitResubmissionDate: null,
       disabled: false,
       emailUsed: null,
+      kamNotes: null,
       nextVisitDateTime: null,
       nextSteps: null,
       numberCalled: null,
@@ -39,6 +40,7 @@ class Collection extends Component {
       ptpDate: null,
       recordId: null,
       resolution: '---',
+      role: sessionStorage.getItem('cwsRole'),
       transactionType: null,
       type: null,
       user: sessionStorage.getItem('cwsUser'),
@@ -149,7 +151,7 @@ class Collection extends Component {
   handleDate(e){
     if (typeof e !== 'string') {
       const nextVisitDateTime = moment(e.toDate()).format("YYYY-MM-DD HH:mm:ss");
-      console.log('nextVisitDateTime: ', nextVisitDateTime);
+      //console.log('nextVisitDateTime: ', nextVisitDateTime);
       this.setState({ nextVisitDateTime: nextVisitDateTime });
     }
   };
@@ -213,19 +215,23 @@ class Collection extends Component {
       numberCalled,
       outcome,
       outcomeNotes,
+      kamNotes,
       pendReason,
       ptpDate,
       ptpAmount,
+      role,
       transactionType,
       user
     } = this.state;
     const notes = this.state.outcomeNotes;
+    const kamnotes = this.state.kamNotes;
 
     // checking all the mandatory fields are populated
     let problems = [];
     if (contactPerson === null) problems.push('Please enter a contact person');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
-    if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (role !== 'kam' && (!notes || notes.length < 10)) problems.push('Please enter a note longer than 10 characters');
+    if (role === 'kam' && (!kamnotes || kamnotes.length < 10)) problems.push('Please enter a KAM note longer than 10 characters');
     if (nextSteps === null) problems.push('Please provide the next steps');
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
@@ -241,8 +247,10 @@ class Collection extends Component {
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
+      let oldkamNotes = this.state.collection.kamNotes ? this.state.collection.kamNotes + `\n\r` : '';
 
       let newNote = oldNotes + outcomeNotes;
+      let newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -255,6 +263,7 @@ class Collection extends Component {
       let caseUpdate = {
         currentStatus: 'Pended',
         nextVisitDateTime: nextVisitDateTime,
+        kamNotes: newkamNote,
         pendReason: pendReason,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
@@ -394,18 +403,22 @@ class Collection extends Component {
       numberCalled,
       outcome,
       outcomeNotes,
+      kamNotes,
       ptpDate,
       ptpAmount,
+      role,
       transactionType,
       user
     } = this.state;
     const notes = this.state.outcomeNotes;
+    const kamnotes = this.state.kamNotes;
 
-    console.log('nextVisitDateTime: ', nextVisitDateTime);
+    //console.log('nextVisitDateTime: ', nextVisitDateTime);
 
     // checking all the mandatory fields are populated
     let problems = [];
-    if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (role !== 'kam' && (!notes || notes.length < 10)) problems.push('Please enter a note longer than 10 characters');
+    if (role === 'kam' && (!kamnotes || kamnotes.length < 10)) problems.push('Please enter a KAM note longer than 10 characters');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
     if (numberCalled !== null && numberCalled.length > 11) problems.push('The telephone number can only be up to 11 digits long');
@@ -419,8 +432,10 @@ class Collection extends Component {
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
+      let oldkamNotes = this.state.collection.kamNotes ? this.state.collection.kamNotes + `\n\r` : '';
 
       let newNote = oldNotes + outcomeNotes;
+      let newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -433,6 +448,7 @@ class Collection extends Component {
       let caseUpdate = {
         currentStatus: 'Open',
         nextVisitDateTime: nextVisitDateTime,
+        kamNotes: newkamNote,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
@@ -571,16 +587,20 @@ class Collection extends Component {
       numberCalled,
       outcome,
       outcomeNotes,
+      kamNotes,
       ptpDate,
       ptpAmount,
+      role,
       transactionType,
       user
     } = this.state;
     const notes = this.state.outcomeNotes;
+    const kamnotes = this.state.kamNotes;
 
     // checking all the mandatory fields are populated
     let problems = [];
-    if (!notes || notes.length < 10) problems.push('Please enter a note longer than 10 characters');
+    if (role !== 'kam' && (!notes || notes.length < 10)) problems.push('Please enter a note longer than 10 characters');
+    if (role === 'kam' && (!kamnotes || kamnotes.length < 10)) problems.push('Please enter a KAM note longer than 10 characters');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
     if (numberCalled !== null && numberCalled.length > 11) problems.push('The telephone number can only be up to 11 digits long');
@@ -593,8 +613,10 @@ class Collection extends Component {
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
       let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
+      let oldkamNotes = this.state.collection.kamNotes ? this.state.collection.kamNotes + `\n\r` : '';
 
       let newNote = oldNotes + outcomeNotes;
+      let newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -608,6 +630,7 @@ class Collection extends Component {
       let caseUpdate = {
         currentStatus: 'Closed',
         //nextVisitDateTime: nextVisitDateTime,
+        kamNotes: newkamNote,
         resolution: outcome,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
@@ -841,6 +864,11 @@ class Collection extends Component {
       <option key={cipcStatus.id} value={cipcStatus.cipcStatus}>{cipcStatus.cipcStatus}</option>
     ));
 
+    const idvStatusList = <>
+      <option key="1" value="option1">Option 1</option>
+      <option key="2" value="option2">Option 2</option></>
+    ;
+
     let repNumber = (this.state.contactRecords[0].representativeNumber) ? `tel:${this.state.contactRecords[0].representativeNumber}` : '00000';
 
     // Setting dates earlier than today as disabled for Next Date and Time
@@ -890,18 +918,33 @@ class Collection extends Component {
                 </div>
               </div>
 
+              <div className="row">
+                <div className="col-12">
+                  <div className="form-group">
+                    <label htmlFor="kamNotes">KAM Notes</label>
+                    <textarea
+                      disabled={true}
+                      rows="3"
+                      name="kamNotes"
+                      className="form-control"
+                      value={this.state.collection.kamNotes || ''}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <br />
 
               <div className="row">
                 <div className="col-8">
                   <div className="form-group">
-                    <label htmlFor="CompanyName">Company Name</label>
+                    <label htmlFor="customerName">Customer Name</label>
                     <input
                       disabled={true}
                       type="text"
-                      name="companyName"
+                      name="customerName"
                       className="form-control"
-                      value={collection.companyName || ''}
+                      value={collection.customerName || ''}
                     />
                   </div>
                 </div>
@@ -909,30 +952,65 @@ class Collection extends Component {
 
               <div className="row">
                 <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="RegNumber">Reg Number</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="regNumber"
-                      className="form-control"
-                      value={collection.regNumber || ''}
-                    />
-                  </div>
+                  {
+                    collection.customerEntity === 'Enterprise' &&
+                    <div className="form-group">
+                      <label htmlFor="RegNumber">Reg Number</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="regIdNumber"
+                        className="form-control"
+                        value={collection.regIdNumber || ''}
+                      />
+                    </div>
+                  }
+
+                  {
+                    collection.customerEntity === 'Consumer' &&
+                    <div className="form-group">
+                      <label htmlFor="IdNumber">ID Number</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="regIdNumber"
+                        className="form-control"
+                        value={collection.regIdNumber || ''}
+                      />
+                    </div>
+                  }
                 </div>
 
                 <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="cipcStatus">CIPC Status</label>
-                    <select
-                      required
-                      name="cipcStatus"
-                      className="custom-select"
-                      onChange={(e) => {this.handleChange(e)}}
-                    >
-                      {cipcStatusList}
-                    </select>
-                  </div>
+                  {
+                    collection.customerEntity === 'Enterprise' &&
+                    <div className="form-group">
+                      <label htmlFor="cipcStatus">CIPC Status</label>
+                      <select
+                        required
+                        name="regIdStatus"
+                        className="custom-select"
+                        onChange={(e) => {this.handleChange(e)}}
+                      >
+                        {cipcStatusList}
+                      </select>
+                    </div>
+                  }
+
+                  {
+                    collection.customerEntity === 'Consumer' &&
+                    <div className="form-group">
+                      <label htmlFor="cipcStatus">IDV Status</label>
+                      <select
+                        required
+                        name="regIdStatus"
+                        className="custom-select"
+                        onChange={(e) => {this.handleChange(e)}}
+                      >
+                        {idvStatusList}
+                      </select>
+                    </div>
+                  }
                 </div>
 
                 <div className="col-4">
@@ -1535,32 +1613,19 @@ class Collection extends Component {
                 <div className="row">
                   <div className="col-12">
                     {(role === 'kam') && (<div className="form-group">
-                      <label htmlFor="outcomeNotes">KAM Outcome Notes</label>
+                      <label htmlFor="kamNotes">KAM Case Notes</label>
                       <textarea
                         disabled={this.state.disabled}
                         type="text"
                         rows="3"
-                        name="outcomeNotes"
+                        name="kamNotes"
                         onChange={(e) => {this.handleChange(e)}}
                         className="form-control"
                         placeholder="Remember to provide clear notes"
                       />
                     </div>)}
 
-                    {(role === 'superuser') && (<div className="form-group">
-                      <label htmlFor="outcomeNotes">Superuser Outcome Notes</label>
-                      <textarea
-                        disabled={this.state.disabled}
-                        type="text"
-                        rows="3"
-                        name="outcomeNotes"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        placeholder="Remember to provide clear notes"
-                      />
-                    </div>)}
-
-                    {(role !== 'superuser') && (<div className="form-group">
+                    {(role !== 'kam') && (<div className="form-group">
                       <label htmlFor="outcomeNotes">Outcome Notes</label>
                       <textarea
                         disabled={this.state.disabled}

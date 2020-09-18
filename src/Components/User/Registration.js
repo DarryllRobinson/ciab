@@ -90,7 +90,7 @@ export default class Registration extends Component {
 
          this.mysqlLayer.Post(`/admin/user`, user, { withCredentials: true }
          ).then(response => {
-           console.log('response: ', response);
+           //console.log('response: ', response);
            if (response.data === 'user exists') {
              let message = 'User already exists. Please create a new username (email).';
              this.handleFailedReg(message);

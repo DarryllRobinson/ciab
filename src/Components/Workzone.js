@@ -100,7 +100,7 @@ class Workzone extends Component {
 
   //async loadRecords(currentStatus, workspace) {
   async loadRecords(currentStatus, task, workspace) {
-    console.log('this.props.history.location.state: ', this.props.history.location.state);
+    //console.log('this.props.history.location.state: ', this.props.history.location.state);
     //console.log('loading records: ', this.props.location.state.records.length === 0);
     //console.log('currentStatus: ', currentStatus);
     workspace = 'collections';
@@ -115,7 +115,7 @@ class Workzone extends Component {
     //const workspace = this.props.location.state.workspace;
     //console.log('typeof: ', typeof workspace);
     const workrecord = workspace.substring(0, workspace.length - 1);
-    console.log('workrecord: ', workrecord);
+    //console.log('workrecord: ', workrecord);
 
     // check if any records were sent as props
     if (this.props.history.location.state.records) { //console.log('props records: ', this.props.history.location.state.records);
@@ -127,7 +127,7 @@ class Workzone extends Component {
     //else { records = this.props.location.state.records; }
     //console.log('records: ', records);
     let recordStatus = currentStatus;
-    console.log('recordStatus: ', recordStatus);
+    //console.log('recordStatus: ', recordStatus);
     let rows = [];
     let columns = [];
 

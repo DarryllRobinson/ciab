@@ -10,6 +10,15 @@ function clickableNumber(tel) {
   }
 }
 
+function clickableEmail(email) {
+  if (email) {
+    let clickableLink = `mailto:${email}`;
+    return clickableLink;
+  } else {
+    return '';
+  }
+}
+
 function Contacts(props) {
 
   return (
@@ -34,7 +43,9 @@ function Contacts(props) {
                 </Col>
                 <Col>
                   <Form.Label>Primary contact email</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].primaryContactEmail} readOnly />
+                  <a href={clickableEmail(props.contacts[0].primaryContactEmail)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].primaryContactEmail} readOnly />
+                  </a>
                 </Col>
               </Row>
               <br />
@@ -52,7 +63,9 @@ function Contacts(props) {
                 </Col>
                 <Col>
                   <Form.Label>Representative email</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].representativeEmail} readOnly />
+                  <a href={clickableEmail(props.contacts[0].representativeEmail)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].representativeEmail} readOnly />
+                  </a>
                 </Col>
               </Row>
               <br />
@@ -70,7 +83,9 @@ function Contacts(props) {
                 </Col>
                 <Col>
                   <Form.Label>Alternative representative email</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].alternativeRepEmail} readOnly />
+                  <a href={clickableEmail(props.contacts[0].alternativeRepEmail)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].alternativeRepEmail} readOnly />
+                  </a>
                 </Col>
               </Row>
               <br />
@@ -115,15 +130,21 @@ function Contacts(props) {
               <Row>
                 <Col>
                   <Form.Label>Other email 1</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].otherEmail1} readOnly />
+                  <a href={clickableEmail(props.contacts[0].otherEmail1)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].otherEmail1} readOnly />
+                  </a>
                 </Col>
                 <Col>
                   <Form.Label>Other email 2</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].otherEmail2} readOnly />
+                  <a href={clickableEmail(props.contacts[0].otherEmail2)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].otherEmail2} readOnly />
+                  </a>
                 </Col>
                 <Col>
                   <Form.Label>Other email 3</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].otherEmail3} readOnly />
+                  <a href={clickableEmail(props.contacts[0].otherEmail3)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].otherEmail3} readOnly />
+                  </a>
                 </Col>
               </Row>
               <br />
@@ -131,11 +152,15 @@ function Contacts(props) {
               <Row>
                 <Col>
                   <Form.Label>Other email 4</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].otherEmail4} readOnly />
+                  <a href={clickableEmail(props.contacts[0].otherEmail4)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].otherEmail4} readOnly />
+                  </a>
                 </Col>
                 <Col>
                   <Form.Label>Other email 5</Form.Label>
-                  <Form.Control placeholder={props.contacts[0].otherEmail5} readOnly />
+                  <a href={clickableEmail(props.contacts[0].otherEmail5)} style={{ textDecoration: "underline" }}>
+                    <Form.Control placeholder={props.contacts[0].otherEmail5} readOnly />
+                  </a>
                 </Col>
                 <Col></Col>
               </Row>

@@ -1,5 +1,6 @@
 import React from 'react';
 import Login from './User/Login';
+//import NavBarlogo from '../Assets/Images/thesystemnavbarlogo.png';
 import { Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 
 class NavBar extends React.Component {
@@ -119,20 +120,22 @@ class NavBar extends React.Component {
       case 'development':
         return ("dark");
       case 'production':
-        return ("light");
+        return ("dark");
       case 'sit':
         return ("dark");
       case 'uat':
         return ("dark");
       default:
-        return ('The System - ???');
+        return ('light');
     }
   }
 
   render() {
     return (
       <Navbar collapseOnSelect bg={this.colourToUse()} expand="lg" variant={this.colourToUse()} fixed="top">
-        <Navbar.Brand href="/">{this.nametoDisplay()}</Navbar.Brand>
+        <Navbar.Brand href="/">
+          {this.nametoDisplay()}
+        </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Route, Switch, withRouter} from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import MysqlLayer from './Utilities/MysqlLayer';
 import Security from './Utilities/Security';
 

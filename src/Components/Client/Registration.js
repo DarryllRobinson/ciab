@@ -30,7 +30,7 @@ export default class Registration extends Component {
   async componentDidMount() {
     //console.log('Registration props: ', this.props);
     let clients = await this.mysqlLayer.Get(`/admin/clients`, { withCredentials: true });
-    console.log('clients: ', clients);
+    //console.log('clients: ', clients);
     await this.setState({ clients: clients });
   }
 
@@ -42,7 +42,6 @@ export default class Registration extends Component {
 
   async handleSubmit(event) {
     event.preventDefault();
-    console.log('submitting');
 
     // Don't let the missing this.state.values confuse you below :)
     const {
@@ -58,6 +57,7 @@ export default class Registration extends Component {
     if (unique) {
       const createdDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       const createdBy = sessionStorage.getItem('cwsUser');
+
       const client = {
         name: name,
         regNum: regNum,
@@ -70,11 +70,22 @@ export default class Registration extends Component {
       };
 
       await this.mysqlLayer.Post(`/admin/clients`, client, { withCredentials: true }
-      ).then(response => {
-        console.log('response: ', response);
+      ).then(async response => {
+        //console.log('response: ', response);
+        //console.log('response.data.insertId: ', response.data.insertId);
         if (response.data.affectedRows === 1) {
-          Toasts('success', 'Client successfully added to The System', true);
-          this.props.loadClients();
+          const services = {
+            f_clientId: response.data.insertId,
+            service: 'collections',
+            type: 'business'
+          };
+
+          await this.mysqlLayer.Post('/admin/clientservices', services, { withCredentials: true }
+          ).then(serviceResponse => {
+            //console.log('serviceResponse: ', serviceResponse);
+            Toasts('success', 'Client successfully added to The System', true);
+            this.props.loadClients();
+          });
         } else {
           Toasts('error', 'Problem adding client to The System', false);
         }

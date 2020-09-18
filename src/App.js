@@ -115,7 +115,7 @@ class App extends Component {
     //console.log('App mounted: ', this.state.loggedInStatus);
     this.checkLoginStatus();
   }
-
+//<a href='https://www.freepik.com/vectors/logo'>Logo vector created by freepik - www.freepik.com</a>
   render() {
     let role = sessionStorage.getItem('cwsRole') ? sessionStorage.getItem('cwsRole') : this.state.user.role;
     let user = this.state.user;
@@ -221,6 +221,48 @@ class App extends Component {
 
             <Route exact path='/community/blogs' render={props => (<Blogs {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+          </Switch>
+        </Container>
+      );
+      case 'kam': return (
+        <Container fluid>
+          <NavBar {...this.props}
+            handleLogin={this.handleLogin}
+            handleLogout={this.handleLogout}
+            handleLogoutClick={this.handleLogoutClick}
+            loggedInStatus={this.state.loggedInStatus}
+            handleSuccessfulAuth={this.handleSuccessfulAuth}
+            role={this.state.user.role}
+          />
+          <Switch>
+
+            <Route exact path='/' render={props => (
+              <Home {...props}
+                handleLogin={this.handleLogin}
+                handleLogout={this.handleLogout}
+                loggedInStatus={this.state.loggedInStatus}
+              />)}
+            />
+
+            <Route exact path='/dashboard' render={props => (<Dashboard {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/applications' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/collections' render={props => (<Workzone {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+            {/*<Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />*/}
+            <Route exact path='/workspace/applications/application/:id' render={props => (<Application {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+            <Route exact path='/workzone/collections/collection/:id' render={props => (<Collection {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/applications/application/:id' render={props => (<Application {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+
+            {/*<Route exact path='/workspace/collections' render={props => (<Collections {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workspace/applications/:id' render={props => (<Application {...props} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} loggedInStatus={this.state.loggedInStatus} />)} />*/}
+
+            <Route exact path='/community/blogs' render={props => (<Blogs {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
         </Container>

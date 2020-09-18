@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import MysqlLayer from '../Utilities/MysqlLayer';
 import { Button, Card, CardDeck, Container } from 'react-bootstrap';
 //import banner from '../Assets/Images/Debt-Recovery.jpg';
+import logo from '../Assets/Images/thesystemlogo.png';
 
 class Home extends Component {
   constructor(props) {
@@ -28,7 +29,7 @@ class Home extends Component {
     return (
       <Container>
         <h1 className="jumbotron">
-          The System
+          <img src={logo} alt="The System logo" />The System
         </h1>
 
         <p className="intro">

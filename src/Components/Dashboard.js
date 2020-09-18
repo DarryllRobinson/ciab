@@ -199,7 +199,7 @@ class Dashboard extends Component {
   async getItems(task, records) {
     //console.log('task, records: ', task, records);
     let items = [];
-    let user = 'eugener@sabco.za.com';
+    let user = sessionStorage.getItem('cwsUser');
 
     if (sessionStorage.getItem('cwsRole') !== 'client') {
       let recordStatuses = this.getStatusLists(records);
@@ -440,7 +440,7 @@ class Dashboard extends Component {
   render() {
 
     //if (this.state.loading) {
-    if (!this.state.workspaces) {
+    if (!this.state.workspaces || !this.state.records) {
       return (
         <Container>
           <Welcome user={this.state.user}/>
