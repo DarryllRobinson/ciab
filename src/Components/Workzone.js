@@ -214,7 +214,7 @@ class Workzone extends Component {
           //record.tags.forEach(tag => {
             //if (tag === task) {
               let row = {
-                recordId: record.caseNumber,
+                recordId: record.caseId,
                 accountNumber: record.accountNumber,
                 caseNumber: record.caseNumber,
                 caseNotes: record.caseNotes,
@@ -245,9 +245,9 @@ class Workzone extends Component {
                 createdBy: record.createdBy,
                 createdDate: moment(record.createdDate).format('YYYY-MM-DD HH:mm:ss'),
                 id: <Link className="nav-link" to={{
-                    pathname: `/workzone/${workspace}/${workrecord}/${record.caseNumber}`,
+                    pathname: `/workzone/${workspace}/${workrecord}/${record.caseId}`,
                     state: {
-                      caseId: record.caseNumber,
+                      caseId: record.caseId,
                       record: record,
                       type: type,
                       workspace: workspace

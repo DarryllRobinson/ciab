@@ -52,9 +52,10 @@ class Collection extends Component {
     this.handleDate = this.handleDate.bind(this);
     this.handlePTPDate = this.handlePTPDate.bind(this);
     this.handleDebitDate = this.handleDebitDate.bind(this);
-    this.pendRecord = this.pendRecord.bind(this);
-    this.closeRecord = this.closeRecord.bind(this);
-    this.updateRecord = this.updateRecord.bind(this);
+    //this.pendRecord = this.pendRecord.bind(this);
+    //this.closeRecord = this.closeRecord.bind(this);
+    //this.updateRecord = this.updateRecord.bind(this);
+    this.processRecord = this.processRecord.bind(this);
 
   }
 
@@ -140,12 +141,15 @@ class Collection extends Component {
         lockedDatetime: dateTime
       };
       //console.log('collection: ', this.state.collection);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, update);
+      await this.mysqlLayer.Put(`/${type}/cases/update_item/${clientId}/${recordId}`, update);
       //console.log('collection: ', this.state.collection);
     } else {
       Toasts('error', 'The record was not found. Returning to the dashboard.', false);
       setTimeout(() => this.props.history.push('/dashboard'), 3000);
     }
+
+    // just for testing during development
+    this.processRecord('close');
   }
 
   handleDate(e){
@@ -191,7 +195,7 @@ class Collection extends Component {
     const update = {
       currentStatus: this.state.prevStatus
     };
-    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, update);
+    await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseId}`, update);
 
     setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
@@ -204,7 +208,31 @@ class Collection extends Component {
     }), timer);
   }
 
-  async pendRecord() {
+  checkFields(fields) {
+    let stateConsts = [];
+    for (const [key, value] of Object.entries(this.state)) {
+      stateConsts.push({[key]: value});
+    }
+    //const stateConsts = Object.entries(this.state);
+    //console.log('stateConsts: ', stateConsts);
+
+    // loop through fields to check if they're populated
+    let problems = [];
+    fields.forEach(field => {
+      stateConsts.forEach(stateConst => {
+        let stateField = Object.keys(stateConst).toString();
+        let stateValue = Object.values(stateConst).toString();
+        if (stateField === field) {
+          console.log('stateField stateValue: ', stateField, stateValue);
+          if (stateValue === null) problems.push(`Please enter a value for ${stateValue}`);
+        }
+      })
+    });
+    return true;
+  }
+
+  async processRecord(process) {
+    // State variables
     const {
       contactPerson,
       debitResubmissionAmount,
@@ -216,6 +244,7 @@ class Collection extends Component {
       outcome,
       outcomeNotes,
       kamNotes,
+      notes,
       pendReason,
       ptpDate,
       ptpAmount,
@@ -223,15 +252,102 @@ class Collection extends Component {
       transactionType,
       user
     } = this.state;
-    const notes = this.state.outcomeNotes;
-    const kamnotes = this.state.kamNotes;
+
+    // Mandatory fields array
+    const mandatoryFields = [
+      {
+        action: 'close',
+        fields: [
+          'debitResubmissionAmount',
+          'debitResubmissionDate',
+          'emailUsed',
+          'kamNotes',
+          'notes',
+          'numberCalled',
+          'outcome',
+          'ptpDate',
+          'ptpAmount'
+        ]
+      },
+      {
+        action: 'pend',
+        fields: [
+          'contactPerson',
+          'debitResubmissionAmount',
+          'debitResubmissionDate',
+          'emailUsed',
+          'kamNotes',
+          'nextSteps',
+          'nextVisitDateTime',
+          'notes',
+          'numberCalled',
+          'outcome',
+          'pendReason',
+          'ptpDate',
+          'ptpAmount',
+          'transactionType'
+        ]
+      },
+      {
+        action: 'update',
+        fields: [
+          'debitResubmissionAmount',
+          'debitResubmissionDate',
+          'emailUsed',
+          'kamNotes',
+          'nextVisitDateTime',
+          'notes',
+          'numberCalled',
+          'outcome',
+          'ptpDate',
+          'ptpAmount'
+        ]
+      }
+    ];
+
+    // checking all mandatory fields are populated for the respective process
+    let fields = null;
+    switch (process) {
+      case 'close':
+        mandatoryFields.forEach(field => {
+          if (process === field.action) fields = field.fields;
+        });
+        let cont = this.checkFields(fields);
+        console.log('cont: ', cont);
+        break;
+      default:
+
+    }
+
+  }
+
+  /*async pendRecord() {
+    const {
+      contactPerson,
+      debitResubmissionAmount,
+      debitResubmissionDate,
+      emailUsed,
+      nextSteps,
+      nextVisitDateTime,
+      numberCalled,
+      outcome,
+      outcomeNotes,
+      kamNotes,
+      notes,
+      pendReason,
+      ptpDate,
+      ptpAmount,
+      role,
+      transactionType,
+      user
+    } = this.state;
 
     // checking all the mandatory fields are populated
     let problems = [];
     if (contactPerson === null) problems.push('Please enter a contact person');
     if (emailUsed === null && transactionType === 'Email') problems.push('Please provide an email address');
     if (role !== 'kam' && (!notes || notes.length < 10)) problems.push('Please enter a note longer than 10 characters');
-    if (role === 'kam' && (!kamnotes || kamnotes.length < 10)) problems.push('Please enter a KAM note longer than 10 characters');
+    if (role === 'kam' && (!kamnotes || kamNotes.length < 10)) problems.push('Please enter a KAM note longer than 10 characters');
     if (nextSteps === null) problems.push('Please provide the next steps');
     if (nextVisitDateTime === null) problems.push('Please provide a next visit date and time');
     if (numberCalled === null && transactionType === 'Call') problems.push('Please provide a telephone number');
@@ -246,11 +362,16 @@ class Collection extends Component {
 
     if (problems.length === 0) {//if (notes && notes.length > 10 && nextVisitDateTime !== null && pendReason !== '---') {
       this.setState({ disabled: true });
-      let oldNotes = this.state.collection.outcomeNotes ? this.state.collection.outcomeNotes + `\n\r` : '';
-      let oldkamNotes = this.state.collection.kamNotes ? this.state.collection.kamNotes + `\n\r` : '';
 
-      let newNote = oldNotes + outcomeNotes;
-      let newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
+      // Only update the relevant notes
+      if (role === 'kam') {
+        let oldkamNotes = kamNotes ? kamNotes + `\n\r` : '';
+        let newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
+      } else {
+        let oldNotes = outcomeNotes ? outcomeNotes + `\n\r` : '';
+        let newNote = oldNotes + outcomeNotes;
+      }
+
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
@@ -291,7 +412,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (ptpDate && !debitResubmissionDate) {
 
@@ -317,7 +438,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (!ptpDate && debitResubmissionDate) {
 
@@ -341,7 +462,7 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (ptpDate && debitResubmissionDate) {
 
@@ -369,13 +490,13 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
       await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection.accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseId}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -475,7 +596,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (ptpDate && !debitResubmissionDate) {
 
@@ -501,7 +622,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (!ptpDate && debitResubmissionDate) {
 
@@ -525,7 +646,7 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (ptpDate && debitResubmissionDate) {
 
@@ -553,13 +674,13 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
       await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection.accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseId}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -658,7 +779,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (ptpDate && !debitResubmissionDate) {
 
@@ -684,7 +805,7 @@ class Collection extends Component {
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (!ptpDate && debitResubmissionDate) {
 
@@ -708,7 +829,7 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       } else if (ptpDate && debitResubmissionDate) {
 
@@ -736,13 +857,13 @@ class Collection extends Component {
           closedBy: closedBy,
           debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
           debitResubmissionAmount: debitResubmissionAmount,
-          f_caseNumber: this.state.collection.caseNumber
+          f_caseId: this.state.collection.caseId
         };
       }
 
       await this.mysqlLayer.Put(`/${this.state.type}/customers/update_item/${this.state.clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
       await this.mysqlLayer.Put(`/${this.state.type}/accounts/update_item/${this.state.clientId}/${this.state.collection.accountNumber}`, accountUpdate);
-      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseNumber}`, caseUpdate);
+      await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseId}`, caseUpdate);
 
       await this.mysqlLayer.Post(`/${this.state.type}/outcomes/create_item/${this.state.clientId}`, outcomeInsert);
       this.props.history.push({
@@ -757,7 +878,7 @@ class Collection extends Component {
     } else {
       problems.forEach(problem => Toasts('error', problem, true));
     }
-  }
+  }*/
 
   render() {
     const collection = this.state.collection;
@@ -883,7 +1004,7 @@ class Collection extends Component {
         <div className="row">
           <div className="col-12">
             <div className="card border-primary">
-              <div className="card-header">Case Number {collection.caseNumber}</div>
+              <div className="card-header">Case Number {collection.caseId}</div>
               <div className="card-body text-left">
 
               <div className="row">
