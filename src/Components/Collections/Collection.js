@@ -32,7 +32,7 @@ class Collection extends Component {
       nextVisitDateTime: null,
       nextSteps: null,
       numberCalled: null,
-      outcome: null,
+      outcomeResolution: null,
       outcomeNotes: null,
       outcomeRecords: null,
       pendReason: '---',
@@ -248,7 +248,7 @@ class Collection extends Component {
   }
 
   async processRecord(process) {
-    const {
+    let {
       clientId,
       contactPerson,
       debitResubmissionAmount,
@@ -257,7 +257,7 @@ class Collection extends Component {
       nextSteps,
       nextVisitDateTime,
       numberCalled,
-      outcome,
+      outcomeResolution,
       outcomeNotes,
       kamNotes,
       pendReason,
@@ -275,7 +275,7 @@ class Collection extends Component {
       {
         action: 'Closed',
         fields: [
-          'outcome'
+          'outcomeResolution'
         ]
       },
       {
@@ -284,7 +284,7 @@ class Collection extends Component {
           'contactPerson',
           'nextSteps',
           'nextVisitDateTime',
-          'outcome',
+          'outcomeResolution',
           'pendReason',
           'transactionType'
         ]
@@ -293,7 +293,7 @@ class Collection extends Component {
         action: 'Updated',
         fields: [
           'nextVisitDateTime',
-          'outcome'
+          'outcomeResolution'
         ]
       }
     ];
@@ -329,33 +329,54 @@ class Collection extends Component {
       this.setState({ disabled: true });
 
       // Only update the relevant notes
-      let newNote = '';
+      //let newNote = '';
       let newkamNote = '';
       if (role === 'kam') {
-        let oldkamNotes = kamNotes ? kamNotes + `\n\r` : '';
-        newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
-      } else {
+        let oldkamNotes = this.state.collection.kamNotes ? this.state.collection.kamNotes : '';
+        newkamNote = `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\n${kamNotes}\n\r`  + oldkamNotes;
+
+        if (!outcomeNotes) outcomeNotes = 'KAM notes updated'; //this.setState({ outcomeNotes: 'KAM notes updated' });
+      } /*else {
         let oldNotes = outcomeNotes ? outcomeNotes + `\n\r` : '';
         newNote = oldNotes + outcomeNotes;
-      }
+      }*/
 
       let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
       let closedBy = user;
 
       let customerUpdate = {
-        cipcStatus: this.state.cipcStatus,
+        regIdStatus: this.state.regIdStatus,
         updatedBy: user,
         updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
       };
 
-      let caseUpdate = {
-        currentStatus: process,
-        nextVisitDateTime: nextVisitDateTime,
-        kamNotes: newkamNote,
-        pendReason: pendReason,
-        updatedBy: user,
-        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
-      };
+      let caseUpdate = null;
+
+      if (process === 'Pended') {
+        caseUpdate = {
+          currentStatus: process,
+          kamNotes: newkamNote,
+          nextVisitDateTime: nextVisitDateTime,
+          pendReason: pendReason,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+      } else if (process === 'Closed') {
+        caseUpdate = {
+          currentStatus: process,
+          kamNotes: newkamNote,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+      } else {
+        caseUpdate = {
+          currentStatus: process,
+          kamNotes: newkamNote,
+          nextVisitDateTime: nextVisitDateTime,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+      }
 
       let outcomeInsert = null;
       let accountUpdate = null;
@@ -369,13 +390,13 @@ class Collection extends Component {
 
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: process,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
           contactPerson: contactPerson,
-          outcome: outcome,
-          outcomeNotes: newNote,
+          outcomeResolution: outcomeResolution,
+          outcomeNotes: outcomeNotes,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -393,13 +414,13 @@ class Collection extends Component {
 
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: process,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
           contactPerson: contactPerson,
-          outcome: outcome,
-          outcomeNotes: newNote,
+          outcomeResolution: outcomeResolution,
+          outcomeNotes: outcomeNotes,
           ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
           ptpAmount: ptpAmount,
           nextSteps: nextSteps,
@@ -417,13 +438,13 @@ class Collection extends Component {
 
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: process,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
           contactPerson: contactPerson,
-          outcome: outcome,
-          outcomeNotes: newNote,
+          outcomeResolution: outcomeResolution,
+          outcomeNotes: outcomeNotes,
           nextSteps: nextSteps,
           closedDate: closedDate,
           closedBy: closedBy,
@@ -443,13 +464,13 @@ class Collection extends Component {
 
         outcomeInsert = {
           createdBy: user,
-          outcomeStatus: process,
+          outcomeStatus: 'Closed',
           transactionType: transactionType,
           numberCalled: numberCalled,
           emailUsed: emailUsed,
           contactPerson: contactPerson,
-          outcome: outcome,
-          outcomeNotes: newNote,
+          outcomeResolution: outcomeResolution,
+          outcomeNotes: outcomeNotes,
           ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
           ptpAmount: ptpAmount,
           nextSteps: nextSteps,
@@ -1081,19 +1102,20 @@ class Collection extends Component {
     let outcomesNotes = '';
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
       let outcomesNotesArray = [];
+      //console.log('this.state.outcomeRecords: ', this.state.outcomeRecords);
       this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
-        console.log('outcomeRecord.outcomeNotes: ', outcomeRecord.outcomeNotes);
-        outcomesNotesArray[idx] = outcomeRecord.outcomeNotes + '\n\r'
+        //console.log('outcomeRecord.outcomeNotes: ', outcomeRecord.outcomeNotes);
+        outcomesNotesArray[idx] = `${idx + 1}: ` + outcomeRecord.outcomeNotes + '\n\r'
       });
-      console.log('outcomesNotes before: ', outcomesNotes);
+      //console.log('outcomesNotes before: ', outcomesNotes);
       outcomesNotes = outcomesNotesArray.join('\n');
-      console.log('outcomesNotes after: ', outcomesNotes);
+      //console.log('outcomesNotes after: ', outcomesNotes);
     } else {
       outcomesNotes = 'No notes to display';
     }
 
     let outcomes = '';
-    if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcome !== undefined) {
+    if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeResolution !== undefined) {
       let outcomeArray = [];
       this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
         let ptpDate = outcomeRecord.ptpDate ? moment(outcomeRecord.ptpDate).format('YYYY-MM-DD') : '--';
@@ -1109,7 +1131,7 @@ class Collection extends Component {
         'Pend reason: ' + outcomeRecord.pendReason + '\n' +
         'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
         'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
-        'Outcome resolution: ' + outcomeRecord.outcome + '\n' +
+        'Outcome resolution: ' + outcomeRecord.outcomeResolution + '\n' +
         'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
         'Next steps: ' + outcomeRecord.nextSteps + '\n' +
         'Outcome notes: \n' + outcomesNotes + '\n' +
@@ -1143,7 +1165,7 @@ class Collection extends Component {
       <option key={accountStatus.id} value={accountStatus.accountStatus}>{accountStatus.accountStatus}</option>
     ));
 
-    const cipcStatusList = [<option key="0" value={this.state.collection.cipcStatus}>{this.state.collection.cipcStatus}</option>];
+    const cipcStatusList = [<option key="0" value={this.state.collection.regIdStatus}>{this.state.collection.regIdStatus}</option>];
     cipcStatusList.push(this.state.cipcStatuses.map(cipcStatus =>
       <option key={cipcStatus.id} value={cipcStatus.cipcStatus}>{cipcStatus.cipcStatus}</option>
     ));
@@ -1843,7 +1865,7 @@ class Collection extends Component {
                       <label htmlFor="resolution">Outcome Resolution</label>
                       <select className="custom-select"
                         required
-                        name="outcome"
+                        name="outcomeResolution"
                         onChange={this.handleChange}
                       >
                       {resolutionList}
