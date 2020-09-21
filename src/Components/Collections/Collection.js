@@ -7,6 +7,7 @@ import Toasts from '../../Utilities/Toasts';
 import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 import DateTime from 'react-datetime';
+import _ from 'lodash';
 import NumberFormat from 'react-number-format';
 import './datetime.css';
 
@@ -149,7 +150,7 @@ class Collection extends Component {
     }
 
     // just for testing during development
-    this.processRecord('close');
+    //this.processRecord('close');
   }
 
   handleDate(e){
@@ -191,16 +192,21 @@ class Collection extends Component {
       timer = 3000;
     }
 
+    let prevStatus = this.state.prevStatus;
+
+    // if prevStatus === 'Locked', change to 'Open'
+    if (prevStatus === 'Locked') prevStatus = 'Open';
+
     // unlock the record and release it to the pool
     const update = {
-      currentStatus: this.state.prevStatus
+      currentStatus: prevStatus
     };
     await this.mysqlLayer.Put(`/${this.state.type}/cases/update_item/${this.state.clientId}/${this.state.collection.caseId}`, update);
 
     setTimeout(() => this.props.history.push({
       pathname: '/workzone/collections',
       state: {
-        recordStatus: this.state.prevStatus,
+        recordStatus: prevStatus,
         clientId: this.state.clientId,
         type: this.state.type,
         workspace: this.state.workspace
@@ -208,13 +214,11 @@ class Collection extends Component {
     }), timer);
   }
 
-  checkFields(fields) {
+  checkFields(process, fields) {
     let stateConsts = [];
     for (const [key, value] of Object.entries(this.state)) {
       stateConsts.push({[key]: value});
     }
-    //const stateConsts = Object.entries(this.state);
-    //console.log('stateConsts: ', stateConsts);
 
     // loop through fields to check if they're populated
     let problems = [];
@@ -223,17 +227,29 @@ class Collection extends Component {
         let stateField = Object.keys(stateConst).toString();
         let stateValue = Object.values(stateConst).toString();
         if (stateField === field) {
-          console.log('stateField stateValue: ', stateField, stateValue);
-          if (stateValue === null) problems.push(`Please enter a value for ${stateValue}`);
+          if (stateValue === '') problems.push(`Please enter a value for ${_.startCase(stateField)}`);
         }
-      })
+      });
     });
-    return true;
+
+    // check if relevant linked fields are populated
+    if (this.state.emailUsed === null && this.state.transactionType === 'Email') problems.push('Please provide an email address');
+    if (this.state.role !== 'kam' && (!this.state.outcomeNotes || this.state.outcomeNotes.length < 10)) problems.push('Please enter a note longer than 10 characters');
+    if (this.state.role === 'kam' && (!this.state.kamNotes || this.state.kamNotes.length < 10)) problems.push('Please enter a KAM note longer than 10 characters');
+    if (this.state.numberCalled === null && this.state.transactionType === 'Call') problems.push('Please provide a telephone number');
+    if (this.state.numberCalled !== null && this.state.numberCalled.length > 11) problems.push('The telephone number can only be up to 11 digits long');
+    if (process === 'Pended' && this.state.pendReason === '---') problems.push('Please select a pend reason');
+    if (this.state.ptpDate && !this.state.ptpAmount) problems.push('Please provide a PTP amount');
+    if (!this.state.ptpDate && this.state.ptpAmount) problems.push('Please provide a PTP date');
+    if (this.state.debitResubmissionDate && !this.state.debitResubmissionAmount) problems.push('Please provide a debit resubmission amount');
+    if (!this.state.debitResubmissionDate && this.state.debitResubmissionAmount) problems.push('Please provide a debit resubmission date');
+
+    return problems;
   }
 
   async processRecord(process) {
-    // State variables
     const {
+      clientId,
       contactPerson,
       debitResubmissionAmount,
       debitResubmissionDate,
@@ -244,63 +260,40 @@ class Collection extends Component {
       outcome,
       outcomeNotes,
       kamNotes,
-      notes,
       pendReason,
       ptpDate,
       ptpAmount,
       role,
+      type,
       transactionType,
-      user
+      user,
+      workspace
     } = this.state;
 
     // Mandatory fields array
     const mandatoryFields = [
       {
-        action: 'close',
+        action: 'Closed',
         fields: [
-          'debitResubmissionAmount',
-          'debitResubmissionDate',
-          'emailUsed',
-          'kamNotes',
-          'notes',
-          'numberCalled',
-          'outcome',
-          'ptpDate',
-          'ptpAmount'
+          'outcome'
         ]
       },
       {
-        action: 'pend',
+        action: 'Pended',
         fields: [
           'contactPerson',
-          'debitResubmissionAmount',
-          'debitResubmissionDate',
-          'emailUsed',
-          'kamNotes',
           'nextSteps',
           'nextVisitDateTime',
-          'notes',
-          'numberCalled',
           'outcome',
           'pendReason',
-          'ptpDate',
-          'ptpAmount',
           'transactionType'
         ]
       },
       {
-        action: 'update',
+        action: 'Updated',
         fields: [
-          'debitResubmissionAmount',
-          'debitResubmissionDate',
-          'emailUsed',
-          'kamNotes',
           'nextVisitDateTime',
-          'notes',
-          'numberCalled',
-          'outcome',
-          'ptpDate',
-          'ptpAmount'
+          'outcome'
         ]
       }
     ];
@@ -308,15 +301,182 @@ class Collection extends Component {
     // checking all mandatory fields are populated for the respective process
     let fields = null;
     switch (process) {
-      case 'close':
+      case 'Closed':
         mandatoryFields.forEach(field => {
           if (process === field.action) fields = field.fields;
         });
-        let cont = this.checkFields(fields);
-        console.log('cont: ', cont);
+
+        break;
+      case 'Pended':
+        mandatoryFields.forEach(field => {
+          if (process === field.action) fields = field.fields;
+        });
+
+        break;
+      case 'Updated':
+        mandatoryFields.forEach(field => {
+          if (process === field.action) fields = field.fields;
+        });
+        process = 'Open';
+
         break;
       default:
+        console.log('Problem with process from button');
+    }
 
+    let problems = this.checkFields(process, fields);
+    if (problems.length === 0) {
+      this.setState({ disabled: true });
+
+      // Only update the relevant notes
+      let newNote = '';
+      let newkamNote = '';
+      if (role === 'kam') {
+        let oldkamNotes = kamNotes ? kamNotes + `\n\r` : '';
+        newkamNote = oldkamNotes + `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\nNote ${kamNotes}`;
+      } else {
+        let oldNotes = outcomeNotes ? outcomeNotes + `\n\r` : '';
+        newNote = oldNotes + outcomeNotes;
+      }
+
+      let closedDate = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+      let closedBy = user;
+
+      let customerUpdate = {
+        cipcStatus: this.state.cipcStatus,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
+
+      let caseUpdate = {
+        currentStatus: process,
+        nextVisitDateTime: nextVisitDateTime,
+        kamNotes: newkamNote,
+        pendReason: pendReason,
+        updatedBy: user,
+        updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+      };
+
+      let outcomeInsert = null;
+      let accountUpdate = null;
+      if (!ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: process,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseId: this.state.collection.caseId
+        };
+      } else if (ptpDate && !debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: process,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
+          ptpAmount: ptpAmount,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          f_caseId: this.state.collection.caseId
+        };
+      } else if (!ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: process,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
+          f_caseId: this.state.collection.caseId
+        };
+      } else if (ptpDate && debitResubmissionDate) {
+
+        accountUpdate = {
+          accountStatus: this.state.accountStatus,
+          lastPTPDate: moment(ptpDate).format('YYYY-MM-DD'),
+          lastPTPAmount: ptpAmount,
+          updatedBy: user,
+          updatedDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+        };
+
+        outcomeInsert = {
+          createdBy: user,
+          outcomeStatus: process,
+          transactionType: transactionType,
+          numberCalled: numberCalled,
+          emailUsed: emailUsed,
+          contactPerson: contactPerson,
+          outcome: outcome,
+          outcomeNotes: newNote,
+          ptpDate: moment(ptpDate).format('YYYY-MM-DD'),
+          ptpAmount: ptpAmount,
+          nextSteps: nextSteps,
+          closedDate: closedDate,
+          closedBy: closedBy,
+          debitResubmissionDate: moment(debitResubmissionDate).format('YYYY-MM-DD'),
+          debitResubmissionAmount: debitResubmissionAmount,
+          f_caseId: this.state.collection.caseId
+        };
+      }
+
+      await this.mysqlLayer.Put(`/${type}/customers/update_item/${clientId}/${this.state.collection.customerRefNo}`, customerUpdate);
+      await this.mysqlLayer.Put(`/${type}/accounts/update_item/${clientId}/${this.state.collection.accountNumber}`, accountUpdate);
+      await this.mysqlLayer.Put(`/${type}/cases/update_item/${clientId}/${this.state.collection.caseId}`, caseUpdate);
+
+      await this.mysqlLayer.Post(`/${type}/outcomes/create_item/${clientId}`, outcomeInsert);
+      this.props.history.push({
+        pathname: '/workzone/collections',
+        state: {
+          recordStatus: process,
+          clientId: clientId,
+          type: type,
+          workspace: workspace
+        }
+      });
+    } else {
+      problems.forEach(problem => Toasts('error', problem, true));
     }
 
   }
@@ -922,9 +1082,12 @@ class Collection extends Component {
     if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
       let outcomesNotesArray = [];
       this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
+        console.log('outcomeRecord.outcomeNotes: ', outcomeRecord.outcomeNotes);
         outcomesNotesArray[idx] = outcomeRecord.outcomeNotes + '\n\r'
       });
+      console.log('outcomesNotes before: ', outcomesNotes);
       outcomesNotes = outcomesNotesArray.join('\n');
+      console.log('outcomesNotes after: ', outcomesNotes);
     } else {
       outcomesNotes = 'No notes to display';
     }
@@ -1803,7 +1966,7 @@ class Collection extends Component {
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.pendRecord()}}
+                      onClick={() => {this.processRecord('Pended')}}
                       style={{ margin: "5px" }}
                     >
                       Save and Pend
@@ -1812,7 +1975,7 @@ class Collection extends Component {
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.closeRecord()}}
+                      onClick={() => {this.processRecord('Closed')}}
                       style={{ margin: "5px" }}
                     >
                       Close
@@ -1821,7 +1984,7 @@ class Collection extends Component {
                     <button
                       disabled={this.state.disabled}
                       className="btn btn-primary"
-                      onClick={() => {this.updateRecord()}}
+                      onClick={() => {this.processRecord('Updated')}}
                       style={{ margin: "5px" }}
                     >
                       Update
