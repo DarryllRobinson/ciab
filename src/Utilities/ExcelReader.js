@@ -76,8 +76,16 @@ class ExcelReader extends Component {
       const ws = wb.Sheets[wsname];
       /* Convert array of arrays */
       const data = XLSX.utils.sheet_to_json(ws);
-      /* Update state */
-      this.setState({ data: data, cols: make_cols(ws['!ref']) }, async () => {
+      // Update state and clear error messages
+      this.setState({
+        data: data,
+        cols: make_cols(ws['!ref']),
+        accountErrors: [],
+        customerErrors: [],
+        contactErrors: [],
+        caseErrors: [],
+        outcomeErrors: []
+      }, async () => {
         //console.log(JSON.stringify(this.state.data, null, 2));
         //console.log('data: ', data);
         try {
@@ -144,7 +152,6 @@ class ExcelReader extends Component {
     this.setState({ errors: errors });
     if (errors.length > 0) return false;
     return true;
-    //console.log('errors: ', errors);
   }
 
   uploadData(workspace, data) {

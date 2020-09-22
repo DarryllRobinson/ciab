@@ -332,7 +332,7 @@ class Collection extends Component {
       //let newNote = '';
       let newkamNote = '';
       if (role === 'kam') {
-        let oldkamNotes = this.state.collection.kamNotes ? this.state.collection.kamNotes : '';
+        let oldkamNotes = kamNotes ? kamNotes : '';
         newkamNote = `${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')} by ${user}\n${kamNotes}\n\r`  + oldkamNotes;
 
         if (!outcomeNotes) outcomeNotes = 'KAM notes updated'; //this.setState({ outcomeNotes: 'KAM notes updated' });
