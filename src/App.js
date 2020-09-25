@@ -19,6 +19,7 @@ import Application from './Components/Applications/Application';
 import NewApplication from './Components/Applications/NewApplication';
 
 import Collection from './Components/Collections/Collection';
+import Contacts from './Components/Collections/editContacts';
 import Payment from './Components/Collections/Payment';
 
 import Blogs from './Components/Community/Blogs';
@@ -155,6 +156,7 @@ class App extends Component {
             <Route exact path='/workspace/new-application' render={props => (<NewApplication {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
             <Route exact path='/workzone/collections/collection/:id' render={props => (<Collection {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
+            <Route exact path='/workzone/collections/contacts/:id' render={props => (<Contacts {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
             <Route exact path='/workzone/applications/application/:id' render={props => (<Application {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
             {/*<Route exact path='/workspace/applications' render={props => (<Applications {...props} loggedInStatus={this.state.loggedInStatus} />)} />*/}

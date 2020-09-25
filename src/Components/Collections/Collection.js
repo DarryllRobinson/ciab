@@ -177,8 +177,8 @@ class Collection extends Component {
     }
   };
 
-  async handleChange(e) {
-    await this.setState({
+  handleChange(e) {
+    this.setState({
       [e.target.name]: e.target.value,
       changesMade: true
     });
@@ -1697,7 +1697,7 @@ class Collection extends Component {
                 </div>
               </div>
 
-              <Contacts contacts={this.state.contactRecords} />
+              <Contacts contacts={this.state.contactRecords[0]} accountNumber={collection.accountNumber} />
               </div>
             </div>
           </div>

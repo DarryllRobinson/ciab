@@ -58,13 +58,17 @@ export default class Login extends Component {
       //console.log('Login props: ', this.props);
       console.log('Login response.data: ', response.data);
       //console.log('response.data[0].active !== 1: ', response.data[0].active !== 1);
-      if (response.data[1].logged_in) {
-        this.security.writeLoginSession(response.data, loginDatetime);
-        this.props.handleSuccessfulAuth(response.data);
+      if (response.data === undefined) {
+        console.log('cannot connect');
+        Toasts('error', 'Unable to access the server. Please contact your administrator.', true);
+        this.setState({ email: '', password: '' });
       } else if (response.data[0].active !== 1) {
         //console.log('inactive');
         Toasts('error', 'The user is not active', true);
         this.setState({ email: '', password: '' });
+      } else if (response.data[1].logged_in) {
+        this.security.writeLoginSession(response.data, loginDatetime);
+        this.props.handleSuccessfulAuth(response.data);
       } else {
         Toasts('error', 'Incorrect username or password', true);
         this.setState({ email: '', password: '' });

@@ -411,7 +411,7 @@ class ExcelReader extends Component {
 
     let outcome = [
       {
-        f_caseNumber: record.CaseNumber,
+        f_caseId: record.CaseNumber,
         createdDate: createdDate,
         createdBy: record.CreatedBy,
         outcomeStatus: record.Status,
@@ -419,7 +419,7 @@ class ExcelReader extends Component {
         numberCalled: record.PhoneNumberCalled,
         EmailAddressUsed: record.emailUsed,
         contactPerson: record.ContactPerson,
-        outcome: record.Resolution,
+        outcomeResolution: record.Resolution,
         nextSteps: record.NextSteps,
         ptpDate: ptpDate,
         ptpAmount: record.PTPAmount,
