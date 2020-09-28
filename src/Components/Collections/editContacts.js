@@ -18,19 +18,14 @@ class editContacts extends Component {
     console.log('saveDetails');
   }
 
-  handleChange(e) {
-    console.log('handling change: ', e.target.name);
-    console.log('handling change: ', e.target.value);
-    let name = [e.target.name];
+  async handleChange(e) {
+    let name = e.target.name;
     let value = e.target.value;
-    console.log('name: ', name);
-    console.log('typeof name: ', typeof name);
-    console.log('value: ', value);
 
     this.setState(prevState => ({
-      contacts: {
-        ...prevState.contacts,
-        name: value
+      contacts: {                   // object that we want to update
+        ...prevState.contacts,    // keep all other key-value pairs
+        [name]: value       // update the value of specific key
       }
     }));
   }
