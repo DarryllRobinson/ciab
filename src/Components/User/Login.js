@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import Security from '../../Utilities/Security';
+import ErrorReporting from '../../Utilities/ErrorReporting';
 import Toasts from '../../Utilities/Toasts';
 import moment from 'moment';
 import { Accordion, Button, Col, Form, Row } from 'react-bootstrap';
@@ -20,6 +21,7 @@ export default class Login extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.sendEmail = this.sendEmail.bind(this);
 
+    this.errorReporting = new ErrorReporting();
     this.mysqlLayer = new MysqlLayer();
     this.security = new Security();
   }
@@ -60,12 +62,18 @@ export default class Login extends Component {
       //console.log('response.data[0].active !== 1: ', response.data[0].active !== 1);
       if (response.data === undefined) {
         console.log('cannot connect');
+        this.errorReporting.sendMessage(
+          {
+            error: 'Unable to login - no response data',
+            fileName: 'Login.js',
+            dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+            user: sessionStorage.getItem('cwsUser'),
+            state: JSON.stringify(this.state)
+          }
+        );
         Toasts('error', 'Unable to access the server. Please contact your administrator.', true);
-        this.setState({ email: '', password: '' });
       } else if (response.data[0].active !== 1) {
-        //console.log('inactive');
         Toasts('error', 'The user is not active', true);
-        this.setState({ email: '', password: '' });
       } else if (response.data[1].logged_in) {
         this.security.writeLoginSession(response.data, loginDatetime);
         this.props.handleSuccessfulAuth(response.data);

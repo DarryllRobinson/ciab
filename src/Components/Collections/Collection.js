@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import ErrorReporting from '../../Utilities/ErrorReporting';
 import Contacts from './Contacts';
 import { ToastContainer } from 'react-toastify';
 import Toasts from '../../Utilities/Toasts';
@@ -48,6 +49,7 @@ class Collection extends Component {
       workspace: null,
     }
 
+    this.errorReporting = new ErrorReporting();
     this.mysqlLayer = new MysqlLayer();
     this.handleChange = this.handleChange.bind(this);
     this.handleDate = this.handleDate.bind(this);
@@ -66,6 +68,15 @@ class Collection extends Component {
     //console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
     // check if there are any props or send to the dashboard again
     if (this.props.location.state === undefined) {
+      this.errorReporting.sendMessage(
+        {
+          error: 'Unable to find this.props.location.state',
+          fileName: 'Collection.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          state: JSON.stringify(this.state)
+        }
+      );
       Toasts('error', 'The record was not found. Returning to the dashboard.', false);
       //alert('Buggered');
     } else if (this.props.location.state !== undefined) {
@@ -145,6 +156,15 @@ class Collection extends Component {
       await this.mysqlLayer.Put(`/${type}/cases/update_item/${clientId}/${recordId}`, update);
       //console.log('collection: ', this.state.collection);
     } else {
+      this.errorReporting.sendMessage(
+        {
+          error: 'Unable to find Collection record',
+          fileName: 'Collection.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          state: JSON.stringify(this.state)
+        }
+      );
       Toasts('error', 'The record was not found. Returning to the dashboard.', false);
       setTimeout(() => this.props.history.push('/dashboard'), 3000);
     }

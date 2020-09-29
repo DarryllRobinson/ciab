@@ -30,7 +30,7 @@ class editContacts extends Component {
     await this.mysqlLayer.Put(`/business/contacts/update_item/${this.state.clientId}/${this.state.accNum}`, contacts
       ).then(response => {
         console.log('editContacts response: ', response);
-        if (response.saffectedRows === 1) {
+        if (response.affectedRows === 1) {
           Toasts('success', 'The contact details were updated. Please close this tab.', true);
           //this.props.history.push(`/workzone/collections/collection/${this.props.location.state.accNum}`);
         } else {

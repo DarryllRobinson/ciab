@@ -3,6 +3,7 @@ import XLSX from 'xlsx';
 import { make_cols } from './MakeColumns';
 import { SheetJSFT } from './types';
 import MysqlLayer from '../Utilities/MysqlLayer';
+import ErrorReporting from '../Utilities/ErrorReporting';
 import moment from 'moment';
 
 class ExcelReader extends Component {
@@ -38,6 +39,7 @@ class ExcelReader extends Component {
     this.saveOutcomeRecordsToDatabase = this.saveOutcomeRecordsToDatabase.bind(this);
 
     this.mysqlLayer = new MysqlLayer();
+    this.errorReporting = new ErrorReporting();
   }
 
   componentDidMount() {
@@ -96,6 +98,15 @@ class ExcelReader extends Component {
           if (cont) this.uploadData(workspace, this.state.data);
         } catch(e) {
           console.log('Uploading Collection update file problem (e): ', e);
+          this.errorReporting.sendMessage(
+            {
+              error: `handleFile error: ${e}`,
+              fileName: 'ExcelReader.js',
+              dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+              user: sessionStorage.getItem('cwsUser'),
+              state: JSON.stringify(this.state)
+            }
+          );
         }
       });
 

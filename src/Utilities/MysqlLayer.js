@@ -17,7 +17,6 @@ export default class MysqlLayer {
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
-        //alert('Major Get request error: ', e);
         return e;
       }
       if (e.response.status === 500) {
@@ -40,7 +39,6 @@ export default class MysqlLayer {
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
-        //alert('Major Get request error: ', e);
         return e;
       }
       if (e.response.status === 500) {
@@ -64,7 +62,6 @@ export default class MysqlLayer {
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
-        //alert('Major Get request error: ', e);
         return e;
       }
       if (e.response.status === 500) {
@@ -88,7 +85,6 @@ export default class MysqlLayer {
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
-        //alert('Major Get request error: ', e);
         return e;
       }
       if (e.response.status === 500) {
@@ -110,7 +106,6 @@ export default class MysqlLayer {
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
-        //alert('Major Get request error: ', e);
         return e;
       }
       if (e.response.status === 500) {
@@ -132,7 +127,6 @@ export default class MysqlLayer {
     } catch(e) {
       console.log('e: ', e);
       if (!e.response) {
-        //alert('Major Get request error: ', e);
         return e;
       }
       if (e.response.status === 500) {
