@@ -2,6 +2,12 @@ import React from 'react';
 import { Accordion, Button, Card, Col, Form, Row } from 'react-bootstrap';
 import {Link } from "react-router-dom";
 
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+library.add(faExternalLinkAlt);
+
+
 function clickableNumber(tel) {
   if (tel) {
     let clickableTel = `tel:${tel}`;
@@ -21,7 +27,11 @@ function clickableEmail(email) {
 }
 
 function Contacts(props) {
-  console.log('Contacts props: ', props);
+  //console.log('Contacts props: ', props);
+  // setting variables in state for the new tab to pick up
+  localStorage.setItem('accNum', props.accountNumber);
+  localStorage.setItem('clientId', props.clientId);
+  localStorage.setItem('contacts', JSON.stringify(props.contacts));
 
   return (
     <Accordion>
@@ -198,12 +208,11 @@ function Contacts(props) {
               <Row>
                 <Col>
                   <Link className="nav-link" to={{
-                      pathname: `/workzone/collections/contacts/${props.accountNumber}`,
-                      state: {
-                        contacts: props.contacts
-                      }
+                      pathname: `/workzone/collections/contacts/${props.accountNumber}`
                     }}
                     style={{padding: 0}}
+                    target="_blank"
+                    rel='noopener noreferrer'
                   >
                     <Button
                       style={{
@@ -211,7 +220,7 @@ function Contacts(props) {
                         borderColor: "#48B711",
                       }}
                     >
-                      Edit contact details
+                      Edit contact details <FontAwesomeIcon icon={faExternalLinkAlt} size="1x"  />
                     </Button>
                   </Link>
                 </Col>

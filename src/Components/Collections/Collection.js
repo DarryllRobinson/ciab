@@ -1697,7 +1697,11 @@ class Collection extends Component {
                 </div>
               </div>
 
-              <Contacts contacts={this.state.contactRecords[0]} accountNumber={collection.accountNumber} />
+              <Contacts
+                contacts={this.state.contactRecords[0]}
+                accountNumber={collection.accountNumber}
+                clientId={this.state.clientId}
+              />
               </div>
             </div>
           </div>

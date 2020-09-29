@@ -1,21 +1,54 @@
 import React, { Component } from 'react';
 import { Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
+import Toasts from '../../Utilities/Toasts';
 import MysqlLayer from '../../Utilities/MysqlLayer';
+import ErrorReporting from '../../Utilities/ErrorReporting';
+import { ToastContainer } from 'react-toastify';
+import moment from 'moment';
 
 class editContacts extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      contacts: this.props.location.state.contacts
+      accNum: localStorage.getItem('accNum'),
+      clientId: localStorage.getItem('clientId'),
+      contacts: JSON.parse(localStorage.getItem('contacts'))
     }
 
     this.mysqlLayer = new MysqlLayer();
+    this.errorReporting = new ErrorReporting();
     this.handleChange = this.handleChange.bind(this);
+    this.saveDetails = this.saveDetails.bind(this);
   }
 
-  saveDetails() {
-    console.log('saveDetails');
+  async saveDetails() {
+    let { contacts } = this.state;
+    contacts.updatedDate = moment(new Date()).format('YYYY-MM-DD');
+    contacts.updatedBy = sessionStorage.getItem('cwsUser');
+
+    await this.mysqlLayer.Put(`/business/contacts/update_item/${this.state.clientId}/${this.state.accNum}`, contacts
+      ).then(response => {
+        console.log('editContacts response: ', response);
+        if (response.saffectedRows === 1) {
+          Toasts('success', 'The contact details were updated. Please close this tab.', true);
+          //this.props.history.push(`/workzone/collections/collection/${this.props.location.state.accNum}`);
+        } else {
+          console.log('cannot connect');
+          this.errorReporting.sendMessage(
+            {
+              error: 'Unable to update contacts',
+              fileName: 'editContacts.js',
+              dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+              user: sessionStorage.getItem('cwsUser'),
+              state: JSON.stringify(this.state)
+            }
+          );
+          Toasts('error', 'Unable to access the server. Please contact your administrator.', false);
+        }
+      }).catch(error => {
+        console.log('editContacts error: ', error);
+      });
   }
 
   async handleChange(e) {
@@ -33,6 +66,8 @@ class editContacts extends Component {
   render() {
     let { contacts } = this.state;
     console.log('render contacts: ', contacts);
+    //console.log('render editContacts props: ', this.props);
+    //console.log('editContacts this.props.history.location.pathname: ', this.props.history.location.pathname);
     if (!contacts || contacts === undefined) {
       return <div>Loading...</div>
     } else {
@@ -190,6 +225,7 @@ class editContacts extends Component {
               </Card.Body>
 
           </Card>
+          <ToastContainer />
         </Container>
       );
     }
