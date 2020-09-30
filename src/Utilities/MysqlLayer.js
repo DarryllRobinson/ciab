@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AppSettings from './appSettings';
 import Security from './Security';
+import moment from 'moment';
 
 export default class MysqlLayer {
 
@@ -16,6 +17,16 @@ export default class MysqlLayer {
       return response.data;
     } catch(e) {
       console.log('e: ', e);
+      this.sendMessage(
+        {
+          error: `Get error: ${e}`,
+          fileName: 'MysqlLayer.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          state: null,
+          path: path
+        }
+      );
       if (!e.response) {
         return e;
       }
@@ -38,6 +49,17 @@ export default class MysqlLayer {
       return response;
     } catch(e) {
       console.log('e: ', e);
+      this.sendMessage(
+        {
+          error: `Post error: ${e}`,
+          fileName: 'MysqlLayer.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          path: path,
+          state: null,
+          object: JSON.stringify(object)
+        }
+      );
       if (!e.response) {
         return e;
       }
@@ -61,6 +83,16 @@ export default class MysqlLayer {
       return response;
     } catch(e) {
       console.log('e: ', e);
+      this.sendMessage(
+        {
+          error: `PostLogin error: ${e}`,
+          fileName: 'MysqlLayer.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          path: path,
+          state: null,
+          object: JSON.stringify(object)
+        }
+      );
       if (!e.response) {
         return e;
       }
@@ -84,6 +116,17 @@ export default class MysqlLayer {
       return response;
     } catch(e) {
       console.log('e: ', e);
+      this.sendMessage(
+        {
+          error: `PostChange error: ${e}`,
+          fileName: 'MysqlLayer.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          path: path,
+          state: null,
+          object: JSON.stringify(object)
+        }
+      );
       if (!e.response) {
         return e;
       }
@@ -105,6 +148,17 @@ export default class MysqlLayer {
       return response.data;
     } catch(e) {
       console.log('e: ', e);
+      this.sendMessage(
+        {
+          error: `Put error: ${e}`,
+          fileName: 'MysqlLayer.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          path: path,
+          state: null,
+          object: JSON.stringify(object)
+        }
+      );
       if (!e.response) {
         return e;
       }
@@ -126,6 +180,16 @@ export default class MysqlLayer {
       return response.data;
     } catch(e) {
       console.log('e: ', e);
+      this.sendMessage(
+        {
+          error: `Post error: ${e}`,
+          fileName: 'MysqlLayer.js',
+          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
+          user: sessionStorage.getItem('cwsUser'),
+          state: null,
+          path: path
+        }
+      );
       if (!e.response) {
         return e;
       }
@@ -157,5 +221,17 @@ export default class MysqlLayer {
       , httpsAgent: new https.Agent({ rejectUnauthorized: false, withCredentials: true }),
       //user: user
     }
+  }
+
+  async sendMessage(msgObject) {
+    msgObject.purpose = 'error';
+    msgObject.to = 'darryll@thesystem.co.za';
+    msgObject.subject = 'ALERT! Error picked up!';
+
+    await axios.post(`${AppSettings.serverEndpoint}/admin/email`, msgObject
+      ).then(response => {
+        console.log('response: ', response);
+      }
+    );
   }
 }

@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
 import MysqlLayer from '../../Utilities/MysqlLayer';
 import ErrorReporting from '../../Utilities/ErrorReporting';
 import Contacts from './Contacts';
@@ -16,6 +15,8 @@ class Collection extends Component {
   constructor(props) {
     super(props);
 
+    this._isMounted = false;
+
     this.state = {
       accountStatus: null,
       caseNotes: null,
@@ -25,6 +26,7 @@ class Collection extends Component {
       collection: null,
       contactPerson: null,
       contactRecords: null,
+      currentAssignment: sessionStorage.getItem('cwsUser'),
       debitResubmissionAmount: null,
       debitResubmissionDate: null,
       disabled: false,
@@ -46,6 +48,7 @@ class Collection extends Component {
       transactionType: null,
       type: null,
       user: sessionStorage.getItem('cwsUser'),
+      users: [],
       workspace: null,
     }
 
@@ -63,114 +66,105 @@ class Collection extends Component {
   }
 
   async componentDidMount() {
+    this._isMounted = true;
+    let type = '';
+    let workspace = '';
+    let recordId = '';
+    const clientId = this.state.clientId;
+
+    if (this.props.location.state === undefined) {
+      //console.log('Collection props: ', this.props.match);
+      if (this.props.match.path === '/workzone/collections/collection/:id') {
+        type = 'business';
+        workspace = 'collections';
+        recordId = this.props.match.params.id;
+      }
+    } else if (this.props.location.state !== undefined) {
+      type = this.props.location.state.type;
+      workspace = this.props.location.state.workspace;
+      recordId = this.props.location.state.caseId;
+    }
+
     //let record = [];
     //console.log('Collection this.props.location.state.record: ', this.props.location.state.record);
     //console.log('this.props.location.state !== undefined: ', this.props.location.state === undefined);
     // check if there are any props or send to the dashboard again
-    if (this.props.location.state === undefined) {
-      this.errorReporting.sendMessage(
-        {
-          error: 'Unable to find this.props.location.state',
-          fileName: 'Collection.js',
-          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-          user: sessionStorage.getItem('cwsUser'),
-          state: JSON.stringify(this.state)
-        }
-      );
-      Toasts('error', 'The record was not found. Returning to the dashboard.', false);
-      //alert('Buggered');
-    } else if (this.props.location.state !== undefined) {
-      // initial setting of state - need this in case someone tries to pull a record not found in the db
-      const type = this.props.location.state.type;
-      const workspace = this.props.location.state.workspace;
-      const recordId = this.props.location.state.caseId;
-      // can't use the props record as we need to extract the outcomes which can't be extracted at the Workzone level as it messes up the Today count
-      //const record = this.props.location.state.record;
-      const clientId = this.state.clientId;
 
-      let record = null;
-      await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`)
-        .then(response => {
-          //console.log('Collection response: ', response);
-          if (response) record = response[0];
-        }
-      );
 
-      this.setState({
-        record: record,
-        recordId: recordId,
-        type: type,
-        workspace: workspace
-      });
+    let record = null;
+    await this.mysqlLayer.Get(`/${type}/${workspace}/read_item/${clientId}/${recordId}`)
+      .then(response => {
+        console.log('Collection response: ', response);
+        if (response) record = response[0];
+      }
 
-      // Check if there are any associated outcomes to load
-      let outcomeRecords = null;
-      await this.mysqlLayer.Get(`/${type}/${workspace}/read_outcomes/${clientId}/${recordId}`)
-        .then(outcomeResponse => {
-          //console.log('Outcome records response: ', outcomeResponse);
-          if (outcomeResponse) outcomeRecords = outcomeResponse;
-        }
-      );
+    );
 
-      // Check if there are any extra contact details to load
-      let contactRecords = null;
-      await this.mysqlLayer.Get(`/${type}/${workspace}/read_contacts/${clientId}/${recordId}`)
-        .then(contactResponse => {
-          //console.log('contactRecords records response: ', contactResponse);
-          if (contactResponse) contactRecords = contactResponse;
-        }
-      );
+    this.setState({
+      record: record,
+      recordId: recordId,
+      type: type,
+      workspace: workspace
+    });
 
-      // Getting all the config for dropdown lists, etc
-      let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
-      let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
-      let transactionTypes = await this.mysqlLayer.Get(`/admin/transactiontypes/list_all`);
-      let accountStatuses = await this.mysqlLayer.Get(`/admin/accountstatuses/list_all`);
-      let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
+    // Check if there are any associated outcomes to load
+    let outcomeRecords = null;
+    await this.mysqlLayer.Get(`/${type}/${workspace}/read_outcomes/${clientId}/${recordId}`)
+      .then(outcomeResponse => {
+        //console.log('Outcome records response: ', outcomeResponse);
+        if (outcomeResponse) outcomeRecords = outcomeResponse;
+      }
+    );
 
-      // saving the previous status so we can unlock it properly after releasing the record
-      const prevStatus = record.currentStatus;
+    // Check if there are any extra contact details to load
+    let contactRecords = null;
+    await this.mysqlLayer.Get(`/${type}/${workspace}/read_contacts/${clientId}/${recordId}`)
+      .then(contactResponse => {
+        //console.log('contactRecords records response: ', contactResponse);
+        if (contactResponse) contactRecords = contactResponse;
+      }
+    );
 
-      this.setState({
-        accountStatuses: accountStatuses,
-        accountStatus: record.accountStatus,
-        caseNotes: record.caseNotes,
-        cipcStatuses: cipcStatuses,
-        regIdStatus: record.regIdStatus,
-        contactRecords: contactRecords,
-        collection: record,
-        outcomeRecords: outcomeRecords,
-        pendReasons: pends,
-        prevStatus: prevStatus,
-        resolutions: resolutions,
-        transactionTypes: transactionTypes
-      });
+    // Getting all the config for dropdown lists, etc
+    let resolutions = await this.mysqlLayer.Get(`/admin/resolutions/list_all`);
+    let pends = await this.mysqlLayer.Get(`/admin/pendreasons/list_all`);
+    let transactionTypes = await this.mysqlLayer.Get(`/admin/transactiontypes/list_all`);
+    let accountStatuses = await this.mysqlLayer.Get(`/admin/accountstatuses/list_all`);
+    let cipcStatuses = await this.mysqlLayer.Get(`/admin/cipcstatuses/list_all`);
+    let users = await this.mysqlLayer.Get(`/admin/users/${clientId}`);
 
-      // lock the record so no other agent accidentally opens it
-      const dateTime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-      const update = {
-        currentStatus: 'Locked',
-        lockedDatetime: dateTime
-      };
-      //console.log('collection: ', this.state.collection);
-      await this.mysqlLayer.Put(`/${type}/cases/update_item/${clientId}/${recordId}`, update);
-      //console.log('collection: ', this.state.collection);
-    } else {
-      this.errorReporting.sendMessage(
-        {
-          error: 'Unable to find Collection record',
-          fileName: 'Collection.js',
-          dateTime: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-          user: sessionStorage.getItem('cwsUser'),
-          state: JSON.stringify(this.state)
-        }
-      );
-      Toasts('error', 'The record was not found. Returning to the dashboard.', false);
-      setTimeout(() => this.props.history.push('/dashboard'), 3000);
-    }
+    // saving the previous status so we can unlock it properly after releasing the record
+    const prevStatus = record.currentStatus;
 
-    // just for testing during development
-    //this.processRecord('close');
+    this.setState({
+      accountStatuses: accountStatuses,
+      accountStatus: record.accountStatus,
+      caseNotes: record.caseNotes,
+      cipcStatuses: cipcStatuses,
+      regIdStatus: record.regIdStatus,
+      contactRecords: contactRecords,
+      collection: record,
+      outcomeRecords: outcomeRecords,
+      pendReasons: pends,
+      prevStatus: prevStatus,
+      resolutions: resolutions,
+      transactionTypes: transactionTypes,
+      users: users
+    });
+
+    // lock the record so no other agent accidentally opens it
+    const dateTime = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    const update = {
+      currentStatus: 'Locked',
+      lockedDatetime: dateTime
+    };
+    //console.log('collection: ', this.state.collection);
+    await this.mysqlLayer.Put(`/${type}/cases/update_item/${clientId}/${recordId}`, update);
+  }
+
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   handleDate(e){
@@ -271,6 +265,7 @@ class Collection extends Component {
     let {
       clientId,
       contactPerson,
+      currentAssignment,
       debitResubmissionAmount,
       debitResubmissionDate,
       emailUsed,
@@ -302,6 +297,7 @@ class Collection extends Component {
         action: 'Pended',
         fields: [
           'contactPerson',
+          'currentAssignment',
           'nextSteps',
           'nextVisitDateTime',
           'outcomeResolution',
@@ -312,6 +308,7 @@ class Collection extends Component {
       {
         action: 'Updated',
         fields: [
+          'currentAssignment',
           'nextVisitDateTime',
           'outcomeResolution'
         ]
@@ -374,6 +371,7 @@ class Collection extends Component {
 
       if (process === 'Pended') {
         caseUpdate = {
+          currentAssignment: currentAssignment,
           currentStatus: process,
           kamNotes: newkamNote,
           nextVisitDateTime: nextVisitDateTime,
@@ -390,6 +388,7 @@ class Collection extends Component {
         };
       } else {
         caseUpdate = {
+          currentAssignment: currentAssignment,
           currentStatus: process,
           kamNotes: newkamNote,
           nextVisitDateTime: nextVisitDateTime,
@@ -517,7 +516,7 @@ class Collection extends Component {
         }
       });
     } else {
-      problems.forEach(problem => Toasts('error', problem, true));
+      this._isMounted && problems.forEach(problem => Toasts('error', problem, true));
     }
 
   }
@@ -1082,978 +1081,996 @@ class Collection extends Component {
   }*/
 
   render() {
-    const collection = this.state.collection;
-    const role = sessionStorage.getItem('cwsRole');
-
-    if (collection === null && this.props.location.state !== undefined) return <p>Loading...</p>;
-    if (this.props.location.state === undefined) return <p>Record not found. Please return to the <Link to={"/dashboard"}>dashboard</Link></p>;
-
-    //const index = this.state.outcomeRecords.length - 1; // to get the most recent data for whatever field
-    //console.log('index: ', index);
-
-    let paymentDueDate = '';
-    if (this.state.collection.paymentDueDate !== undefined) {
-      paymentDueDate = this.state.collection.paymentDueDate ?
-        moment(collection.paymentDueDate).format('YYYY-MM-DD') :
-        '';
-    }
-
-    const debitOrderDate = this.state.collection.debitOrderDate ?
-      moment(collection.debitOrderDate).format('YYYY-MM-DD') :
-      '';
-
-    const lastPaymentDate = this.state.collection.lastPaymentDate ?
-      moment(collection.lastPaymentDate).format('YYYY-MM-DD') :
-      '';
-
-    const lastPTPDate = this.state.collection.lastPTPDate ?
-      moment(collection.lastPTPDate).format('YYYY-MM-DD') :
-      '';
-
-    //this.state.outcomeRecords.forEach(record => console.log('nvdt: ', record.id, record.nextVisitDateTime));
-    let nextVisitDateTime = '';
-    if (collection.nextVisitDateTime !== undefined) {
-      nextVisitDateTime = collection.nextVisitDateTime ?
-        moment(collection.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
-        '';
-    }
-    //console.log('render nextVisitDateTime: ', nextVisitDateTime);
-
-    let outcomesNotes = '';
-    if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
-      let outcomesNotesArray = [];
-      //console.log('this.state.outcomeRecords: ', this.state.outcomeRecords);
-      this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
-        //console.log('outcomeRecord.outcomeNotes: ', outcomeRecord.outcomeNotes);
-        outcomesNotesArray[idx] = `${idx + 1}: ` + outcomeRecord.outcomeNotes + '\n\r'
-      });
-      //console.log('outcomesNotes before: ', outcomesNotes);
-      outcomesNotes = outcomesNotesArray.join('\n');
-      //console.log('outcomesNotes after: ', outcomesNotes);
+    if (this.state.collection === null ) {
+      return <p>Loading...</p>;
     } else {
-      outcomesNotes = 'No notes to display';
-    }
+      const collection = this.state.collection;
+      const role = sessionStorage.getItem('cwsRole');
 
-    let outcomes = '';
-    if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeResolution !== undefined) {
-      let outcomeArray = [];
-      this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
-        let ptpDate = outcomeRecord.ptpDate ? moment(outcomeRecord.ptpDate).format('YYYY-MM-DD') : '--';
-        let debitResubmissionDate = outcomeRecord.debitResubmissionDate ? moment(outcomeRecord.debitResubmissionDate).format('YYYY-MM-DD') : '--';
+      let paymentDueDate = '';
+      if (this.state.collection.paymentDueDate !== undefined) {
+        paymentDueDate = this.state.collection.paymentDueDate ?
+          moment(collection.paymentDueDate).format('YYYY-MM-DD') :
+          '';
+      }
 
-        outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') + ' by user ' + outcomeRecord.createdBy + '\n' +
-        'Transaction type: ' + outcomeRecord.transactionType + '\n' +
-        'Contacted person: ' + outcomeRecord.contactPerson + '\n' +
-        'Number called: ' + outcomeRecord.numberCalled + '\n' +
-        'Email used: ' + outcomeRecord.emailUsed + '\n' +
-        'PTP date: ' + ptpDate + '\n' +
-        'PTP amount: R' + outcomeRecord.ptpAmount + '\n' +
-        'Pend reason: ' + outcomeRecord.pendReason + '\n' +
-        'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
-        'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
-        'Outcome resolution: ' + outcomeRecord.outcomeResolution + '\n' +
-        'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
-        'Next steps: ' + outcomeRecord.nextSteps + '\n' +
-        'Outcome notes: \n' + outcomesNotes + '\n' +
-        '-----------------------------------------\n\r'
-      });
-      outcomes = outcomeArray.join('\n');
-    } else {
-      outcomes = 'No outcomes to display';
-    }
+      const debitOrderDate = this.state.collection.debitOrderDate ?
+        moment(collection.debitOrderDate).format('YYYY-MM-DD') :
+        '';
 
-    const resolutionList = [<option key="0" value="---">Outcome Resolution</option>];
-    //console.log('resolutionList before: ', resolutionList);
-    resolutionList.push(this.state.resolutions.map(resolution =>
-      <option key={resolution.id} value={resolution.resolution}>{resolution.resolution}</option>
-    ));
+      const lastPaymentDate = this.state.collection.lastPaymentDate ?
+        moment(collection.lastPaymentDate).format('YYYY-MM-DD') :
+        '';
 
-    const pendList = [<option key="0" value="---">Pend Reason</option>];
-    //console.log('pendList before: ', pendList);
-    pendList.push(this.state.pendReasons.map(pend =>
-      <option key={pend.id} value={pend.pendreason}>{pend.pendreason}</option>
-    ));
+      const lastPTPDate = this.state.collection.lastPTPDate ?
+        moment(collection.lastPTPDate).format('YYYY-MM-DD') :
+        '';
 
-    const transactionTypeList = [<option key="0" value="---">Transaction Type</option>];
-    //console.log('pendList before: ', pendList);
-    transactionTypeList.push(this.state.transactionTypes.map(type =>
-      <option key={type.id} value={type.transactiontype}>{type.transactiontype}</option>
-    ));
+      //this.state.outcomeRecords.forEach(record => console.log('nvdt: ', record.id, record.nextVisitDateTime));
+      let nextVisitDateTime = '';
+      if (collection.nextVisitDateTime !== undefined) {
+        nextVisitDateTime = collection.nextVisitDateTime ?
+          moment(collection.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') :
+          '';
+      }
+      //console.log('render nextVisitDateTime: ', nextVisitDateTime);
 
-    const accountStatusList = [<option key="0" value={this.state.collection.accountStatus}>{this.state.collection.accountStatus}</option>];
-    accountStatusList.push(this.state.accountStatuses.map(accountStatus =>
-      <option key={accountStatus.id} value={accountStatus.accountStatus}>{accountStatus.accountStatus}</option>
-    ));
+      let outcomesNotes = '';
+      if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeNotes !== undefined) {
+        let outcomesNotesArray = [];
+        //console.log('this.state.outcomeRecords: ', this.state.outcomeRecords);
+        this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
+          //console.log('outcomeRecord.outcomeNotes: ', outcomeRecord.outcomeNotes);
+          outcomesNotesArray[idx] = `${idx + 1}: ` + outcomeRecord.outcomeNotes + '\n\r'
+        });
+        //console.log('outcomesNotes before: ', outcomesNotes);
+        outcomesNotes = outcomesNotesArray.join('\n');
+        //console.log('outcomesNotes after: ', outcomesNotes);
+      } else {
+        outcomesNotes = 'No notes to display';
+      }
 
-    const cipcStatusList = [<option key="0" value={this.state.collection.regIdStatus}>{this.state.collection.regIdStatus}</option>];
-    cipcStatusList.push(this.state.cipcStatuses.map(cipcStatus =>
-      <option key={cipcStatus.id} value={cipcStatus.cipcStatus}>{cipcStatus.cipcStatus}</option>
-    ));
+      let outcomes = '';
+      if (this.state.outcomeRecords.length > 0 && this.state.outcomeRecords[0].outcomeResolution !== undefined) {
+        let outcomeArray = [];
+        this.state.outcomeRecords.forEach((outcomeRecord, idx) => {
+          let ptpDate = outcomeRecord.ptpDate ? moment(outcomeRecord.ptpDate).format('YYYY-MM-DD') : '--';
+          let debitResubmissionDate = outcomeRecord.debitResubmissionDate ? moment(outcomeRecord.debitResubmissionDate).format('YYYY-MM-DD') : '--';
 
-    const idvStatusList = <>
-      <option key="1" value="option1">Option 1</option>
-      <option key="2" value="option2">Option 2</option></>
-    ;
+          outcomeArray[idx] = moment(outcomeRecord.createdDate).format('YYYY-MM-DD HH:mm:ss') + ' by user ' + outcomeRecord.createdBy + '\n' +
+          'Transaction type: ' + outcomeRecord.transactionType + '\n' +
+          'Contacted person: ' + outcomeRecord.contactPerson + '\n' +
+          'Number called: ' + outcomeRecord.numberCalled + '\n' +
+          'Email used: ' + outcomeRecord.emailUsed + '\n' +
+          'PTP date: ' + ptpDate + '\n' +
+          'PTP amount: R' + outcomeRecord.ptpAmount + '\n' +
+          'Pend reason: ' + outcomeRecord.pendReason + '\n' +
+          'Debit order resubmission date: ' + debitResubmissionDate + '\n' +
+          'Debit order resubmission amount: R' + outcomeRecord.debitResubmissionAmount + '\n' +
+          'Outcome resolution: ' + outcomeRecord.outcomeResolution + '\n' +
+          'Next visit date and time: ' + moment(outcomeRecord.nextVisitDateTime).format('YYYY-MM-DD HH:mm:ss') + '\n' +
+          'Next steps: ' + outcomeRecord.nextSteps + '\n' +
+          'Outcome notes: \n' + outcomesNotes + '\n' +
+          '-----------------------------------------\n\r'
+        });
+        outcomes = outcomeArray.join('\n');
+      } else {
+        outcomes = 'No outcomes to display';
+      }
 
-    let repNumber = (this.state.contactRecords[0].representativeNumber) ? `tel:${this.state.contactRecords[0].representativeNumber}` : '00000';
+      const resolutionList = [<option key="0" value="---">Outcome Resolution</option>];
+      //console.log('resolutionList before: ', resolutionList);
+      resolutionList.push(this.state.resolutions.map(resolution =>
+        <option key={resolution.id} value={resolution.resolution}>{resolution.resolution}</option>
+      ));
 
-    // Setting dates earlier than today as disabled for Next Date and Time
-    const yesterday = DateTime.moment().subtract( 1, 'day' );
-    const valid = function( current ){
-      return current.isAfter( yesterday );
-    };
+      const pendList = [<option key="0" value="---">Pend Reason</option>];
+      //console.log('pendList before: ', pendList);
+      pendList.push(this.state.pendReasons.map(pend =>
+        <option key={pend.id} value={pend.pendreason}>{pend.pendreason}</option>
+      ));
 
-    return (
+      const transactionTypeList = [<option key="0" value="---">Transaction Type</option>];
+      //console.log('pendList before: ', pendList);
+      transactionTypeList.push(this.state.transactionTypes.map(type =>
+        <option key={type.id} value={type.transactiontype}>{type.transactiontype}</option>
+      ));
 
-      <div className="container">
-        <div className="row">
-          <div className="col-12">
-            <div className="card border-primary">
-              <div className="card-header">Case Number {collection.caseId}</div>
-              <div className="card-body text-left">
+      const userList = [<option key="0" value={this.state.user}>Me</option>];
+      userList.push(this.state.users.map(user =>
+        <option key={user.id} value={user.email}>{user.firstName} {user.surname} -- {user.email}</option>
+      ));
 
-              <div className="row">
-                <div className="col-12">
-                  <div className="form-group">
-                    <label htmlFor="accountNotes">Account Number {collection.accountNumber} - Notes</label>
-                    <textarea
-                      disabled={true}
-                      rows="3"
-                      name="accountNotes"
-                      className="form-control"
-                      value={this.state.collection.accountNotes || ''}
-                    />
-                  </div>
-                </div>
-              </div>
+      const accountStatusList = [<option key="0" value={this.state.collection.accountStatus}>{this.state.collection.accountStatus}</option>];
+      accountStatusList.push(this.state.accountStatuses.map(accountStatus =>
+        <option key={accountStatus.id} value={accountStatus.accountStatus}>{accountStatus.accountStatus}</option>
+      ));
 
-              <br />
+      const cipcStatusList = [<option key="0" value={this.state.collection.regIdStatus}>{this.state.collection.regIdStatus}</option>];
+      cipcStatusList.push(this.state.cipcStatuses.map(cipcStatus =>
+        <option key={cipcStatus.id} value={cipcStatus.cipcStatus}>{cipcStatus.cipcStatus}</option>
+      ));
 
-              <div className="row">
-                <div className="col-12">
-                  <div className="form-group">
-                    <label htmlFor="caseNotes">Case Notes</label>
-                    <textarea
-                      disabled={true}
-                      rows="3"
-                      name="caseNotes"
-                      className="form-control"
-                      value={this.state.collection.caseNotes || ''}
-                    />
-                  </div>
-                </div>
-              </div>
+      const idvStatusList = <>
+        <option key="1" value="option1">Option 1</option>
+        <option key="2" value="option2">Option 2</option></>
+      ;
 
-              <div className="row">
-                <div className="col-12">
-                  <div className="form-group">
-                    <label htmlFor="kamNotes">KAM Notes</label>
-                    <textarea
-                      disabled={true}
-                      rows="3"
-                      name="kamNotes"
-                      className="form-control"
-                      value={this.state.collection.kamNotes || ''}
-                    />
-                  </div>
-                </div>
-              </div>
+      let repNumber = (this.state.contactRecords[0].representativeNumber) ? `tel:${this.state.contactRecords[0].representativeNumber}` : '00000';
 
-              <br />
+      // Setting dates earlier than today as disabled for Next Date and Time
+      const yesterday = DateTime.moment().subtract( 1, 'day' );
+      const valid = function( current ){
+        return current.isAfter( yesterday );
+      };
 
-              <div className="row">
-                <div className="col-8">
-                  <div className="form-group">
-                    <label htmlFor="customerName">Customer Name</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="customerName"
-                      className="form-control"
-                      value={collection.customerName || ''}
-                    />
-                  </div>
-                </div>
-              </div>
+      return (
 
-              <div className="row">
-                <div className="col-4">
-                  {
-                    collection.customerEntity === 'Enterprise' &&
-                    <div className="form-group">
-                      <label htmlFor="RegNumber">Reg Number</label>
-                      <input
-                        disabled={true}
-                        type="text"
-                        name="regIdNumber"
-                        className="form-control"
-                        value={collection.regIdNumber || ''}
-                      />
-                    </div>
-                  }
-
-                  {
-                    collection.customerEntity === 'Consumer' &&
-                    <div className="form-group">
-                      <label htmlFor="IdNumber">ID Number</label>
-                      <input
-                        disabled={true}
-                        type="text"
-                        name="regIdNumber"
-                        className="form-control"
-                        value={collection.regIdNumber || ''}
-                      />
-                    </div>
-                  }
-                </div>
-
-                <div className="col-4">
-                  {
-                    collection.customerEntity === 'Enterprise' &&
-                    <div className="form-group">
-                      <label htmlFor="cipcStatus">CIPC Status</label>
-                      <select
-                        required
-                        name="regIdStatus"
-                        className="custom-select"
-                        onChange={(e) => {this.handleChange(e)}}
-                      >
-                        {cipcStatusList}
-                      </select>
-                    </div>
-                  }
-
-                  {
-                    collection.customerEntity === 'Consumer' &&
-                    <div className="form-group">
-                      <label htmlFor="cipcStatus">IDV Status</label>
-                      <select
-                        required
-                        name="regIdStatus"
-                        className="custom-select"
-                        onChange={(e) => {this.handleChange(e)}}
-                      >
-                        {idvStatusList}
-                      </select>
-                    </div>
-                  }
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-
-                  </div>
-                </div>
-              </div>
-
-              <br />
-
-              <div className="row">
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="debtorAge">Debtor Age</label>
-                    <input
-                      disabled={true}
-                      type="number"
-                      name="debtorAge"
-                      className="form-control"
-                      value={collection.debtorAge || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="creditLimit">Credit Limit</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="creditLimit"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.creditLimit.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="totalBalance">Total Balance</label>
-                    <NumberFormat
-                      displayType={'input'}
-                      name="totalBalance"
-                      className="form-control"
-                      disabled={true}
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.totalBalance.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="amountDue">Amount Due</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="amountDue"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.amountDue.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="currentBalance">Current Balance</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="currentBalance"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.currentBalance.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="accountStatus">Account Status</label>
-                    <select className="custom-select"
-                      required
-                      name="accountStatus"
-                      onChange={this.handleChange}
-                    >
-                      {accountStatusList}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <br /><br />
-
-              <div className="row">
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days30">30 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days30"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days30.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days60">60 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days60"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days60.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days90">90 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days90"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days90.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="row">
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days120">120 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days120"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days120.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days150">150 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days150"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days150.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days180">180 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days180"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days180.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-3">
-                  <div className="form-group">
-                    <label htmlFor="days180Over">+180 Days</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="days180Over"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.days180Over.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <br /><br />
-
-              <div className="row">
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="paymentDueDate">Payment Due Date</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="paymentDueDate"
-                      className="form-control"
-                      value={paymentDueDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="debitOrderDate">Debit Order Date</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="debitOrderDate"
-                      className="form-control"
-                      value={debitOrderDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    {/* This space left blank intentionally */}
-                  </div>
-                </div>
-              </div>
-
-              <br /><br />
-
-              <div className="row">
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="lastPaymentDate">Last Payment Date</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="lastPaymentDate"
-                      className="form-control"
-                      value={lastPaymentDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="lastPaymentAmount">Last Payment Amount</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      name="lastPaymentAmount"
-                      value={collection.lastPaymentAmount.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    {/* This space left blank intentionally */}
-                  </div>
-                </div>
-              </div>
-
-              <br /><br />
-
-              <div className="row">
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="ptpDate">Last PTP Date</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="lastPTPDate"
-                      className="form-control"
-                      value={lastPTPDate}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="ptpAmount">Last PTP Amount</label>
-                    <NumberFormat
-                      disabled={true}
-                      displayType={'input'}
-                      name="lastPTPAmount"
-                      className="form-control"
-                      thousandSeparator={true}
-                      prefix={'R '}
-                      value={collection.lastPTPAmount.toFixed(2) || 0}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    {/* This space left blank intentionally */}
-                  </div>
-                </div>
-              </div>
-
-              <br /><br />
-
-              <div className="row">
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="nextVisitDateTime">Next Visit Date and Time</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="nextVisitDateTime"
-                      className="form-control"
-                      value={nextVisitDateTime}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="repName">Representative Name</label>
-                    <input
-                      disabled={true}
-                      type="text"
-                      name="representativeName"
-                      className="form-control"
-                      value={this.state.contactRecords[0].representativeName || ''}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-4">
-                  <div className="form-group">
-                    <label htmlFor="representativeNumber">Representative Number</label>
-                    <a
-                      href={repNumber}
-                      style={{
-                        background: "#ECF0F1",
-                        border: "1px solid #CED4DA",
-                        borderRadius: "0.25rem",
-                        color: "#7B8A8B",
-                        display: "block",
-                        fontSize: "0.9375rem",
-                        fontWeight: "400",
-                        lineHeight: "1.5",
-                        margin: "0",
-                        padding: "0.375rem 0.75rem",
-                        textDecoration: "underline",
-                        width: "100%"
-                      }}
-                    >
-                      {repNumber.substring(4)}
-                    </a>
-
-                  </div>
-                </div>
-              </div>
-
-              <Contacts
-                contacts={this.state.contactRecords[0]}
-                accountNumber={collection.accountNumber}
-                clientId={this.state.clientId}
-              />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-12">
-            <div className="form-group">
-              {/* This space left blank intentionally */}
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12">
-          <div className="form-group">
-            {/* This space left blank intentionally */}
-          </div>
-        </div>
-
-{/* --------------------------------------------- Outcome History section ------------------------------------------------------- */}
-        <div className="row">
-          <div className="col-12">
-            <div className="card border-primary">
-              <div className="card-header">Outcome History</div>
-              <div className="card-body text-left">
+        <div className="container">
+          <div className="row">
+            <div className="col-12">
+              <div className="card border-primary">
+                <div className="card-header">Case Number {collection.caseId}</div>
+                <div className="card-body text-left">
 
                 <div className="row">
                   <div className="col-12">
                     <div className="form-group">
-                      <label htmlFor="outcomes">Outcomes</label>
+                      <label htmlFor="accountNotes">Account Number {collection.accountNumber} - Notes</label>
                       <textarea
                         disabled={true}
-                        rows="10"
-                        name="outcomes"
+                        rows="3"
+                        name="accountNotes"
                         className="form-control"
-                        value={outcomes}
+                        value={this.state.collection.accountNotes || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <br />
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="caseNotes">Case Notes</label>
+                      <textarea
+                        disabled={true}
+                        rows="3"
+                        name="caseNotes"
+                        className="form-control"
+                        value={this.state.collection.caseNotes || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-12">
+                    <div className="form-group">
+                      <label htmlFor="kamNotes">KAM Notes</label>
+                      <textarea
+                        disabled={true}
+                        rows="3"
+                        name="kamNotes"
+                        className="form-control"
+                        value={this.state.collection.kamNotes || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <br />
+
+                <div className="row">
+                  <div className="col-8">
+                    <div className="form-group">
+                      <label htmlFor="customerName">Customer Name</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="customerName"
+                        className="form-control"
+                        value={collection.customerName || ''}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    {
+                      collection.customerEntity === 'Enterprise' &&
+                      <div className="form-group">
+                        <label htmlFor="RegNumber">Reg Number</label>
+                        <input
+                          disabled={true}
+                          type="text"
+                          name="regIdNumber"
+                          className="form-control"
+                          value={collection.regIdNumber || ''}
+                        />
+                      </div>
+                    }
+
+                    {
+                      collection.customerEntity === 'Consumer' &&
+                      <div className="form-group">
+                        <label htmlFor="IdNumber">ID Number</label>
+                        <input
+                          disabled={true}
+                          type="text"
+                          name="regIdNumber"
+                          className="form-control"
+                          value={collection.regIdNumber || ''}
+                        />
+                      </div>
+                    }
+                  </div>
+
+                  <div className="col-4">
+                    {
+                      collection.customerEntity === 'Enterprise' &&
+                      <div className="form-group">
+                        <label htmlFor="cipcStatus">CIPC Status</label>
+                        <select
+                          required
+                          name="regIdStatus"
+                          className="custom-select"
+                          onChange={(e) => {this.handleChange(e)}}
+                        >
+                          {cipcStatusList}
+                        </select>
+                      </div>
+                    }
+
+                    {
+                      collection.customerEntity === 'Consumer' &&
+                      <div className="form-group">
+                        <label htmlFor="cipcStatus">IDV Status</label>
+                        <select
+                          required
+                          name="regIdStatus"
+                          className="custom-select"
+                          onChange={(e) => {this.handleChange(e)}}
+                        >
+                          {idvStatusList}
+                        </select>
+                      </div>
+                    }
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+
+                    </div>
+                  </div>
+                </div>
+
+                <br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="debtorAge">Debtor Age</label>
+                      <input
+                        disabled={true}
+                        type="number"
+                        name="debtorAge"
+                        className="form-control"
+                        value={collection.debtorAge || 0}
                       />
                     </div>
                   </div>
 
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="creditLimit">Credit Limit</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="creditLimit"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.creditLimit.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="totalBalance">Total Balance</label>
+                      <NumberFormat
+                        displayType={'input'}
+                        name="totalBalance"
+                        className="form-control"
+                        disabled={true}
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.totalBalance.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="amountDue">Amount Due</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="amountDue"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.amountDue.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="currentBalance">Current Balance</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="currentBalance"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.currentBalance.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="accountStatus">Account Status</label>
+                      <select className="custom-select"
+                        required
+                        name="accountStatus"
+                        onChange={this.handleChange}
+                      >
+                        {accountStatusList}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days30">30 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days30"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days30.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days60">60 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days60"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days60.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days90">90 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days90"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days90.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="row">
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days120">120 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days120"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days120.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days150">150 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days150"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days150.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days180">180 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days180"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days180.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-3">
+                    <div className="form-group">
+                      <label htmlFor="days180Over">+180 Days</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="days180Over"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.days180Over.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="paymentDueDate">Payment Due Date</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="paymentDueDate"
+                        className="form-control"
+                        value={paymentDueDate}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="debitOrderDate">Debit Order Date</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="debitOrderDate"
+                        className="form-control"
+                        value={debitOrderDate}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="lastPaymentDate">Last Payment Date</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="lastPaymentDate"
+                        className="form-control"
+                        value={lastPaymentDate}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="lastPaymentAmount">Last Payment Amount</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        name="lastPaymentAmount"
+                        value={collection.lastPaymentAmount.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="ptpDate">Last PTP Date</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="lastPTPDate"
+                        className="form-control"
+                        value={lastPTPDate}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="ptpAmount">Last PTP Amount</label>
+                      <NumberFormat
+                        disabled={true}
+                        displayType={'input'}
+                        name="lastPTPAmount"
+                        className="form-control"
+                        thousandSeparator={true}
+                        prefix={'R '}
+                        value={collection.lastPTPAmount.toFixed(2) || 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      {/* This space left blank intentionally */}
+                    </div>
+                  </div>
+                </div>
+
+                <br /><br />
+
+                <div className="row">
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="nextVisitDateTime">Next Visit Date and Time</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="nextVisitDateTime"
+                        className="form-control"
+                        value={nextVisitDateTime}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="repName">Representative Name</label>
+                      <input
+                        disabled={true}
+                        type="text"
+                        name="representativeName"
+                        className="form-control"
+                        value={this.state.contactRecords[0].representativeName || ''}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-4">
+                    <div className="form-group">
+                      <label htmlFor="representativeNumber">Representative Number</label>
+                      <a
+                        href={repNumber}
+                        style={{
+                          background: "#ECF0F1",
+                          border: "1px solid #CED4DA",
+                          borderRadius: "0.25rem",
+                          color: "#7B8A8B",
+                          display: "block",
+                          fontSize: "0.9375rem",
+                          fontWeight: "400",
+                          lineHeight: "1.5",
+                          margin: "0",
+                          padding: "0.375rem 0.75rem",
+                          textDecoration: "underline",
+                          width: "100%"
+                        }}
+                      >
+                        {repNumber.substring(4)}
+                      </a>
+
+                    </div>
+                  </div>
+                </div>
+
+                <Contacts
+                  contacts={this.state.contactRecords[0]}
+                  accountNumber={collection.accountNumber}
+                  clientId={this.state.clientId}
+                />
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-
-        <div className="row">
           <div className="row">
             <div className="col-12">
               <div className="form-group">
                 {/* This space left blank intentionally */}
               </div>
             </div>
+          </div>
 
+          <div className="col-12">
+            <div className="form-group">
+              {/* This space left blank intentionally */}
+            </div>
+          </div>
+
+  {/* --------------------------------------------- Outcome History section ------------------------------------------------------- */}
+          <div className="row">
             <div className="col-12">
-              <div className="form-group">
-                {/* This space left blank intentionally */}
+              <div className="card border-primary">
+                <div className="card-header">Outcome History</div>
+                <div className="card-body text-left">
+
+                  <div className="row">
+                    <div className="col-12">
+                      <div className="form-group">
+                        <label htmlFor="outcomes">Outcomes</label>
+                        <textarea
+                          disabled={true}
+                          rows="10"
+                          name="outcomes"
+                          className="form-control"
+                          value={outcomes}
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-{/* --------------------------------------------- New activity section ------------------------------------------------------- */}
-          <div className="col-12">
-            <div className="card border-primary">
-              <div className="card-header">New Case Activity</div>
-              <div className="card-body text-left">
 
-                <div className="row">
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="transactionType">Transaction Type</label>
-                      <select className="custom-select"
-                        required
-                        name="transactionType"
-                        onChange={this.handleChange}
-                      >
-                      {transactionTypeList}
-                      </select>
+          <div className="row">
+            <div className="row">
+              <div className="col-12">
+                <div className="form-group">
+                  {/* This space left blank intentionally */}
+                </div>
+              </div>
+
+              <div className="col-12">
+                <div className="form-group">
+                  {/* This space left blank intentionally */}
+                </div>
+              </div>
+            </div>
+
+  {/* --------------------------------------------- New activity section ------------------------------------------------------- */}
+            <div className="col-12">
+              <div className="card border-primary">
+                <div className="card-header">New Case Activity</div>
+                <div className="card-body text-left">
+
+                  <div className="row">
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="transactionType">Transaction Type</label>
+                        <select className="custom-select"
+                          required
+                          name="transactionType"
+                          onChange={this.handleChange}
+                        >
+                        {transactionTypeList}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="numberCalled">Number Called</label>
+                        <input
+                          disabled={this.state.disabled}
+                          type="text"
+                          name="numberCalled"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          value={this.state.numberCalled || ''}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="contactPerson">Person Contacted</label>
+                        <input
+                          disabled={this.state.disabled}
+                          type="text"
+                          name="contactPerson"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          value={this.state.contactPerson || ''}
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className="row">
+                    <div className="col-8">
+                      <div className="form-group">
+                        <label htmlFor="emailUsed">Email Used</label>
+                        <input
+                          disabled={this.state.disabled}
+                          type="text"
+                          name="emailUsed"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          value={this.state.emailUsed || ''}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        {/* This space left intentionally blank */}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="numberCalled">Number Called</label>
-                      <input
-                        disabled={this.state.disabled}
-                        type="text"
-                        name="numberCalled"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.numberCalled || ''}
-                      />
+                  <div className="row">
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="ptpDate">PTP Date</label>
+                        <DateTime
+                          isValidDate={ valid }
+                          onBlur={this.handlePTPDate}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="ptpAmount">PTP Amount</label>
+                        <NumberFormat
+                          displayType={'input'}
+                          className="form-control"
+                          prefix={'R '}
+                          thousandSeparator={true}
+                          disabled={false}
+                          name="debitResubmissionAmount"
+                          onValueChange={(values) => {
+                            this.setState({ ptpAmount: values.floatValue })}}
+                          value={this.state.ptpAmount || ''}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="resolution">Outcome Resolution</label>
+                        <select className="custom-select"
+                          required
+                          name="outcomeResolution"
+                          onChange={this.handleChange}
+                        >
+                        {resolutionList}
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="contactPerson">Person Contacted</label>
-                      <input
-                        disabled={this.state.disabled}
-                        type="text"
-                        name="contactPerson"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.contactPerson || ''}
-                      />
+                  <div className="row">
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="debitResubmissionDate">Debit Resubmission Date</label>
+                        <DateTime
+                          isValidDate={ valid }
+                          onBlur={this.handleDebitDate}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="debitResubmissionAmount">Debit Resubmission Amount</label>
+                        <NumberFormat
+                          displayType={'input'}
+                          className="form-control"
+                          prefix={'R '}
+                          thousandSeparator={true}
+                          disabled={false}
+                          name="debitResubmissionAmount"
+                          onValueChange={(values) => {
+                            this.setState({ debitResubmissionAmount: values.floatValue })}}
+                          value={this.state.debitResubmissionAmount || ''}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="pendReason">Pend Reason</label>
+                        <select className="custom-select"
+                          required
+                          name="pendReason"
+                          onChange={this.handleChange}
+                        >
+                        {pendList}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-12">
+                      {(role === 'kam') && (<div className="form-group">
+                        <label htmlFor="kamNotes">KAM Case Notes</label>
+                        <textarea
+                          disabled={this.state.disabled}
+                          type="text"
+                          rows="3"
+                          name="kamNotes"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          placeholder="Remember to provide clear notes"
+                        />
+                      </div>)}
+
+                      {(role !== 'kam') && (<div className="form-group">
+                        <label htmlFor="outcomeNotes">Outcome Notes</label>
+                        <textarea
+                          disabled={this.state.disabled}
+                          type="text"
+                          rows="3"
+                          name="outcomeNotes"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          placeholder="Remember to provide clear notes"
+                        />
+                      </div>)}
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="nextVisitDateTime">Next Visit Date and Time</label>
+                        <DateTime
+                          isValidDate={ valid }
+                          onBlur={this.handleDate}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-4">
+                      <div className="form-group">
+                        <label htmlFor="userList">Assignment</label>
+                        <select className="custom-select"
+                          required
+                          name="currentAssignment"
+                          onChange={this.handleChange}
+                        >
+                          {userList}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col-12">
+                      <div className="form-group">
+                        <label htmlFor="nextSteps">Next Steps</label>
+                        <textarea
+                          disabled={this.state.disabled}
+                          type="text"
+                          rows="8"
+                          name="nextSteps"
+                          onChange={(e) => {this.handleChange(e)}}
+                          className="form-control"
+                          value={this.state.nextSteps || ''}
+                        />
+                      </div>
                     </div>
                   </div>
 
                 </div>
-
-                <div className="row">
-                  <div className="col-8">
-                    <div className="form-group">
-                      <label htmlFor="emailUsed">Email Used</label>
-                      <input
-                        disabled={this.state.disabled}
-                        type="text"
-                        name="emailUsed"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.emailUsed || ''}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      {/* This space left intentionally blank */}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="row">
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="ptpDate">PTP Date</label>
-                      <DateTime
-                        isValidDate={ valid }
-                        onBlur={this.handlePTPDate}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="ptpAmount">PTP Amount</label>
-                      <NumberFormat
-                        displayType={'input'}
-                        className="form-control"
-                        prefix={'R '}
-                        thousandSeparator={true}
-                        disabled={false}
-                        name="debitResubmissionAmount"
-                        onValueChange={(values) => {
-                          this.setState({ ptpAmount: values.floatValue })}}
-                        value={this.state.ptpAmount || ''}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="resolution">Outcome Resolution</label>
-                      <select className="custom-select"
-                        required
-                        name="outcomeResolution"
-                        onChange={this.handleChange}
-                      >
-                      {resolutionList}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="row">
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="debitResubmissionDate">Debit Resubmission Date</label>
-                      <DateTime
-                        isValidDate={ valid }
-                        onBlur={this.handleDebitDate}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="debitResubmissionAmount">Debit Resubmission Amount</label>
-                      <NumberFormat
-                        displayType={'input'}
-                        className="form-control"
-                        prefix={'R '}
-                        thousandSeparator={true}
-                        disabled={false}
-                        name="debitResubmissionAmount"
-                        onValueChange={(values) => {
-                          this.setState({ debitResubmissionAmount: values.floatValue })}}
-                        value={this.state.debitResubmissionAmount || ''}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="pendReason">Pend Reason</label>
-                      <select className="custom-select"
-                        required
-                        name="pendReason"
-                        onChange={this.handleChange}
-                      >
-                      {pendList}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="row">
-                  <div className="col-12">
-                    {(role === 'kam') && (<div className="form-group">
-                      <label htmlFor="kamNotes">KAM Case Notes</label>
-                      <textarea
-                        disabled={this.state.disabled}
-                        type="text"
-                        rows="3"
-                        name="kamNotes"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        placeholder="Remember to provide clear notes"
-                      />
-                    </div>)}
-
-                    {(role !== 'kam') && (<div className="form-group">
-                      <label htmlFor="outcomeNotes">Outcome Notes</label>
-                      <textarea
-                        disabled={this.state.disabled}
-                        type="text"
-                        rows="3"
-                        name="outcomeNotes"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        placeholder="Remember to provide clear notes"
-                      />
-                    </div>)}
-                  </div>
-                </div>
-
-                <div className="row">
-                  <div className="col-4">
-                    <div className="form-group">
-                      <label htmlFor="nextVisitDateTime">Next Visit Date and Time</label>
-                      <DateTime
-                        isValidDate={ valid }
-                        onBlur={this.handleDate}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-8">
-                    <div className="form-group">
-                      <label htmlFor="nextSteps">Next Steps</label>
-                      <textarea
-                        disabled={this.state.disabled}
-                        type="text"
-                        rows="8"
-                        name="nextSteps"
-                        onChange={(e) => {this.handleChange(e)}}
-                        className="form-control"
-                        value={this.state.nextSteps || ''}
-                      />
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="row">
-          <div className="col-12">
+          <div className="row">
+            <div className="col-12">
 
-              <div className="card-body text-center">
+                <div className="card-body text-center">
 
-                <div className="row">
-                  <div className="col-12">
-                    <button
-                      disabled={this.state.disabled}
-                      className="btn btn-primary"
-                      onClick={() => {this.processRecord('Pended')}}
-                      style={{ margin: "5px" }}
-                    >
-                      Save and Pend
-                    </button>
+                  <div className="row">
+                    <div className="col-12">
+                      <button
+                        disabled={this.state.disabled}
+                        className="btn btn-primary"
+                        onClick={() => {this.processRecord('Pended')}}
+                        style={{ margin: "5px" }}
+                      >
+                        Save and Pend
+                      </button>
 
-                    <button
-                      disabled={this.state.disabled}
-                      className="btn btn-primary"
-                      onClick={() => {this.processRecord('Closed')}}
-                      style={{ margin: "5px" }}
-                    >
-                      Close
-                    </button>
+                      <button
+                        disabled={this.state.disabled}
+                        className="btn btn-primary"
+                        onClick={() => {this.processRecord('Closed')}}
+                        style={{ margin: "5px" }}
+                      >
+                        Close
+                      </button>
 
-                    <button
-                      disabled={this.state.disabled}
-                      className="btn btn-primary"
-                      onClick={() => {this.processRecord('Updated')}}
-                      style={{ margin: "5px" }}
-                    >
-                      Update
-                    </button>
+                      <button
+                        disabled={this.state.disabled}
+                        className="btn btn-primary"
+                        onClick={() => {this.processRecord('Updated')}}
+                        style={{ margin: "5px" }}
+                      >
+                        Update
+                      </button>
 
-                    <button
-                      disabled={this.state.disabled}
-                      className="btn btn-primary"
-                      onClick={() => {this.cancel()}}
-                      style={{ margin: "5px" }}
-                    >
-                      Cancel
-                    </button>
+                      <button
+                        disabled={this.state.disabled}
+                        className="btn btn-primary"
+                        onClick={() => {this.cancel()}}
+                        style={{ margin: "5px" }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
+            </div>
           </div>
-        </div>
-        <ToastContainer />
+          <ToastContainer />
 
-      </div>
-    )
+        </div>
+      )
+    }
   }
 }
 

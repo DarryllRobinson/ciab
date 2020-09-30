@@ -109,7 +109,8 @@ class App extends Component {
     //console.log('handleSuccessfulAuth data: ', data);
     await this.handleLogin(data);
     //console.log('pushing to dashboard with :', this.state.loggedInStatus);
-    this.props.history.push('/dashboard');
+    //console.log('App this.props.history: ', this.props.history);
+    if (this.props.history.location.pathname === '/') this.props.history.push('/dashboard');
   }
 
   componentDidMount() {
