@@ -8,6 +8,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import NavBar from './Components/NavBar';
 import Home from './Components/Home';
+import Footer from './Components/Footer';
 //import NewHome from './Components/newHome';
 
 import Dashboard from './Components/Dashboard';
@@ -117,7 +118,7 @@ class App extends Component {
     //console.log('App mounted: ', this.state.loggedInStatus);
     this.checkLoginStatus();
   }
-//<a href='https://www.freepik.com/vectors/logo'>Logo vector created by freepik - www.freepik.com</a>
+
   render() {
     let role = sessionStorage.getItem('cwsRole') ? sessionStorage.getItem('cwsRole') : this.state.user.role;
     let user = this.state.user;
@@ -371,6 +372,7 @@ class App extends Component {
             />
           </Switch>
 
+          <Footer />
         </Container>
       )
 
