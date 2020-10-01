@@ -7,30 +7,32 @@ library.add(faCopyright);
 
 function Footer() {
   return (
-    <div>
+    <div
+      style={{
+        color: "#7B8A8B",
+        fontSize: "0.6rem",
+        fontWeight: "400",
+        lineHeight: "1.5",
+        position: "absolute",
+        left: "0",
+        bottom: "0",
+        right: "0",
+        textAlign: "center"
+      }}
+    >
+      <FontAwesomeIcon icon={faCopyright} size="1x"  /> The System 2020
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
       <a
         style={{
           color: "#7B8A8B",
-          fontSize: "0.6rem",
-          fontWeight: "400",
-          lineHeight: "1.5",
-          textAlign: "center"
         }}
         href='https://www.freepik.com/vectors/logo'
       >
         Logo vector created by freepik - www.freepik.com
       </a>
 
-      <span
-        style={{
-          color: "#7B8A8B",
-          fontSize: "0.6rem",
-          fontWeight: "400",
-          lineHeight: "1.5"
-        }}
-      >
-        <FontAwesomeIcon icon={faCopyright} size="1x"  /> The System 2020
-      </span>
+
+
     </div>
   )
 }
