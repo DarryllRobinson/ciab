@@ -187,6 +187,8 @@ class App extends Component {
 
 
           </Switch>
+
+          <Footer />
         </Container>
       );
       case 'store': return (
@@ -227,6 +229,8 @@ class App extends Component {
             <Route exact path='/community/blogs/:blogId' render={props => (<Blog {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
+
+          <Footer />
         </Container>
       );
       case 'kam': return (
@@ -269,6 +273,8 @@ class App extends Component {
             <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
+
+          <Footer />
         </Container>
       );
       case 'agent': return (
@@ -311,6 +317,8 @@ class App extends Component {
             <Route exact path='/collections/upload' render={props => (<ExcelReader {...props} user={this.state.user} loggedInStatus={this.state.loggedInStatus} />)} />
 
           </Switch>
+
+          <Footer />
         </Container>
       );
       case 'client': return (
@@ -343,6 +351,8 @@ class App extends Component {
 
 
           </Switch>
+
+          <Footer />
         </Container>
       );
       default: return (
