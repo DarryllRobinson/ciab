@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+body .bg-dark {
+  /*background-color: #94CF9F !important;*/
+  background-color: #3D3735;
+}
+
+.container-fluid {
+  margin-top: 80px;
+}
+
+.jumbotron {
+  margin-top: 80px;
+  background-color: #ffffff !important;
+  font-weight: 700 !important;
+  font-family: 'Poppins', sans-serif !important;
+  padding: 10px !important;
+  /*box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 75);*/
+  /*border: 1px solid #3D3735 !important;*/
+}
+
+.jumbotron h1 {
+  margin-top: 80px;
+}
+
+.intro {
+  padding: 10px !important;
+  width: 80%;
+}
+
+.card mb-3 {
+  background-color: red !important;
+}
+
+/*
+
+h5 {
+  color: "red" !important;
+}
+
+.xxxjumbotron {
+  background-repeat: no-repeat, repeat;
+  background-position: center;
+  background-size: cover;
+  font-weight: bold;
+  margin-bottom: 100px;
+  padding: 100px;
+  border-radius: 50px;
+  box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 75);
+  background-clip: padding-box;
+}
+
+.xxxjumbotron h1, p {
+  background-color: #ffffff73;
+  padding: 50px;
+}
+
+
+
+const background = {backgroundSize : 'cover'};
+const textStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%'
+};
+return (
+
+    <Container>
+
+        <Image src={banner} fluid style={background} />
+        <h1 style={textStyle}>The System</h1>
+        <p>
+          Let us take care of your debt collection process for you. We know how important your customers are to you, even
+          the ones who are struggling to pay right now.
+        </p>
+
+    </Container>
+
+)
+*/
